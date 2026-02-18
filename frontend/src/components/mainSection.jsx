@@ -10,9 +10,9 @@ const MainSection = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: 'Home', path: '/', icon: <Home size={20} /> },
-    { label: 'Mix Builder', path: '/builder', icon: <Flame size={20} /> }, // Поправил опечатку в названии
-    { label: 'Presets', path: '/presets', icon: <Grid size={20} /> }
+    { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
+    { label: 'Конструктор Миксов', path: '/builder', icon: <Flame size={20} /> },
+    { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> }
   ];
 
   return (

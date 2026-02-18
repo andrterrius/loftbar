@@ -7,6 +7,7 @@ import {
   Search, Plus, ShoppingCart, DollarSign 
 } from "lucide-react";
 import FlavorCard from "./flavorCard";
+import { apiRequest } from "@/utils/api";
 
 const mockFlavors = [
   { id: '1', name: 'Double Apple', brand: 'Al Fakher', category: 'Classic', color: '#dc2626' },
@@ -45,9 +46,9 @@ const MainBuilderPage = () => {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navItems = [
-        { label: 'Home', path: '/', icon: <Home size={20} /> },
-        { label: 'Mix Builder', path: '/builder', icon: <Flame size={20} /> },
-        { label: 'Presets', path: '/presets', icon: <Grid size={20} /> }
+        { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
+        { label: 'Конструктор Миксов', path: '/builder', icon: <Flame size={20} /> },
+        { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> }
     ];
 
 
@@ -57,8 +58,9 @@ const MainBuilderPage = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [mixName, setMixName] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // --- Logic Functions ---
+    // Функции
     const handlePercentageChange = (id, newPercentage) => {
       if (selectedFlavors.length <= 1) return;
   
@@ -154,10 +156,45 @@ const MainBuilderPage = () => {
         setSelectedBowl('Classic');
     };
 
-    const handleOrder = () => {
+    const handleOrder = async () => {
         if (selectedFlavors.length === 0) return alert('Mix is empty!');
         if (!selectedLiquid) return alert('Select base liquid!');
-        alert(`Order placed! Total: $${calculatePrice()}`);
+        setIsSubmitting(true);
+        
+        const orderData = {
+            name: mixName || "Unnamed Mix",
+            ingredients: selectedFlavors.map(f => ({
+            flavorId: f.flavorId,
+            percentage: f.percentage,
+        })),
+            liquidId: selectedLiquid,
+            bowlType: selectedBowl,
+            totalPrice: calculatePrice(),
+            createdAt: new Date().toISOString()
+        };
+
+        try {
+            const response = await apiRequest('api/orders', {
+                method: "Post", 
+                body: JSON.stringify(orderData),
+            });
+            if (!response.ok) {
+                throw new Error("Ошибка при создании заказа")
+            }
+            const result = response.json()
+
+            alert(`Заказ #${result.id || ''} успешно оформлен!`);
+
+            setSelectedFlavors([]);
+            setSelectedLiquid(null);
+            setMixName('');
+            
+        } catch (error) {
+            console.error("Order error:", error);
+            alert('Не удалось отправить заказ. Попробуйте позже.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const filteredFlavors = mockFlavors.filter(f => 
@@ -213,13 +250,13 @@ const MainBuilderPage = () => {
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-6 text-left">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Mix Builder</h1>
-                        <p className="text-neutral-400 text-sm md:text-base">Compose your perfect bowl. Auto-balanced ratios.</p>
+                        <h1 className="text-3xl font-bold text-white mb-2">Конструктор Миксов</h1>
+                        <p className="text-neutral-400 text-sm md:text-base">Создай свою идеальную чашу</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                         <input 
                             type="text" 
-                            placeholder="Name your mix..." 
+                            placeholder="Название микса..." 
                             value={mixName}
                             onChange={(e) => setMixName(e.target.value)}
                             className="flex-1 sm:w-64 bg-neutral-900 border border-white/10 rounded-lg px-4 py-3 sm:py-2 text-white focus:outline-none focus:border-cyan-500"
@@ -228,7 +265,7 @@ const MainBuilderPage = () => {
                             onClick={handleSave}
                             className="flex items-center justify-center gap-2 px-6 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-colors active:scale-95"
                         >
-                            <Save size={18} /> Save
+                            <Save size={18} /> Сохранить
                         </button>
                     </div>
                 </div>
@@ -257,7 +294,7 @@ const MainBuilderPage = () => {
                             {selectedFlavors.length === 0 && (
                             <div className="p-8 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-neutral-500 h-64">
                                 <Plus size={48} className="mb-4 opacity-50" />
-                                <p>Add flavors to start mixing</p>
+                                <p>Выберите вкус</p>
                             </div>
                             )}
                             
@@ -266,7 +303,7 @@ const MainBuilderPage = () => {
                                 onClick={() => setIsSearchOpen(true)}
                                 className="w-full py-4 border border-white/10 rounded-xl hover:bg-white/5 transition-colors text-cyan-400 flex items-center justify-center gap-2 font-medium active:scale-95"
                             >
-                                <Plus size={20} /> Add Flavor
+                                <Plus size={20} /> Добавить вкус
                             </button>
                             )}
                         </div>
@@ -275,7 +312,7 @@ const MainBuilderPage = () => {
                     <div className="space-y-6">
                         
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Bowl Type</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Вид Чаши</h3>
                             <div className="grid grid-cols-4 gap-2">
                             {BOWL_OPTIONS.map((bowl) => (
                                 <button
@@ -301,7 +338,7 @@ const MainBuilderPage = () => {
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Base Liquid</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Стандартное наполнение</h3>
                             <div className="grid grid-cols-2 gap-2">
                             {mockLiquids.map((liquid) => (
                                 <button
@@ -321,7 +358,7 @@ const MainBuilderPage = () => {
 
                         <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-6 shadow-xl">
                             <div className="flex justify-between items-center mb-4">
-                            <span className="text-neutral-400">Total Price</span>
+                            <span className="text-neutral-400">Итоговая цена</span>
                             <span className="text-3xl font-bold text-white flex items-center">
                                 <DollarSign size={24} className="text-green-500" />
                                 {calculatePrice()}
@@ -329,11 +366,12 @@ const MainBuilderPage = () => {
                             </div>
                             
                             <motion.button
-                            whileTap={{ scale: 0.96 }}
-                            onClick={handleOrder}
-                            className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] transition-all flex items-center justify-center gap-2 active:scale-95"
+                                whileTap={{ scale: 0.96 }}
+                                onClick={handleOrder}
+                                className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] transition-all flex items-center justify-center gap-2 active:scale-95"
+                                disabled={isSubmitting}
                             >
-                            <ShoppingCart size={20} /> Order Now
+                            <ShoppingCart size={20} /> Сделать заказ
                             </motion.button>
                         </div>
                     </div>
@@ -358,7 +396,7 @@ const MainBuilderPage = () => {
                             <Search className="text-neutral-500" />
                             <input
                             type="text"
-                            placeholder="Search flavors..."
+                            placeholder="Поиск вкуса..."
                             autoFocus
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -371,7 +409,7 @@ const MainBuilderPage = () => {
 
                         <div className="flex-1 overflow-y-auto p-2">
                             {filteredFlavors.length === 0 ? (
-                            <div className="p-8 text-center text-neutral-500">No flavors found.</div>
+                            <div className="p-8 text-center text-neutral-500">Вкусы не найдены.</div>
                             ) : (
                             <div className="grid grid-cols-1 gap-1">
                                 {filteredFlavors.map(flavor => (
