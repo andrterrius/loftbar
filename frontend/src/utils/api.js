@@ -1,35 +1,26 @@
-function getTelegramHeaders() {
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-
-  if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
-    headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
-  } else {
-    console.warn('Telegram WebApp initData не найден. Работаем в режиме разработки или браузера.');
-  }
-
-  return headers;
-}
-
 export async function apiRequest(endpoint, options = {}) {
-  const BASE_URL = '/api';
+  let tgInitData = '';
+
+  if (typeof window !== 'undefined') {
+    // Мы на клиенте — берем из объекта Telegram
+    tgInitData = window.Telegram?.WebApp?.initData || '';
+  }
 
   const config = {
     ...options,
     headers: {
-      ...getTelegramHeaders(),
-      ...options.headers, 
+      'Content-Type': 'application/json',
+      'X-TG-Data': tgInitData, 
+      ...options.headers,
     },
   };
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, config);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Ошибка сервера');
-  }
-
+  // Важно: на сервере нужно указывать полный URL (http://localhost:3000...)
+  // На клиенте достаточно относительного path (/api/...)
+  const baseUrl = typeof window === 'undefined' ? process.env.NEXT_PUBLIC_API_URL : '';
+  
+  const response = await fetch(`${baseUrl}/api${endpoint}`, config);
+  
+  if (!response.ok) throw new Error('Ошибка запроса');
   return response.json();
 }

@@ -1,8 +1,10 @@
 import MainBuilderPage from "@/components/builder/mainBuilderPage";
 
-const Builder = () => {
+const Builder = async ({searchParams}) => {
+    const res = await searchParams
+    const tgDataFromServer = res.tgWebAppStartParam;
     return ( 
-        <MainBuilderPage/>
+        <MainBuilderPage initialData={tgDataFromServer}/>
      );
 }
  
