@@ -1,22 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+// Убрал Link отсюда, так как он конфликтует с системным Link из Next.js
 import { Flame, ArrowRight, Droplets, Menu, X, Home, Grid } from "lucide-react";
 
 const MainSection = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Данные для навигации
   const navItems = [
     { label: 'Home', path: '/', icon: <Home size={20} /> },
-    { label: 'Mix Builde', path: '/builder', icon: <Flame size={20} /> },
+    { label: 'Mix Builder', path: '/builder', icon: <Flame size={20} /> }, // Поправил опечатку в названии
     { label: 'Presets', path: '/presets', icon: <Grid size={20} /> }
   ];
 
   return (
     <section className="mt-8 px-5 flex flex-col items-center text-center">
-      {/* Навигация */}
+      {/* --- Navigation --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-sm items-center justify-between px-4">
           <div className="text-lg font-bold text-white tracking-tight">
@@ -27,13 +28,11 @@ const MainSection = () => {
               className="p-2 text-neutral-400 transition-colors"
               onClick={() => setIsMobileMenuOpen(prev => !prev)}
             >
-              {/* Меняем иконку в зависимости от состояния */}
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} strokeWidth={1.5}/>}
             </button>
           </div>
         </div>
 
-        {/* Выпадающее меню */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -44,7 +43,7 @@ const MainSection = () => {
             >
               <div className="px-4 py-4 space-y-2">
                 {navItems.map((item) => (
-                  <a
+                  <Link
                     key={item.label}
                     href={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -52,7 +51,7 @@ const MainSection = () => {
                   >
                     {item.icon}
                     <span className="font-medium">{item.label}</span>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </motion.div>
@@ -60,7 +59,7 @@ const MainSection = () => {
         </AnimatePresence>
       </nav>
 
-      {/* главный контент */}
+      {/* --- Main Content --- */}
       <motion.h1
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -83,30 +82,35 @@ const MainSection = () => {
       </motion.p>
 
       <div className="mt-10 flex flex-col gap-4 w-full max-w-[300px]">
-        <motion.button
-          whileTap={{
-            scale: 0.96,
-            boxShadow: "0px 0px 25px 5px rgba(192, 38, 211, 0.6)",
-            filter: "brightness(1.1)"
-          }}
-          className="flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-2xl shadow-lg"
-        >
-          <span>Start Mixing</span>
-          <Flame className="w-5 h-5 fill-white" />
-        </motion.button>
+        <Link href="/builder" className="w-full">
+          <motion.button
+            whileTap={{
+              scale: 0.96,
+              boxShadow: "0px 0px 25px 5px rgba(192, 38, 211, 0.6)",
+              filter: "brightness(1.1)"
+            }}
+            className="flex items-center justify-center gap-2 py-4 w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-2xl shadow-lg"
+          >
+            <span>Собрать Свой Микс</span>
+            <Flame className="w-5 h-5 fill-white" />
+          </motion.button>
+        </Link>
 
-        <button className="flex items-center justify-center gap-2 py-4 bg-zinc-900/50 border border-zinc-800 text-white font-semibold rounded-2xl active:scale-95 transition-transform">
-          <span>Explore Presets</span>
-          <ArrowRight className="w-5 h-5 text-zinc-500" />
-        </button>
+        <Link href="/presets" className="w-full">
+          <button className="flex items-center justify-center gap-2 py-4 w-full bg-zinc-900/50 border border-zinc-800 text-white font-semibold rounded-2xl active:scale-95 transition-all hover:bg-zinc-800">
+            <span>Готовые миксы</span>
+            <ArrowRight className="w-5 h-5 text-zinc-500" />
+          </button>
+        </Link>
       </div>
 
-      <div className="mt-12 w-full max-w-[400px]">
+      {/* --- Features --- */}
+      <div className="mt-12 w-full max-w-[400px] mb-10">
         <div className="flex flex-col gap-4">
           {[
-            { title: 'Smart Balancer', desc: 'Auto-adjust percentages for perfect ratios.', icon: <Droplets className="text-cyan-400" /> },
-            { title: 'Community Driven', desc: 'Share and discover top-rated mixes.', icon: <Flame className="text-fuchsia-400" /> },
-            { title: 'Flavor Library', desc: 'Extensive database of premium tobaccos.', icon: <ArrowRight className="text-purple-400" /> },
+            { title: 'Большая библиотека', desc: 'Более 50 вкусов на выбор', icon: <Droplets className="text-cyan-400" /> },
+            { title: 'Сохранение вкусов', desc: 'Сохраняйте любимые комбинации', icon: <Flame className="text-fuchsia-400" /> },
+            { title: 'Уникальная подача', desc: 'Чаши в виде фруктов', icon: <ArrowRight className="text-purple-400" /> },
           ].map((item, i) => (
             <motion.div
               key={i}
