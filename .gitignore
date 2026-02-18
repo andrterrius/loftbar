@@ -1,0 +1,296 @@
+####################################
+#           DEPENDENCIES           #
+####################################
+
+# Backend зависимости (Node.js/Python/PHP/Java/Ruby)
+**/node_modules/
+**/vendor/
+**/venv/
+**/env/
+**/__pycache__/
+**/*.pyc
+**/target/                 # Java (Maven)
+**/build/                  # Java (Gradle) или C++
+**/.gradle/
+**/bin/
+**/obj/
+
+# Frontend зависимости
+**/node_modules/           # (уже есть выше, но для ясности)
+**/bower_components/
+**/vendor/
+
+####################################
+#         ENVIRONMENT FILES        #
+####################################
+
+# Корневые .env файлы
+.env
+.env.local
+.env.*.local
+!.env.example             # НЕ игнорируем примеры
+!.env.dist                # НЕ игнорируем дистрибутивы
+
+# Backend .env файлы (если есть)
+backend/.env
+backend/.env.local
+backend/.env.*.local
+!backend/.env.example
+
+# Frontend .env файлы (если есть)
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+!frontend/.env.example
+
+# Docker окружение (если используете отдельные файлы)
+*.env.docker
+!.env.docker.example
+
+####################################
+#           LOGS & DEBUG           #
+####################################
+
+# Логи
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Диагностика
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+pid-debug.log
+*.pid
+*.seed
+*.pid.lock
+
+####################################
+#         BUILD & OUTPUT           #
+####################################
+
+# Директории сборки
+dist/
+build/
+out/
+release/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Backend сборка
+**/dist/
+**/build/
+**/*.tar
+**/*.gz
+
+# Frontend сборка
+**/build/                  # Create React App
+**/dist/                   # Vite, Webpack
+**/.next/                  # Next.js
+**/.nuxt/                  # Nuxt.js
+**/out/                    # Next.js export
+
+# Тестовые покрытия
+coverage/
+.nyc_output/
+*.lcov
+*.lcov.info
+
+####################################
+#         IDE & EDITORS            #
+####################################
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.example.json
+.history/
+
+# IntelliJ / WebStorm / PHPStorm / PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+.classpath
+.project
+.settings/
+.factorypath
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+.sublime/
+
+# Vim
+*.swp
+*.swo
+*~
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+####################################
+#            OS FILES              #
+####################################
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*.swo
+*~
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+####################################
+#          PACKAGE FILES           #
+####################################
+
+# Package manager locks (иногда их нужно хранить, иногда нет)
+# Раскомментируйте если нужно игнорировать
+# **/package-lock.json
+# **/yarn.lock
+# **/pnpm-lock.yaml
+# **/composer.lock
+# **/Gemfile.lock
+# **/poetry.lock
+
+####################################
+#         DATABASE FILES           #
+####################################
+
+# Локальные базы данных
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.sql
+*.sql.gz
+
+# Дампы БД
+dump.rdb
+*.dump
+*.backup
+
+####################################
+#           DOCKER FILES           #
+####################################
+
+# Локальные Docker файлы (которые не должны попасть в репозиторий)
+*.dockerignore           # Игнорируем dockerignore файлы
+!.dockerignore           # Кроме самого .dockerignore
+
+# Временные Docker файлы
+docker-compose.override.yml
+.docker/
+*.dockerfile.local
+
+####################################
+#            CACHE FILES           #
+####################################
+
+# Кеши
+.cache/
+.temp/
+.tmp/
+*.cache
+*.temp
+*.tmp
+
+# PHPStorm мета
+.phpstorm.meta.php
+.idea/php.xml
+.idea/blade.xml
+
+# TypeScript
+*.tsbuildinfo
+.next/build-manifest.json
+.next/react-loadable-manifest.json
+.next/server/pages-manifest.json
+
+# Python
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+####################################
+#         SECURITY FILES           #
+####################################
+
+# Ключи и сертификаты
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.keystore
+*.jks
+*.cert
+*.cer
+
+# SSH ключи
+*.pem
+id_rsa*
+id_dsa*
+*.pub
+
+####################################
+#        PROJECT SPECIFIC          #
+####################################
+
+# Свои локальные файлы (добавьте сюда ваши особенности)
+/uploads/
+/storage/
+/public/uploads/
+/private/
+/temp/
+
+# Секретные конфиги
+config/secrets.yml
+config/database.local.yml
+config/parameters.yml
