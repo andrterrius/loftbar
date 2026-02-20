@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-    X, Home, Flame, Grid, Save, 
-    Search, Plus, ShoppingCart, DollarSign 
-} from "lucide-react";
+        X, Save, Search, Plus, ShoppingCart, DollarSign 
+    } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import { apiRequest } from "@/utils/api";
 import Nav from "../nav";
@@ -44,15 +43,6 @@ const BOWL_OPTIONS = [
 
 
 const MainBuilderPage = () => {
-
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const navItems = [
-        { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
-        { label: 'Конструктор Миксов', path: '/builder', icon: <Flame size={20} /> },
-        { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> }
-    ];
-
-
     const [selectedFlavors, setSelectedFlavors] = useState([]);
     const [selectedLiquid, setSelectedLiquid] = useState(null);
     const [selectedBowl, setSelectedBowl] = useState('Classic');
@@ -165,9 +155,9 @@ const MainBuilderPage = () => {
         const orderData = {
             name: mixName || "Unnamed Mix",
             ingredients: selectedFlavors.map(f => ({
-            flavorId: f.flavorId,
-            percentage: f.percentage,
-        })),
+                flavorId: f.flavorId,
+                percentage: f.percentage,
+            })),
             liquidId: selectedLiquid,
             bowlType: selectedBowl,
             totalPrice: calculatePrice(),
@@ -176,7 +166,7 @@ const MainBuilderPage = () => {
 
         try {
             const response = await apiRequest('api/orders', {
-                method: "Post", 
+                method: "POST", 
                 body: JSON.stringify(orderData),
             });
             if (!response.ok) {
