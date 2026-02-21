@@ -2,8 +2,7 @@ import uuid as uuid_pkg
 
 from typing import Optional, List
 
-from sqlalchemy import text
-from sqlalchemy import String, Float
+from sqlalchemy import text, ForeignKey, String, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -26,16 +25,37 @@ class DBPreset(TimestampMixin, Base):
     description: Mapped[str] = mapped_column(String(64), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
 
-    preset_ingredients: Mapped[List["DBPresetIngredient"]] = relationship(
+    preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="preset",
         cascade="all, delete-orphan"
     )
 
-    liquid: Mapped[Optional["DBLiquid"]] = relationship(
-        "DBLiquid",
-        back_populates="presets"
+    liquid_id: Mapped[Optional[uuid_pkg.UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("liquids.id", ondelete="SET NULL"),
+        nullable=True
     )
 
+    bowl_id: Mapped[Optional[uuid_pkg.UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("bowls.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    created_by_id: Mapped[Optional[uuid_pkg.UUID]] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    liquid: Mapped[Optional["DBLiquid"]] = relationship(
+        "DBLiquid",
+        backref="presets"
+    )
+    bowl: Mapped[Optional["DBBowl"]] = relationship(
+        "DBBowl",
+        backref="presets"
+    )
     created_by: Mapped[Optional["DBUser"]] = relationship(
         "DBUser",
         back_populates="presets"

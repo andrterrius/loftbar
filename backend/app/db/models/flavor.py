@@ -1,5 +1,7 @@
 import uuid as uuid_pkg
 
+from typing import List
+
 from sqlalchemy import text
 from sqlalchemy import String, BigInteger, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -24,3 +26,8 @@ class DBFlavor(TimestampMixin, Base):
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     hex_color: Mapped[str] = mapped_column(String(32), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+
+    preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
+        back_populates="flavor",
+        cascade="all, delete-orphan"
+    )

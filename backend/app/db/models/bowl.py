@@ -1,5 +1,7 @@
 import uuid as uuid_pkg
 
+from typing import List
+
 from sqlalchemy import text
 from sqlalchemy import String, Float, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,8 +11,8 @@ from app.db.models.base import Base
 from app.db.models.mixins import TimestampMixin
 
 
-class DBIngredient(TimestampMixin, Base):
-    __tablename__ = "ingredients"
+class DBBowl(TimestampMixin, Base):
+    __tablename__ = "bowls"
 
     id: Mapped[uuid_pkg.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -22,6 +24,4 @@ class DBIngredient(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
-    description: Mapped[str] = mapped_column(String(64), nullable=True)
-    hex_color: Mapped[str] = mapped_column(String(32), nullable=True)
-    image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    icon: Mapped[str] = mapped_column(String(32), nullable=True)
