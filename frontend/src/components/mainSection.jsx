@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Flame, ArrowRight, Droplets, Menu, X, Home, Grid } from "lucide-react";
 import Nav from "./nav";
 
