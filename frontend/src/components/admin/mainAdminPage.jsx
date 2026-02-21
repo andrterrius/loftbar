@@ -8,6 +8,7 @@ import FlavorsTab from "./FlavorsTab";
 import LiquidsTab from "./LiquidsTab";
 import PresetsTab from "./PresetsTab";
 import SettingsTab from "./SettingsTab";
+import BowlsTab from "./BowlsTab";
 
 const INITIAL_FLAVORS = [
     { id: '1', name: 'Double Apple', brand: 'Al Fakher', category: 'Classic', color: '#dc2626' },
@@ -16,6 +17,18 @@ const INITIAL_FLAVORS = [
     { id: '4', name: 'Peach', brand: 'MustHave', category: 'Fruity', color: '#f97316' },
     { id: '5', name: 'Pinkman', brand: 'MustHave', category: 'Berry', color: '#ec4899' },
     { id: '6', name: 'Pineapple', brand: 'Burn', category: 'Tropical', color: '#facc15' },
+];
+
+const INITIAL_BOWL_OPTIONS = [
+    { type: 'Classic',    icon: '🏺', isFruit: false },
+    { type: 'Silicon',    icon: '⚫', isFruit: false },
+    { type: 'Grapefruit', icon: '🍊', isFruit: true  },
+    { type: 'Lemon',      icon: '🍋', isFruit: true  },
+    { type: 'Orange',     icon: '🍊', isFruit: true  },
+    { type: 'Coconut',    icon: '🥥', isFruit: true  },
+    { type: 'Pineapple',  icon: '🍍', isFruit: true  },
+    { type: 'Pitahaya',   icon: '🐉', isFruit: true  },
+    { type: 'Watermelon', icon: '🍉', isFruit: true  },
 ];
 
 const INITIAL_LIQUIDS = [
@@ -61,6 +74,7 @@ const TABS = [
     { id: 'flavors', label: 'Вкусы' },
     { id: 'liquids', label: 'Жидкости' },
     { id: 'presets', label: 'Миксы' },
+    { id: 'bowls', label: "Чаши"},
     { id: 'settings', label: 'Настройки' },
 ];
 
@@ -71,6 +85,7 @@ const MainAdminPage = () => {
     const [flavors, setFlavors] = useState(INITIAL_FLAVORS);
     const [liquids, setLiquids] = useState(INITIAL_LIQUIDS);
     const [presets, setPresets] = useState(INITIAL_PRESETS);
+    const [bowls, setBowls] = useState(INITIAL_BOWL_OPTIONS); 
     const [settings, setSettings] = useState(INITIAL_SETTINGS);
 
     // Flavors
@@ -86,6 +101,10 @@ const MainAdminPage = () => {
     const updatePresetImage = (id, imageUrl) => {
         setPresets(prev => prev.map(p => p.id === id ? { ...p, imageUrl } : p));
     };
+
+    // Bowls
+    const addBowl = (bowl) => setBowls((prev) => [...prev, bowl])
+    const deleteBowl = (bowlType) => setBowls((prev) => prev.filter(b => b.type !== bowlType));
 
     if (!isAuthenticated) {
         return (
@@ -164,6 +183,13 @@ const MainAdminPage = () => {
                             presets={presets}
                             onDelete={deletePreset}
                             onUpdateImage={updatePresetImage}
+                        />
+                    )}
+                    {activeTab === 'bowls' && (
+                        <BowlsTab
+                            onDelete={deleteBowl}
+                            onAdd={addBowl}
+                            bowls={bowls}
                         />
                     )}
                     {activeTab === 'settings' && (
