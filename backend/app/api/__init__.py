@@ -1,10 +1,10 @@
-from typing import Annotated
-from datetime import timedelta
+from fastapi import FastAPI
 
-from fastapi import APIRouter, Query, Form, Depends
-from dishka.integrations.fastapi import FromDishka, DishkaRoute
+from .v1 import v1_router
 
-main_router = APIRouter(
-     prefix="/api/v1",
-     route_class=DishkaRoute
-)
+_v_routers = [v1_router]
+
+
+def include_routers(app: FastAPI) -> None:
+    for route in _v_routers:
+        app.include_router(route)

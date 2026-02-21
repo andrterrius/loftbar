@@ -8,11 +8,13 @@ services:
     depends_on:
       - redis
       - postgres
-#    volumes:
-#      - ./backend/app:/app/app
+    volumes:
+      - ./backend/app:/app/app
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
-    command: uv run uvicorn app.entrypoints.__main__:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "uv run alembic upgrade head && 
+             uv run uvicorn app.entrypoints.__main__:app --host 0.0.0.0 --port 8000 --reload"
 
   postgres:
     image: postgres:16-alpine

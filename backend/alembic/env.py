@@ -8,6 +8,12 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.core.config import PostgresConfig
 from app.db.models import Base
+from pathlib import Path
+
+from dotenv import load_dotenv  # если используете python-dotenv
+
+env_path = Path(__file__).parent.parent.parent / '.env'  # поднимаемся на два уровня вверх
+load_dotenv(env_path)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
