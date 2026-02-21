@@ -10,6 +10,8 @@ const FlavorsTab = ({ flavors, onAdd, onRemove }) => {
     const [isAdding, setIsAdding] = useState(false);
     const [form, setForm] = useState({ name: '', brand: '', category: 'Fruity', color: '#dc2626' });
 
+
+    // Я использовал Date.now для примера, потом нужно заменить!!!!
     const handleAdd = () => {
         if (!form.name.trim() || !form.brand.trim()) return;
         onAdd({ ...form, id: Date.now().toString() });

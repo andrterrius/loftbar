@@ -9,7 +9,6 @@ import LiquidsTab from "./LiquidsTab";
 import PresetsTab from "./PresetsTab";
 import SettingsTab from "./SettingsTab";
 
-// Начальные данные (те же моки что в других страницах)
 const INITIAL_FLAVORS = [
     { id: '1', name: 'Double Apple', brand: 'Al Fakher', category: 'Classic', color: '#dc2626' },
     { id: '2', name: 'Mint', brand: 'Tangiers', category: 'Minty', color: '#16a34a' },
