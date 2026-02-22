@@ -8,15 +8,15 @@ export const FLAVORS = [
 ];
 
 export const BOWL_OPTIONS = [
-    { type: 'Classic',    icon: '🏺', isFruit: false },
-    { type: 'Silicon',    icon: '⚫', isFruit: false },
-    { type: 'Grapefruit', icon: '🍊', isFruit: true  },
-    { type: 'Lemon',      icon: '🍋', isFruit: true  },
-    { type: 'Orange',     icon: '🍊', isFruit: true  },
-    { type: 'Coconut',    icon: '🥥', isFruit: true  },
-    { type: 'Pineapple',  icon: '🍍', isFruit: true  },
-    { type: 'Pitahaya',   icon: '🐉', isFruit: true  },
-    { type: 'Watermelon', icon: '🍉', isFruit: true  },
+    { type: 'Classic',    icon: '🏺', isFruit: false, price: 0  },
+    { type: 'Silicon',    icon: '⚫', isFruit: false, price: 20  },
+    { type: 'Grapefruit', icon: '🍊', isFruit: true,  price: 30  },
+    { type: 'Lemon',      icon: '🍋', isFruit: true,  price: 40  },
+    { type: 'Orange',     icon: '🍊', isFruit: true,  price: 50  },
+    { type: 'Coconut',    icon: '🥥', isFruit: true,  price: 60  },
+    { type: 'Pineapple',  icon: '🍍', isFruit: true,  price: 70  },
+    { type: 'Pitahaya',   icon: '🐉', isFruit: true,  price: 80 },
+    { type: 'Watermelon', icon: '🍉', isFruit: true,  price: 90  },
 ];
 
 export const LIQUIDS = [
@@ -56,8 +56,7 @@ export const PRESETS = [
 ];
 
 export const SETTINGS = {
-    basePrice: 20,
-    fruitBowlSurcharge: 5
+    basePrice: 20
 };
 
 export const TABS = [

@@ -90,8 +90,8 @@ const MainBuilderPage = () => {
     };
   
     const calculatePrice = () => {
-      const isFruit = BOWL_OPTIONS.find(b => b.type === selectedBowl)?.isFruit;
-      return SETTINGS.basePrice + (isFruit ? SETTINGS.fruitBowlSurcharge : 0);
+        const bowl = BOWL_OPTIONS.find(b => b.type === selectedBowl);
+        return SETTINGS.basePrice + (bowl?.price ?? 0)
     };
   
     const handleSave = () => {
@@ -250,9 +250,9 @@ const MainBuilderPage = () => {
                             ))}
                             </div>
                             {BOWL_OPTIONS.find(b => b.type === selectedBowl)?.isFruit && (
-                            <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
-                                +${SETTINGS.fruitBowlSurcharge} Fruit Bowl Surcharge
-                            </div>
+                                <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
+                                    +${BOWL_OPTIONS.find(b => b.type === selectedBowl)?.price} Fruit Bowl
+                                </div>
                             )}
                         </div>
 
