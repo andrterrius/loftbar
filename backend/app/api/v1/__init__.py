@@ -4,11 +4,12 @@ from dishka.integrations.fastapi import DishkaRoute
 
 from .routers.users import users_router
 from .routers.flavors import flavors_router
-
+from .routers.presets import presets_router
 
 _routers = [
     users_router,
-    flavors_router
+    flavors_router,
+    presets_router
 ]
 
 v1_router = APIRouter(

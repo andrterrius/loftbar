@@ -1,0 +1,33 @@
+from typing import Protocol, List, Optional
+from uuid import UUID
+
+from app.db.uow import BaseUnitOfWork
+from app.schemas.preset import PresetCreate, PresetUpdate, PresetOut
+
+
+class BasePresetService(Protocol):
+    """Протокол сервиса для работы с пресетами"""
+
+    async def get_all(self, uow: BaseUnitOfWork) -> List[PresetOut]:
+        """Получить все пресеты с флагом is_available"""
+        ...
+
+    async def get_available(self, uow: BaseUnitOfWork) -> List[PresetOut]:
+        """Получить только доступные пресеты (is_available=True)"""
+        ...
+
+    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+        """Получить пресет по ID со всеми связями"""
+        ...
+
+    async def create(self, uow: BaseUnitOfWork, data: PresetCreate) -> PresetOut:
+        """Создать новый пресет"""
+        ...
+
+    async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
+        """Обновить существующий пресет"""
+        ...
+
+    async def delete(self, uow: BaseUnitOfWork, preset_id: UUID) -> None:
+        """Удалить пресет"""
+        ...

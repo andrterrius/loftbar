@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Protocol, Optional, Sequence, Any, List
-from sqlalchemy import select, func, delete, and_, or_
+from sqlalchemy import text, select, func, delete, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -28,6 +28,9 @@ class IPresetsRepository(Protocol):
         ...
 
     async def delete(self, _id: UUID) -> None:
+        ...
+
+    async def get_all_with_relations(self) -> Sequence[DBPreset]:
         ...
 
     async def get_by_name(self, name: str) -> Optional[Any]:
@@ -85,6 +88,17 @@ class IPresetsRepository(Protocol):
 class PresetsRepository(SQLAlchemyRepository[DBPreset], IPresetsRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, DBPreset)
+
+    async def get_all_with_relations(self) -> Sequence[DBPreset]:
+        stmt = (
+            select(DBPreset)
+            .options(
+                selectinload(DBPreset.liquid),
+                selectinload(DBPreset.bowl),
+                selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor)
+            )
+        )
+        return (await self._session.scalars(stmt)).all()
 
     async def get_by_name(self, name: str) -> Optional[DBPreset]:
         return await self.get_one(name=name)

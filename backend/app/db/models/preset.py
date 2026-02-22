@@ -2,7 +2,7 @@ import uuid as uuid_pkg
 
 from typing import Optional, List
 
-from sqlalchemy import text, ForeignKey, String, Float
+from sqlalchemy import text, Boolean, ForeignKey, String, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -19,6 +19,7 @@ class DBPreset(TimestampMixin, Base):
         default=uuid_pkg.uuid4,
         server_default=text("gen_random_uuid()")
     )
+    is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
