@@ -1,9 +1,20 @@
 from typing import Protocol
 
-from app.db.repositories.users import UsersRepository
+from app.db.repositories import (
+    UsersRepository,
+    PresetsRepository,
+    FlavorsRepository,
+    BowlsRepository,
+    LiquidsRepository,
+)
+
 
 class BaseUnitOfWork(Protocol):
     users: UsersRepository
+    presets: PresetsRepository
+    flavors: FlavorsRepository
+    bowls: BowlsRepository
+    liquids: LiquidsRepository
 
     async def __aenter__(self):
         ...

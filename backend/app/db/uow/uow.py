@@ -1,7 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.db.repositories.users import UsersRepository
+from app.db.repositories import (
+    UsersRepository,
+    PresetsRepository,
+    FlavorsRepository,
+    BowlsRepository,
+    LiquidsRepository,
+)
+
 
 from app.db.uow import BaseUnitOfWork
 
@@ -13,6 +20,10 @@ class UnitOfWork(BaseUnitOfWork):
     async def __aenter__(self):
         self.session = self.session_maker()
         self.users = UsersRepository(self.session)
+        self.flavors = FlavorsRepository(self.session)
+        self.presets = PresetsRepository(self.session)
+        self.bowls = BowlsRepository(self.session)
+        self.liquids = LiquidsRepository(self.session)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:

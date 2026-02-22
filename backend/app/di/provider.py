@@ -3,8 +3,8 @@ from typing import AsyncIterable
 from dishka import Provider, Scope, provide
 from sqlalchemy.sql.annotation import Annotated
 
-from app.services import TestService
-from app.services.abc import BaseTestService
+from app.services import TestService, FlavorService
+from app.services.abc import BaseTestService, BaseFlavorService
 from app.db.session_maker import new_session_maker
 
 from app.db.uow import BaseUnitOfWork, UnitOfWork
@@ -30,6 +30,6 @@ class MainProvider(Provider):
     def get_uow(self, session_maker: async_sessionmaker[AsyncSession]) -> BaseUnitOfWork:
         return UnitOfWork(session_maker)
 
-    @provide(scope=Scope.REQUEST, provides=BaseTestService)
-    def get_test_service(self) -> TestService:
-        return TestService()
+    @provide(scope=Scope.REQUEST, provides=BaseFlavorService)
+    def get_flavor_service(self) -> FlavorService:
+        return FlavorService()

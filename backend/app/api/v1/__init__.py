@@ -2,9 +2,14 @@
 from fastapi import APIRouter
 from dishka.integrations.fastapi import DishkaRoute
 
-from .routers.test import test_router
+from .routers.users import users_router
+from .routers.flavors import flavors_router
 
-_routers = [test_router]
+
+_routers = [
+    users_router,
+    flavors_router
+]
 
 v1_router = APIRouter(
      prefix="/api/v1",
