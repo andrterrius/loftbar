@@ -8,39 +8,7 @@ import {
 import FlavorCard from "./flavorCard";
 import { apiRequest } from "@/utils/api";
 import Nav from "../nav";
-
-const mockFlavors = [
-  { id: '1', name: 'Double Apple', brand: 'Al Fakher', category: 'Classic', color: '#dc2626' },
-  { id: '2', name: 'Mint', brand: 'Tangiers', category: 'Minty', color: '#16a34a' },
-  { id: '3', name: 'Mango', brand: 'Darkside', category: 'Fruity', color: '#eab308' },
-  { id: '4', name: 'Peach', brand: 'MustHave', category: 'Fruity', color: '#f97316' },
-  { id: '5', name: 'Pinkman', brand: 'MustHave', category: 'Berry', color: '#ec4899' },
-  { id: '6', name: 'Pineapple', brand: 'Burn', category: 'Tropical', color: '#facc15' },
-];
-
-const mockLiquids = [
-  { id: 'water', name: 'Water' },
-  { id: 'milk', name: 'Milk' },
-  { id: 'green_tea', name: 'Green Tea' },
-  { id: 'juice', name: 'Juice' },
-];
-
-const mockSettings = {
-  basePrice: 20,
-  fruitBowlSurcharge: 5
-};
-
-const BOWL_OPTIONS = [
-  { type: 'Classic', icon: '🏺', isFruit: false },
-  { type: 'Silicon', icon: '⚫', isFruit: false },
-  { type: 'Grapefruit', icon: '🍊', isFruit: true },
-  { type: 'Lemon', icon: '🍋', isFruit: true },
-  { type: 'Orange', icon: '🍊', isFruit: true },
-  { type: 'Coconut', icon: '🥥', isFruit: true },
-  { type: 'Pineapple', icon: '🍍', isFruit: true },
-  { type: 'Pitahaya', icon: '🐉', isFruit: true },
-];
-
+import { FLAVORS, LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
 
 const MainBuilderPage = () => {
     const [selectedFlavors, setSelectedFlavors] = useState([]);
@@ -122,8 +90,8 @@ const MainBuilderPage = () => {
     };
   
     const calculatePrice = () => {
-      const isFruit = BOWL_OPTIONS.find(b => b.type === selectedBowl)?.isFruit;
-      return mockSettings.basePrice + (isFruit ? mockSettings.fruitBowlSurcharge : 0);
+        const bowl = BOWL_OPTIONS.find(b => b.type === selectedBowl);
+        return SETTINGS.basePrice + (bowl?.price ?? 0)
     };
   
     const handleSave = () => {
@@ -188,7 +156,7 @@ const MainBuilderPage = () => {
         }
     };
 
-    const filteredFlavors = mockFlavors.filter(f => 
+    const filteredFlavors = FLAVORS.filter(f => 
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.brand.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -227,7 +195,7 @@ const MainBuilderPage = () => {
                         <div className="space-y-4">
                             <AnimatePresence>
                             {selectedFlavors.map((sf) => {
-                                const flavor = mockFlavors.find(f => f.id === sf.flavorId);
+                                const flavor = FLAVORS.find(f => f.id === sf.flavorId);
                                 if (!flavor) return null;
                                 return (
                                 <FlavorCard 
@@ -282,16 +250,16 @@ const MainBuilderPage = () => {
                             ))}
                             </div>
                             {BOWL_OPTIONS.find(b => b.type === selectedBowl)?.isFruit && (
-                            <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
-                                +${mockSettings.fruitBowlSurcharge} Fruit Bowl Surcharge
-                            </div>
+                                <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
+                                    +${BOWL_OPTIONS.find(b => b.type === selectedBowl)?.price} Fruit Bowl
+                                </div>
                             )}
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                             <h3 className="text-lg font-semibold text-white mb-4">Стандартное наполнение</h3>
                             <div className="grid grid-cols-2 gap-2">
-                            {mockLiquids.map((liquid) => (
+                            {LIQUIDS.map((liquid) => (
                                 <button
                                 key={liquid.id}
                                 onClick={() => setSelectedLiquid(liquid.id)}

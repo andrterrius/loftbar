@@ -35,15 +35,6 @@ const SettingsTab = ({ settings, onSave }) => {
                             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm text-neutral-400 mb-2">Надбавка за фруктовую чашу ($)</label>
-                        <input
-                            type="number"
-                            value={form.fruitBowlSurcharge}
-                            onChange={e => setForm({ ...form, fruitBowlSurcharge: Number(e.target.value) })}
-                            className="w-full bg-neutral-900 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-cyan-500 transition-colors"
-                        />
-                    </div>
                 </div>
 
                 <button
