@@ -8,6 +8,20 @@ import Nav from "../nav";
 // Моки заменить на бэк (потом)
 const TABS = ['All', 'Fruity', 'Minty', 'Tropical', 'Classic'];
 
+
+const BOWL_OPTIONS = [
+    { type: 'Classic',    icon: '🏺', isFruit: false },
+    { type: 'Silicon',    icon: '⚫', isFruit: false },
+    { type: 'Grapefruit', icon: '🍊', isFruit: true  },
+    { type: 'Lemon',      icon: '🍋', isFruit: true  },
+    { type: 'Orange',     icon: '🍊', isFruit: true  },
+    { type: 'Coconut',    icon: '🥥', isFruit: true  },
+    { type: 'Pineapple',  icon: '🍍', isFruit: true  },
+    { type: 'Pitahaya',   icon: '🐉', isFruit: true  },
+    { type: 'Watermelon', icon: '🍉', isFruit: true  },
+];
+
+
 const flavors = [
   { id: '1', name: 'Double Apple', color: '#dc2626' },
   { id: '2', name: 'Mint', color: '#16a34a' },
@@ -34,7 +48,8 @@ const mockPresets = [
     ingredients: [
       { flavorId: '1', percentage: 70 },
       { flavorId: '2', percentage: 30 }
-    ]
+    ],
+    bowl: BOWL_OPTIONS[0].type
   },
   {
     id: '2',
@@ -46,7 +61,8 @@ const mockPresets = [
     ingredients: [
       { flavorId: '3', percentage: 80 },
       { flavorId: '2', percentage: 20 }
-    ]
+    ],
+    bowl: BOWL_OPTIONS[2].type
   }
 ];
 
@@ -123,8 +139,6 @@ const MainPresetsPage = () => {
                 >
                     <AnimatePresence mode='popLayout'>
                         {displayedPresets.map((preset) => {
-                            const liquid = liquids.find(l => l.id === preset.liquidId);
-                            
                             return (
                                 <motion.div
                                     layout
@@ -160,19 +174,21 @@ const MainPresetsPage = () => {
                                         </div>
                                         
                                         <div className="absolute bottom-4 left-4 flex -space-x-2 z-10">
-                                            {preset.ingredients.map((ing, i) => {
-                                                const f = flavors.find(fl => fl.id === ing.flavorId);
-                                                return (
-                                                    <div 
-                                                        key={i}
-                                                        className="w-8 h-8 rounded-full border-2 border-neutral-900 bg-neutral-800 flex items-center justify-center text-[10px] text-white font-bold shadow-lg"
-                                                        style={{ backgroundColor: f?.color }}
-                                                        title={`${f?.name} (${ing.percentage}%)`}
-                                                    >
-                                                        {f?.name?.[0] || '?'}
-                                                    </div>
-                                                );
-                                            })}
+                                            {(() => 
+                                                {
+                                                    const bowl = BOWL_OPTIONS.find(b => preset.bowl === b.type )
+                                                    return bowl ? (
+                                                        <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium backdrop-blur-md border 
+                                                            ${
+                                                                bowl.isFruit
+                                                                    ? 'bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300'
+                                                                    : 'bg-black/50 border-white/10 text-neutral-300'
+                                                            }`}>
+                                                                {bowl.icon} {bowl.type}
+                                                        </span>
+                                                    ) : null;
+                                                } 
+                                            )()}
                                         </div>
                                     </div>
 
