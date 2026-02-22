@@ -9,84 +9,17 @@ import LiquidsTab from "./LiquidsTab";
 import PresetsTab from "./PresetsTab";
 import SettingsTab from "./SettingsTab";
 import BowlsTab from "./BowlsTab";
-
-const INITIAL_FLAVORS = [
-    { id: '1', name: 'Double Apple', brand: 'Al Fakher', category: 'Classic', color: '#dc2626' },
-    { id: '2', name: 'Mint', brand: 'Tangiers', category: 'Minty', color: '#16a34a' },
-    { id: '3', name: 'Mango', brand: 'Darkside', category: 'Fruity', color: '#eab308' },
-    { id: '4', name: 'Peach', brand: 'MustHave', category: 'Fruity', color: '#f97316' },
-    { id: '5', name: 'Pinkman', brand: 'MustHave', category: 'Berry', color: '#ec4899' },
-    { id: '6', name: 'Pineapple', brand: 'Burn', category: 'Tropical', color: '#facc15' },
-];
-
-const INITIAL_BOWL_OPTIONS = [
-    { type: 'Classic',    icon: '🏺', isFruit: false },
-    { type: 'Silicon',    icon: '⚫', isFruit: false },
-    { type: 'Grapefruit', icon: '🍊', isFruit: true  },
-    { type: 'Lemon',      icon: '🍋', isFruit: true  },
-    { type: 'Orange',     icon: '🍊', isFruit: true  },
-    { type: 'Coconut',    icon: '🥥', isFruit: true  },
-    { type: 'Pineapple',  icon: '🍍', isFruit: true  },
-    { type: 'Pitahaya',   icon: '🐉', isFruit: true  },
-    { type: 'Watermelon', icon: '🍉', isFruit: true  },
-];
-
-const INITIAL_LIQUIDS = [
-    { id: 'water', name: 'Water', description: 'Обычная вода' },
-    { id: 'milk', name: 'Milk', description: 'Молоко' },
-    { id: 'green_tea', name: 'Green Tea', description: 'Зелёный чай' },
-    { id: 'juice', name: 'Juice', description: 'Сок' },
-];
-
-const INITIAL_PRESETS = [
-    {
-        id: '1',
-        name: 'Apple Freeze',
-        category: 'Fruity',
-        description: 'Освежающий бленд двойного яблока и мятного льда.',
-        imageUrl: null,
-        liquidId: 'water',
-        ingredients: [
-            { flavorId: '1', percentage: 70 },
-            { flavorId: '2', percentage: 30 }
-        ]
-    },
-    {
-        id: '2',
-        name: 'Tropical Breeze',
-        category: 'Tropical',
-        description: 'Летнее настроение со сладким манго.',
-        imageUrl: null,
-        liquidId: 'water',
-        ingredients: [
-            { flavorId: '3', percentage: 80 },
-            { flavorId: '2', percentage: 20 }
-        ]
-    }
-];
-
-const INITIAL_SETTINGS = {
-    basePrice: 20,
-    fruitBowlSurcharge: 5
-};
-
-const TABS = [
-    { id: 'flavors', label: 'Вкусы' },
-    { id: 'liquids', label: 'Жидкости' },
-    { id: 'presets', label: 'Миксы' },
-    { id: 'bowls', label: "Чаши"},
-    { id: 'settings', label: 'Настройки' },
-];
+import { FLAVORS, BOWL_OPTIONS, LIQUIDS, PRESETS, SETTINGS, TABS } from "../moks/moks";
 
 const MainAdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [activeTab, setActiveTab] = useState('flavors');
 
-    const [flavors, setFlavors] = useState(INITIAL_FLAVORS);
-    const [liquids, setLiquids] = useState(INITIAL_LIQUIDS);
-    const [presets, setPresets] = useState(INITIAL_PRESETS);
-    const [bowls, setBowls] = useState(INITIAL_BOWL_OPTIONS); 
-    const [settings, setSettings] = useState(INITIAL_SETTINGS);
+    const [flavors, setFlavors] = useState(FLAVORS);
+    const [liquids, setLiquids] = useState(LIQUIDS);
+    const [presets, setPresets] = useState(PRESETS);
+    const [bowls, setBowls] = useState(BOWL_OPTIONS); 
+    const [settings, setSettings] = useState(SETTINGS);
 
     // Flavors
     const addFlavor = (flavor) => setFlavors(prev => [...prev, flavor]);

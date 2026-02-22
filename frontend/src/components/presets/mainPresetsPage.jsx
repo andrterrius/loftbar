@@ -4,74 +4,14 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Image as ImageIcon, Heart, ShoppingCart, Filter } from "lucide-react";
 import Nav from "../nav";
-
-// Моки заменить на бэк (потом)
-const TABS = ['All', 'Fruity', 'Minty', 'Tropical', 'Classic'];
-
-
-const BOWL_OPTIONS = [
-    { type: 'Classic',    icon: '🏺', isFruit: false },
-    { type: 'Silicon',    icon: '⚫', isFruit: false },
-    { type: 'Grapefruit', icon: '🍊', isFruit: true  },
-    { type: 'Lemon',      icon: '🍋', isFruit: true  },
-    { type: 'Orange',     icon: '🍊', isFruit: true  },
-    { type: 'Coconut',    icon: '🥥', isFruit: true  },
-    { type: 'Pineapple',  icon: '🍍', isFruit: true  },
-    { type: 'Pitahaya',   icon: '🐉', isFruit: true  },
-    { type: 'Watermelon', icon: '🍉', isFruit: true  },
-];
-
-
-const flavors = [
-  { id: '1', name: 'Double Apple', color: '#dc2626' },
-  { id: '2', name: 'Mint', color: '#16a34a' },
-  { id: '3', name: 'Mango', color: '#eab308' },
-];
-
-const liquids = [
-  { id: 'water', name: 'Water' },
-  { id: 'milk', name: 'Milk' },
-];
-
-const settings = {
-  basePrice: 20
-};
-
-const mockPresets = [
-  {
-    id: '1',
-    name: 'Apple Freeze',
-    category: 'Fruity',
-    description: 'A refreshing blend of sweet double apple and icy mint.',
-    imageUrl: null,
-    liquidId: 'water',
-    ingredients: [
-      { flavorId: '1', percentage: 70 },
-      { flavorId: '2', percentage: 30 }
-    ],
-    bowl: BOWL_OPTIONS[0].type
-  },
-  {
-    id: '2',
-    name: 'Tropical Breeze',
-    category: 'Tropical',
-    description: 'Summer vibes with a sweet mango base.',
-    imageUrl: null,
-    liquidId: 'water',
-    ingredients: [
-      { flavorId: '3', percentage: 80 },
-      { flavorId: '2', percentage: 20 }
-    ],
-    bowl: BOWL_OPTIONS[2].type
-  }
-];
+import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS, PRESETS } from "../moks/moks";
 
 const MainPresetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('All');
 
     // Логика фильтрации
-    const displayedPresets = mockPresets.filter(preset => {
+    const displayedPresets = PRESETS.filter(preset => {
       const matchesSearch = preset.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             preset.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTab = activeTab === 'All' || preset.category === activeTab;
@@ -80,7 +20,7 @@ const MainPresetsPage = () => {
     });
 
     const handleOrder = (preset) => {
-        alert(`Order placed for ${preset.name}! Total: $${settings.basePrice}`);
+        alert(`Order placed for ${preset.name}! Total: $${SETTINGS.basePrice}`);
     };
 
     return (
@@ -109,7 +49,7 @@ const MainPresetsPage = () => {
 
                 <div className="w-full border-b border-white/10 pb-4"> 
                     <div className="flex overflow-x-auto gap-2 px-5 scrollbar-hide justify-start md:justify-center">
-                        {TABS.map((tab) => (
+                        {PRESET_TABS.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -200,7 +140,7 @@ const MainPresetsPage = () => {
 
                                         <div className="space-y-2 flex-1">
                                             {preset.ingredients.slice(0, 3).map((ing, i) => {
-                                                const f = flavors.find(fl => fl.id === ing.flavorId);
+                                                const f = FLAVORS.find(fl => fl.id === ing.flavorId);
                                                 return (
                                                     <div key={i} className="flex justify-between text-xs text-neutral-300">
                                                         <span>{f?.name || 'Unknown flavor'}</span>
@@ -213,7 +153,7 @@ const MainPresetsPage = () => {
                                         <div className="pt-4 border-t border-white/5 flex justify-between items-center mt-auto">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] text-neutral-500">Price</span>
-                                                <span className="text-lg font-bold text-white">${settings.basePrice}</span>
+                                                <span className="text-lg font-bold text-white">${SETTINGS.basePrice}</span>
                                             </div>
                                             <button 
                                                 onClick={() => handleOrder(preset)}
