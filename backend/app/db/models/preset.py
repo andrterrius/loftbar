@@ -61,3 +61,6 @@ class DBPreset(TimestampMixin, Base):
         "DBUser",
         back_populates="presets"
     )
+
+    def __repr__(self):
+        return f"<DBPreset {self.name}>"

@@ -16,6 +16,13 @@ class CommonConfig(BaseSettings, env_prefix="COMMON_"):
     bot_token: SecretStr
     admins: list[int]
 
+class AdminConfig(BaseSettings, env_prefix="ADMIN_"):
+    login: SecretStr
+    password: SecretStr
+
+class SecurityConfig(BaseSettings, env_prefix="SECURITY_"):
+    session_secret_key: SecretStr
+
 
 class PostgresConfig(BaseSettings, env_prefix="POSTGRES_"):
     host: str
@@ -47,9 +54,14 @@ class Config(BaseModel):
     common: CommonConfig
     redis: RedisConfig
     postgres: PostgresConfig
+    admin: AdminConfig
+    security: SecurityConfig
 
 
 def create_config() -> Config:
     return Config(common=CommonConfig(),
                   redis=RedisConfig(),
-                  postgres=PostgresConfig())
+                  postgres=PostgresConfig(),
+                  admin=AdminConfig(),
+                  security=SecurityConfig()
+                  )

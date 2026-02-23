@@ -25,3 +25,6 @@ class DBPresetFlavor(Base):
 
     preset: Mapped["DBPreset"] = relationship(back_populates="preset_flavors")
     flavor: Mapped["DBFlavor"] = relationship(back_populates="preset_flavors")
+
+    def __repr__(self):
+        return f"<DBPresetFlavor {self.preset_id}: {self.percent}>"

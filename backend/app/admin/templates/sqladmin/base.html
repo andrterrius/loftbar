@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/fontawesome.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/select2.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/flatpickr.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/main.css') }}">
+  {% if admin.favicon_url %}
+  <link rel="icon" href="{{ admin.favicon_url }}">
+  {% endif %}
+  {% block head %}
+  {% endblock %}
+  <title>{{ admin.title }}</title>
+</head>
+
+<body>
+  {% block body %}
+  <main>
+    {% block main %}
+    {% endblock %}
+  </main>
+  {% endblock %}
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/jquery.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/tabler.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/popper.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/bootstrap.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/select2.full.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/flatpickr.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/main.js') }}"></script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-ru]').forEach(element => {
+        const ruText = element.dataset.ru;
+
+        if (element.tagName === 'INPUT') {
+            // Сохраняем оригинальный текст в data-атрибут
+            element.dataset.originalValue = element.value;
+
+            // Создаем обертку для кнопки
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.display = 'inline-block';
+
+            // Вставляем обертку перед элементом
+            element.parentNode.insertBefore(wrapper, element);
+
+            // Перемещаем элемент в обертку
+            wrapper.appendChild(element);
+
+            // Устанавливаем стили для input
+            element.style.position = 'absolute';
+            element.style.top = '0';
+            element.style.left = '0';
+            element.style.width = '100%';
+            element.style.height = '100%';
+            element.style.opacity = '0'; // Делаем прозрачным, но кликабельным
+            element.style.cursor = 'pointer';
+
+            // Создаем видимый текст
+            const visibleText = document.createElement('span');
+            visibleText.textContent = ruText;
+            visibleText.style.display = 'inline-block';
+            visibleText.style.padding = '0.375rem 0.75rem'; // Bootstrap padding
+            visibleText.style.pointerEvents = 'none'; // Чтобы клик проходил через span
+            visibleText.style.backgroundColor = 'transparent';
+            visibleText.style.color = 'inherit';
+
+            wrapper.appendChild(visibleText);
+
+        } else {
+            // Для ссылок просто меняем текст
+            element.innerHTML = ruText;
+        }
+    });
+});
+</script>
+
+  {% block tail %}
+  {% endblock %}
+</body>
+
+</html>
