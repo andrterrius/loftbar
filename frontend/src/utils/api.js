@@ -25,3 +25,12 @@ export async function apiRequest(endpoint, options = {}) {
 
   return response.json();
 }
+
+const API_URL = 'http://localhost:8000/flavors'
+
+// Получить все вкусы
+export async function getFlavours() {
+  const res = await fetch(`${API_URL}/`)
+  if (!res.ok) throw new Error('Ошибка получения вкусов')
+  return res.json()
+}

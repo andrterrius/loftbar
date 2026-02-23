@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Flame, ArrowRight, Droplets, Menu, X, Home, Grid } from "lucide-react";
+import { Flame, ArrowRight, Droplets } from "lucide-react";
 import Nav from "./nav";
 
 const MainSection = () => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-        X, Save, Search, Plus, ShoppingCart, DollarSign 
+        X, Save, Search, Plus, RussianRuble, 
     } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import { apiRequest } from "@/utils/api";
@@ -279,8 +279,8 @@ const MainBuilderPage = () => {
                             <div className="flex justify-between items-center mb-4">
                             <span className="text-neutral-400">Итоговая цена</span>
                             <span className="text-3xl font-bold text-white flex items-center">
-                                <DollarSign size={24} className="text-green-500" />
                                 {calculatePrice()}
+                                <RussianRuble size={28} className="text-green-500" />
                             </span>
                             </div>
                             
@@ -290,7 +290,7 @@ const MainBuilderPage = () => {
                                 className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] transition-all flex items-center justify-center gap-2 active:scale-95"
                                 disabled={isSubmitting}
                             >
-                            <ShoppingCart size={20} /> Сделать заказ
+                                Сделать заказ
                             </motion.button>
                         </div>
                     </div>

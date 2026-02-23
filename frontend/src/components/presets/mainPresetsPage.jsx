@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Image as ImageIcon, Heart, ShoppingCart, Filter } from "lucide-react";
+import { Search, Image as ImageIcon, Heart, Filter } from "lucide-react";
 import Nav from "../nav";
 import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS, PRESETS } from "../moks/moks";
 
@@ -153,13 +153,13 @@ const MainPresetsPage = () => {
                                         <div className="pt-4 border-t border-white/5 flex justify-between items-center mt-auto">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] text-neutral-500">Price</span>
-                                                <span className="text-lg font-bold text-white">${SETTINGS.basePrice}</span>
+                                                <span className="text-lg font-bold text-white">{SETTINGS.basePrice}₽</span>
                                             </div>
                                             <button 
                                                 onClick={() => handleOrder(preset)}
                                                 className="px-4 py-2 bg-white/10 hover:bg-fuchsia-600 hover:text-white text-neutral-300 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
                                             >
-                                                <ShoppingCart size={16} /> Заказ
+                                                Заказ
                                             </button>
                                         </div>
                                     </div>
