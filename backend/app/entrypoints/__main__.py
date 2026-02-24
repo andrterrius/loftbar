@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from dishka.integrations.fastapi import setup_dishka
 
@@ -25,6 +26,18 @@ async def health_check():
     return {"status": "healthy"}
 
 include_routers(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://andrterrius.lol",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 container = make_async_container(MainProvider(), FastapiProvider(), context={Config: config})
 admin = get_admin_app(
