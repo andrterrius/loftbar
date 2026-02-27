@@ -1,8 +1,10 @@
 export async function apiRequest(endpoint, options = {}) {
   let token = '';
+  let tgData = '';
 
   if (typeof window !== 'undefined') {
     token = localStorage.getItem('jwt') || '';
+    tgData = window.Telegram?.WebApp?.initData || '';
   }
 
   const config = {
@@ -10,27 +12,19 @@ export async function apiRequest(endpoint, options = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
+      ...(tgData && { 'X-Telegram-Init-Data': tgData }),
+      ...options.headers
     },
   };
 
-  const baseUrl =
-    typeof window === 'undefined'
-      ? process.env.NEXT_PUBLIC_API_URL
-      : '';
 
-  const response = await fetch(`${baseUrl}/api${endpoint}`, config);
+  const response = await fetch(`https://andrterrius.lol${endpoint}`, config);
 
   if (!response.ok) throw new Error('Ошибка запроса');
 
   return response.json();
 }
 
-const API_URL = 'http://localhost:8000/flavors'
-
-// Получить все вкусы
-export async function getFlavours() {
-  const res = await fetch(`${API_URL}/`)
-  if (!res.ok) throw new Error('Ошибка получения вкусов')
-  return res.json()
-}
+export const getFlavours = () => apiRequest('/api/v1/flavors/', { method: 'GET' });
+export const getAvailableFlavours = () => apiRequest('/api/v1/flavors/available', { method: 'GET' }); 
+export const getPresets = () => apiRequest('/api/v1/presets/', { method: 'GET' });

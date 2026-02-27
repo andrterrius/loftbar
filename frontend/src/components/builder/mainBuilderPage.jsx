@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
         X, Save, Search, Plus, RussianRuble, 
     } from "lucide-react";
 import FlavorCard from "./flavorCard";
-import { apiRequest } from "@/utils/api";
 import Nav from "../nav";
-import { FLAVORS, LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
+import { LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
+import { apiRequest, getAvailableFlavours } from "@/utils/api";
 
 const MainBuilderPage = () => {
+    const [flavors, setFlavors] = useState([]);
     const [selectedFlavors, setSelectedFlavors] = useState([]);
     const [selectedLiquid, setSelectedLiquid] = useState(null);
     const [selectedBowl, setSelectedBowl] = useState('Classic');
@@ -19,38 +20,31 @@ const MainBuilderPage = () => {
     const [mixName, setMixName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+    useEffect(() => {
+        getAvailableFlavours().then(data => setFlavors(data));
+    }, [])
+
     // Функции
-    const handlePercentageChange = (id, newPercentage) => {
-      if (selectedFlavors.length <= 1) return;
-  
-      const index = selectedFlavors.findIndex(f => f.flavorId === id);
-      if (index === -1) return;
-  
-      let targetPct = Math.max(0, Math.min(100, newPercentage));
-      
-      const others = selectedFlavors.filter(f => f.flavorId !== id);
-      const sumOthers = others.reduce((acc, f) => acc + f.percentage, 0);
-  
-      const remainder = 100 - targetPct;
-      let newOthers = [];
-  
-      if (sumOthers === 0) {
-        const share = remainder / others.length;
-        newOthers = others.map(f => ({ ...f, percentage: share }));
-      } else {
-        newOthers = others.map(f => ({
-          ...f,
-          percentage: (f.percentage / sumOthers) * remainder
-        }));
-      }
-  
-      const updated = selectedFlavors.map(f => {
-        if (f.flavorId === id) return { ...f, percentage: targetPct };
-        const other = newOthers.find(o => o.flavorId === f.flavorId);
-        return other || f;
-      });
-      
-      setSelectedFlavors(updated);
+   const handlePercentageChange = (id, newPercentage) => {
+        if (selectedFlavors.length <= 1) return;
+
+        const targetPct = Math.max(0, Math.min(100, newPercentage));
+        const remainder = 100 - targetPct;
+        const others = selectedFlavors.filter(f => f.flavorId !== id);
+        const sumOthers = others.reduce((acc, f) => acc + f.percentage, 0);
+
+        const updated = selectedFlavors.map(f => {
+            if (f.flavorId === id) return { ...f, percentage: targetPct };
+
+            const newPct = sumOthers === 0
+            ? remainder / others.length
+            : (f.percentage / sumOthers) * remainder;
+
+            return { ...f, percentage: newPct };
+        });
+
+        setSelectedFlavors(updated);
     };
   
     const addFlavorToMix = (flavor) => {
@@ -156,7 +150,7 @@ const MainBuilderPage = () => {
         }
     };
 
-    const filteredFlavors = FLAVORS.filter(f => 
+    const filteredFlavors = flavors.filter(f => 
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.brand.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -195,14 +189,14 @@ const MainBuilderPage = () => {
                         <div className="space-y-4">
                             <AnimatePresence>
                             {selectedFlavors.map((sf) => {
-                                const flavor = FLAVORS.find(f => f.id === sf.flavorId);
+                                const flavor = flavors.find(f => f.id === sf.flavorId);
                                 if (!flavor) return null;
                                 return (
                                 <FlavorCard 
                                     key={sf.flavorId}
                                     item={flavor}
                                     percentage={sf.percentage}
-                                    color={flavor.color}
+                                    color={flavor.hex_color}
                                     onRemove={() => removeFlavorFromMix(sf.flavorId)}
                                     onChange={(val) => handlePercentageChange(sf.flavorId, val)}
                                 />
@@ -341,7 +335,7 @@ const MainBuilderPage = () => {
                                     <div className="flex items-center gap-3">
                                     <div 
                                         className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-black/60 shrink-0"
-                                        style={{ backgroundColor: flavor.color || '#ccc' }}
+                                        style={{ backgroundColor: flavor.hex_color || '#ccc' }}
                                     >
                                         {flavor.name[0]}
                                     </div>
