@@ -27,4 +27,5 @@ export async function apiRequest(endpoint, options = {}) {
 
 export const getFlavours = () => apiRequest('/api/v1/flavors/', { method: 'GET' });
 export const getAvailableFlavours = () => apiRequest('/api/v1/flavors/available', { method: 'GET' }); 
-export const getPresets = () => apiRequest('/api/v1/presets/', { method: 'GET' });
+export const getAvailablePresets = () => apiRequest('/api/v1/presets/available', { method: 'GET' });
+export const savePreset = (presetData) => apiRequest('/api/v1/presets/', { method: 'POST', body: JSON.stringify(presetData) });
