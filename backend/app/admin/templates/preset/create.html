@@ -1,0 +1,263 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Создание нового пресета</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ request.url }}" enctype="multipart/form-data" id="preset-form">
+                        {% if form.csrf_token %}
+                            {{ form.csrf_token }}
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Основная информация</h4>
+
+                                {% for field in form %}
+                                    {% if field.name not in ['csrf_token', 'preset_flavors', 'submit'] %}
+                                        <div class="form-group mb-3">
+                                            {{ field.label(class="form-label") }}
+                                            {% if field.errors %}
+                                                {{ field(class="form-control is-invalid", **field.render_kw) }}
+                                                <div class="invalid-feedback">
+                                                    {% for error in field.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% else %}
+                                                {{ field(class="form-control", **field.render_kw) }}
+                                            {% endif %}
+                                            {% if field.description %}
+                                                <small class="form-text text-muted">{{ field.description }}</small>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <h4>Состав вкусов (сумма должна быть 100%)</h4>
+                                <div id="flavors-container">
+                                    <div class="flavor-row mb-2">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <select name="flavor_ids[]" class="form-control flavor-select">
+                                                    <option value="">Выберите вкус</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-4">
+                                                <input type="number"
+                                                       name="flavor_percents[]"
+                                                       class="form-control percent-input"
+                                                       step="0.1"
+                                                       min="0"
+                                                       max="100"
+                                                       placeholder="%">
+                                            </div>
+                                            <div class="col-2">
+                                                <button type="button" class="btn btn-danger remove-flavor" onclick="removeFlavorRow(this)">✕</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-success mt-2" onclick="addFlavorRow()">
+                                    <i class="fa-solid fa-plus"></i> Добавить вкус
+                                </button>
+
+                                <div class="mt-3">
+                                    <div class="progress" style="height: 30px;">
+                                        <div id="total-percent-bar"
+                                             class="progress-bar"
+                                             role="progressbar"
+                                             style="width: 0%;"
+                                             aria-valuenow="0"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                            0%
+                                        </div>
+                                    </div>
+                                    <div id="total-percent-text" class="text-center mt-1">
+                                        Сумма: 0% (нужно 100%)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <i class="fa-solid fa-save"></i> Сохранить
+                                </button>
+                                <a href="{{ url_for('admin:list', identity='preset') }}" class="btn btn-secondary">
+                                    Отмена
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const flavorsData = {{ flavors_json|safe }};
+let availableFlavors = flavorsData || [];
+
+function getFlavorOptions(selectedId = null) {
+    let options = '<option value="">Выберите вкус</option>';
+
+    availableFlavors.forEach(flavor => {
+        const disabled = !flavor.is_available ? 'disabled' : '';
+        const selected = flavor.id === selectedId ? 'selected' : '';
+        const unavailableText = !flavor.is_available ? ' [НЕДОСТУПЕН]' : '';
+
+        options += `<option value="${flavor.id}" ${disabled} ${selected}>
+            ${flavor.name} (${flavor.brand})${unavailableText}
+        </option>`;
+    });
+
+    return options;
+}
+
+function addFlavorRow(selectedId = null, percent = '') {
+    const container = document.getElementById('flavors-container');
+    const row = document.createElement('div');
+    row.className = 'flavor-row mb-2';
+
+    row.innerHTML = `
+        <div class="row">
+            <div class="col-6">
+                <select name="flavor_ids[]" class="form-control flavor-select" onchange="updateTotalPercent()">
+                    ${getFlavorOptions(selectedId)}
+                </select>
+            </div>
+            <div class="col-4">
+                <input type="number"
+                       name="flavor_percents[]"
+                       value="${percent}"
+                       class="form-control percent-input"
+                       step="0.1"
+                       min="0"
+                       max="100"
+                       placeholder="%"
+                       onchange="updateTotalPercent()"
+                       onkeyup="updateTotalPercent()">
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-danger remove-flavor" onclick="removeFlavorRow(this)">✕</button>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(row);
+    updateTotalPercent();
+}
+
+function removeFlavorRow(button) {
+    if (document.querySelectorAll('.flavor-row').length > 1) {
+        button.closest('.flavor-row').remove();
+        updateTotalPercent();
+    }
+}
+
+function updateTotalPercent() {
+    const percentInputs = document.querySelectorAll('.percent-input');
+    let total = 0;
+
+    percentInputs.forEach(input => {
+        const value = parseFloat(input.value);
+        if (!isNaN(value)) {
+            total += value;
+        }
+    });
+
+    const percentBar = document.getElementById('total-percent-bar');
+    const percentText = document.getElementById('total-percent-text');
+    const submitBtn = document.getElementById('submit-btn');
+
+    total = Math.round(total * 10) / 10;
+    percentBar.style.width = Math.min(total, 100) + '%';
+    percentBar.textContent = total + '%';
+
+    if (Math.abs(total - 100) < 0.01) {
+        percentBar.className = 'progress-bar bg-success';
+        percentText.innerHTML = '✅ Сумма: 100% (корректно)';
+        percentText.style.color = '#28a745';
+        submitBtn.disabled = false;
+    } else {
+        percentBar.className = 'progress-bar bg-danger';
+        percentText.innerHTML = `❌ Сумма: ${total}% (нужно 100%)`;
+        percentText.style.color = '#dc3545';
+        submitBtn.disabled = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Обновляем все select'ы
+    document.querySelectorAll('.flavor-select').forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = getFlavorOptions(currentValue);
+    });
+
+    updateTotalPercent();
+});
+
+document.getElementById('preset-form').addEventListener('submit', function(e) {
+    const percentInputs = document.querySelectorAll('.percent-input');
+    let total = 0;
+
+    percentInputs.forEach(input => {
+        if (!input.value) {
+            e.preventDefault();
+            alert('Заполните проценты для всех вкусов!');
+            return false;
+        }
+        total += parseFloat(input.value);
+    });
+
+    if (Math.abs(total - 100) > 0.01) {
+        e.preventDefault();
+        alert('Сумма процентов должна быть равна 100%!');
+        return false;
+    }
+
+    const flavorSelects = document.querySelectorAll('.flavor-select');
+    for (let select of flavorSelects) {
+        if (!select.value) {
+            e.preventDefault();
+            alert('Выберите вкус для всех строк!');
+            return false;
+        }
+    }
+});
+</script>
+
+<style>
+.progress {
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+.progress-bar {
+    color: white;
+    font-weight: bold;
+    transition: width 0.3s ease;
+}
+.remove-flavor {
+    width: 100%;
+}
+.flavor-row {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+</style>
+{% endblock %}

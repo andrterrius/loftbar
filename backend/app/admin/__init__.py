@@ -16,24 +16,22 @@ from .models import (
     FlavorAdmin,
     LiquidAdmin,
     PresetAdmin,
-    UserAdmin
+    UserAdmin,
 )
 
 _views = [
+    PresetAdmin,
     BowlAdmin,
     FlavorAdmin,
     LiquidAdmin,
-    PresetAdmin,
-    UserAdmin
+    UserAdmin,
 ]
 
 def get_admin_app(app: FastAPI, admin_config: AdminConfig, dishka_container: AsyncContainer, postgres_dsn: str, secret_key: str):
     authentication_backend = AdminAuth(secret_key=secret_key, admin_config=admin_config, dishka_container=dishka_container)
     BASE_DIR = Path(__file__).parent
     TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
-    admin = Admin(app, create_async_engine(postgres_dsn), authentication_backend=authentication_backend, templates_dir=TEMPLATES_DIR)
-
+    admin = Admin(app, create_async_engine(postgres_dsn), authentication_backend=authentication_backend, templates_dir=TEMPLATES_DIR, base_url="/admin")
     for view in _views:
         admin.add_model_view(view)
-
     return admin

@@ -5,7 +5,7 @@ from pydantic import ConfigDict, BaseModel, Field, field_validator
 
 class FlavorInPreset(BaseModel):
     """Схема для вкуса внутри пресета (при создании/обновлении)"""
-    flavor_id: UUID
+    id: UUID
     percent: float = Field(..., ge=0, le=100, description="Процент вкуса от 0 до 100")
 
 
@@ -14,6 +14,7 @@ class PresetBase(BaseModel):
     name: str
     category: str
     price: float
+    is_available: bool = True
     description: Optional[str] = None
     image_url: Optional[str] = None
 
@@ -42,19 +43,22 @@ class PresetCreate(PresetBase):
         return v
 
 class PresetUpdate(BaseModel):
-    """Схема для обновления пресета (все поля опциональны)"""
-    name: Optional[str] = None
+    """Схема для обновления пресета"""
+    name: Optional[str]
+    flavors: Optional[List[FlavorInPreset]]
+    liquid_id: Optional[UUID]
+    bowl_id: Optional[UUID]
+    price: Optional[float]
+    is_available: Optional[bool] = True
     category: Optional[str] = None
-    price: Optional[float] = None
     description: Optional[str] = None
     image_url: Optional[str] = None
-    liquid_id: Optional[UUID] = None
-    bowl_id: Optional[UUID] = None
-    flavors: Optional[List[FlavorInPreset]] = None
 
 class FlavorDetail(FlavorInPreset):
     """Детальная информация о вкусе в пресете"""
-    flavor_name: str
+    name: str
+    brand: str
+    is_available: bool
 
 
 class PresetOut(PresetBase):

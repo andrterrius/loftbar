@@ -1,10 +1,133 @@
-from sqladmin import Admin, ModelView
-from app.db.models import *
-from markupsafe import Markup
-from fastapi.requests import Request
+import uuid as uuid_pkg
+import csv
+import io
 
+from fastapi.requests import Request
+from fastapi.responses import RedirectResponse, HTMLResponse, JSONResponse
+
+from fastapi.responses import RedirectResponse, Response
+from markupsafe import Markup
+from sqlalchemy import select, delete, or_
+from sqlalchemy.orm import selectinload
+from sqladmin import BaseView, ModelView, expose, action
+from sqladmin.authentication import login_required
+
+from typing import Any, Optional, List
+from wtforms import FieldList, FormField, SelectField, FloatField, HiddenField
+from wtforms.validators import DataRequired, NumberRange, ValidationError
+from wtforms import Form
+
+from app.db.models import (
+    DBPreset,
+    DBFlavor,
+    DBPresetFlavor,
+    DBLiquid,
+    DBBowl,
+    DBUser,
+)
 from .utils import *
 
+class PresetAdmin(ModelView, model=DBPreset):
+    name = "Пресет"
+    name_plural = "Пресеты"
+    icon = "fa-solid fa-layer-group"
+    column_labels = {
+        "name": "Название",
+        "category": "Категория",
+        "price": "Цена",
+        "is_available": "Доступен",
+        "description": "Описание",
+        "image_url": "Изображение",
+        "liquid": "Жидкость",
+        "bowl": "Чаша",
+        "created_by": "Создатель",
+        "created_at": "Дата создания",
+        "updated_at": "Дата обновления",
+        "preset_flavors": "Список вкусов"
+    }
+
+    column_list = [
+        DBPreset.name,
+        DBPreset.category,
+        DBPreset.price,
+        DBPreset.is_available,
+        DBPreset.liquid,
+        DBPreset.bowl,
+        DBPreset.image_url,
+        DBPreset.created_at,
+    ]
+
+    column_searchable_list = [DBPreset.name, DBPreset.category, DBPreset.description]
+    column_sortable_list = [DBPreset.name, DBPreset.price, DBPreset.created_at]
+    column_default_sort = [(DBPreset.created_at, True)]
+
+    # Убираем стандартные правила форм
+    form_create_rules = []
+    form_edit_rules = []
+
+    # Форматтеры для колонок
+    @staticmethod
+    def _price_formatter(m, a):
+        return f"{m.price:.2f} ₽"
+
+    @staticmethod
+    def _image_formatter(m, a):
+        if m.image_url:
+            return Markup(
+                f'<img src="{m.image_url}" style="max-width: 50px; max-height: 50px; border-radius: 4px; object-fit: cover;" onerror="this.style.display=\'none\'">'
+            )
+        return Markup('<span style="color: #999;">—</span>')
+
+    def _available_formatter(self, a):
+
+        for pf in self.preset_flavors:
+            if not pf.flavor or not pf.flavor.is_available:
+                return Markup(f'<span style="color: red;">❌ Нет (недоступен вкус {pf.flavor.name})</span>')
+
+        if not self.bowl or not self.bowl.is_available:
+            return Markup(f'<span style="color: red;">❌ Нет (недоступна чаша)</span>')
+
+        if not self.liquid or not self.liquid.is_available:
+            return Markup(f'<span style="color: red;">❌ Нет (недоступна жидкость)</span>')
+
+
+        return Markup('<span style="color: green;">✅ Да</span>')
+
+    @staticmethod
+    def _liquid_formatter(m, a):
+        if hasattr(m, 'liquid') and m.liquid:
+            return m.liquid.name
+        return "-"
+
+    @staticmethod
+    def _bowl_formatter(m, a):
+        if hasattr(m, 'bowl') and m.bowl:
+            return m.bowl.name
+        return "-"
+
+    @staticmethod
+    def _creator_formatter(m, a):
+        if hasattr(m, 'created_by') and m.created_by:
+            return m.created_by.username or m.created_by.first_name or str(m.created_by.telegram_id)
+        return "-"
+
+    column_formatters = {
+        DBPreset.price: _price_formatter,
+        DBPreset.image_url: _image_formatter,
+        DBPreset.is_available: _available_formatter,
+        DBPreset.liquid: _liquid_formatter,
+        DBPreset.bowl: _bowl_formatter,
+        DBPreset.created_by: _creator_formatter
+    }
+
+    column_formatters_detail = {
+        DBPreset.price: _price_formatter,
+        DBPreset.image_url: _image_formatter,
+        DBPreset.is_available: _available_formatter,
+        DBPreset.liquid: _liquid_formatter,
+        DBPreset.bowl: _bowl_formatter,
+        DBPreset.created_by: _creator_formatter
+    }
 
 class BowlAdmin(ModelView, model=DBBowl):
     name = "Чаша"
@@ -76,7 +199,8 @@ class BowlAdmin(ModelView, model=DBBowl):
         return f"{m.price:.2f} ₽"
 
     def _available_formatter(m, a):
-        return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
+        print(m)
+        return Markup("✅ Да") if m.is_available  else Markup("❌ Нет")
 
     column_formatters = {
         DBBowl.price: _price_formatter,
@@ -311,126 +435,6 @@ class LiquidAdmin(ModelView, model=DBLiquid):
         request.state.custom_css = add_css_styles()
         request.state.custom_js = add_image_preview_js()
         return await super().on_before_form(request, obj)
-
-
-# ==================== АДМИНКА ДЛЯ ПРЕСЕТОВ ====================
-class PresetAdmin(ModelView, model=DBPreset):
-    name = "Пресет"
-    name_plural = "Пресеты"
-    icon = "fa-solid fa-layer-group"
-
-    column_labels = {
-        "name": "Название",
-        "category": "Категория",
-        "price": "Цена",
-        "is_available": "Доступен",
-        "description": "Описание",
-        "image_url": "Изображение",
-        "liquid": "Жидкость",
-        "bowl": "Чаша",
-        "created_by": "Создатель",
-        "created_at": "Дата создания"
-    }
-
-    column_list = [
-        DBPreset.name,
-        DBPreset.category,
-        DBPreset.price,
-        DBPreset.is_available,
-        DBPreset.liquid,
-        DBPreset.bowl,
-        DBPreset.image_url,
-        DBPreset.created_at
-    ]
-
-    column_searchable_list = [DBPreset.name, DBPreset.category, DBPreset.description]
-    column_sortable_list = [DBPreset.name, DBPreset.price, DBPreset.created_at]
-    column_default_sort = [(DBPreset.created_at, True)]
-
-    form_create_rules = [
-        "name", "category", "price", "is_available", "description",
-        "image_url", "liquid", "bowl", "created_by"
-    ]
-    form_edit_rules = [
-        "name", "category", "price", "is_available", "description",
-        "image_url", "liquid", "bowl", "created_by"
-    ]
-
-    form_args = {
-        "name": {
-            "label": "Название",
-            "description": "Название пресета",
-            "render_kw": {"placeholder": "Например: Фруктовый микс", "class": "form-control"}
-        },
-        "category": {
-            "label": "Категория",
-            "description": "Например: фруктовый, десертный",
-            "render_kw": {"placeholder": "фруктовый/десертный", "class": "form-control"}
-        },
-        "price": {
-            "label": "Цена",
-            "description": "Цена в рублях",
-            "render_kw": {"type": "number", "step": "0.01", "class": "form-control"}
-        },
-        "is_available": {
-            "label": "Доступен",
-            "description": "Доступен ли для заказа",
-            "render_kw": {"class": "form-check-input"}
-        },
-        "description": {
-            "label": "Описание",
-            "description": "Краткое описание",
-            "render_kw": {"placeholder": "Описание пресета...", "class": "form-control"}
-        },
-        "image_url": {
-            "label": "URL изображения",
-            "description": "Ссылка на картинку или загрузите файл",
-            "render_kw": {"type": "url", "class": "form-control", "placeholder": "https://example.com/image.jpg"}
-        }
-    }
-
-    form_widget_args = {
-        "is_available": {"class": "form-check-input"}
-    }
-
-    def _price_formatter(m, a):
-        return f"{m.price:.2f} ₽"
-
-    def _image_formatter(m, a):
-        if m.image_url:
-            return Markup(
-                f'<img src="{m.image_url}" style="max-width: 50px; max-height: 50px; border-radius: 4px; object-fit: cover;" onerror="this.style.display=\'none\'">'
-            )
-        return Markup('<span style="color: #999;">—</span>')
-
-    def _available_formatter(m, a):
-        return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
-
-    def _liquid_formatter(m, a):
-        return m.liquid.name if m.liquid else "-"
-
-    def _bowl_formatter(m, a):
-        return m.bowl.name if m.bowl else "-"
-
-    def _creator_formatter(m, a):
-        if m.created_by:
-            return m.created_by.username or m.created_by.first_name or str(m.created_by.telegram_id)
-        return "-"
-
-    column_formatters = {
-        DBPreset.price: _price_formatter,
-        DBPreset.image_url: _image_formatter,
-        DBPreset.is_available: _available_formatter,
-        DBPreset.liquid: _liquid_formatter,
-        DBPreset.bowl: _bowl_formatter,
-        DBPreset.created_by: _creator_formatter
-    }
-
-    async def on_before_form(self, request: Request, obj=None):
-        request.state.custom_css = add_css_styles()
-        request.state.custom_js = add_image_preview_js()
-        return await super().on_before_form(request, obj)
-
 
 # ==================== АДМИНКА ДЛЯ ПОЛЬЗОВАТЕЛЕЙ ====================
 class UserAdmin(ModelView, model=DBUser):

@@ -13,6 +13,10 @@ from app.core.config import Config
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from sqladmin import Admin
+
+from app.admin import get_admin_app
+
 class MainProvider(Provider):
 
     @provide(scope=Scope.APP)

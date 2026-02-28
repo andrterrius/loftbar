@@ -25,3 +25,6 @@ class DBBowl(TimestampMixin, Base):
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
     icon: Mapped[str] = mapped_column(String(32), nullable=True)
+
+    def __str__(self) -> str:
+        return self.name

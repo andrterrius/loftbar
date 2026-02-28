@@ -102,7 +102,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.129.0" },
     { name = "markupsafe", specifier = ">=3.0.3" },
     { name = "pydantic-settings", specifier = ">=2.13.0" },
-    { name = "sqladmin", extras = ["full"], specifier = ">=0.23.0" },
+    { name = "sqladmin", extras = ["full"], specifier = "==0.23.0" },
     { name = "uuid", specifier = ">=1.30" },
     { name = "uvicorn", extras = ["standard", "standart"], specifier = ">=0.41.0" },
 ]

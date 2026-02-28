@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from .v1 import v1_router
 
+
 _v_routers = [v1_router]
 
 

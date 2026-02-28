@@ -31,3 +31,6 @@ class DBFlavor(TimestampMixin, Base):
         back_populates="flavor",
         cascade="all, delete-orphan"
     )
+
+    def __str__(self) -> str:
+        return self.name

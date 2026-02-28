@@ -28,7 +28,8 @@ class DBPreset(TimestampMixin, Base):
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="preset",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy="selectin"
     )
 
     liquid_id: Mapped[Optional[uuid_pkg.UUID]] = mapped_column(
@@ -61,6 +62,5 @@ class DBPreset(TimestampMixin, Base):
         "DBUser",
         back_populates="presets"
     )
-
-    def __repr__(self):
-        return f"<DBPreset {self.name}>"
+    def __str__(self) -> str:
+        return self.name

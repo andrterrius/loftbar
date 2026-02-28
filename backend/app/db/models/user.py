@@ -35,3 +35,6 @@ class DBUser(TimestampMixin, Base):
         back_populates="created_by",
         cascade="all, delete-orphan"
     )
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}"

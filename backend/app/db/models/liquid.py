@@ -27,3 +27,6 @@ class DBLiquid(TimestampMixin, Base):
     description: Mapped[str] = mapped_column(String(64), nullable=True)
     hex_color: Mapped[str] = mapped_column(String(32), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+
+    def __str__(self) -> str:
+        return self.name

@@ -21,7 +21,7 @@ class PresetService(BasePresetService):
             presets = await uow.presets.get_all_with_relations()
             return [self._preset_to_detail_out(p) for p in presets if self._is_available(p)]
 
-    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: str) -> Optional[PresetOut]:
         async with uow:
             preset = await uow.presets.get_with_relations(preset_id)
             if not preset:
@@ -50,7 +50,7 @@ class PresetService(BasePresetService):
             preset_with_rels = await uow.presets.get_with_relations(preset.id)
             return self._preset_to_detail_out(preset_with_rels)
 
-    async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
+    async def update(self, uow: BaseUnitOfWork, preset_id: str, data: PresetUpdate) -> Optional[PresetOut]:
 
         raise Exception
         #Да, плохо, но пока заглушка, потому что нужно будет добавить проверки на доступность жидкости, чаши
@@ -86,7 +86,7 @@ class PresetService(BasePresetService):
             updated = await uow.presets.get_with_relations(preset_id)
             return self._preset_to_detail_out(updated)
 
-    async def delete(self, uow: BaseUnitOfWork, preset_id: UUID) -> None:
+    async def delete(self, uow: BaseUnitOfWork, preset_id: str) -> None:
         async with uow:
             await uow.presets.delete(preset_id)
 
@@ -111,9 +111,11 @@ class PresetService(BasePresetService):
     def _preset_to_detail_out(self, preset: DBPreset) -> PresetOut:
         flavors = [
             FlavorDetail(
-                flavor_id=pf.flavor_id,
+                id=pf.flavor_id,
                 percent=pf.percent,
-                flavor_name=pf.flavor.name if pf.flavor else "Unknown"
+                is_available=pf.flavor.is_available,
+                name=pf.flavor.name if pf.flavor else "Unknown",
+                brand=pf.flavor.brand if pf.flavor else "Unknown"
             )
             for pf in preset.preset_flavors
         ]
