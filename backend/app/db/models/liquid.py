@@ -10,6 +10,8 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from app.db.models.base import Base
 from app.db.models.mixins import TimestampMixin
 
+from fastapi_storages import S3Storage
+from fastapi_storages.integrations.sqlalchemy import FileType
 
 class DBLiquid(TimestampMixin, Base):
     __tablename__ = "liquids"
@@ -24,9 +26,7 @@ class DBLiquid(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
-    description: Mapped[str] = mapped_column(String(64), nullable=True)
-    hex_color: Mapped[str] = mapped_column(String(32), nullable=True)
-    image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
 
     def __str__(self) -> str:
         return self.name

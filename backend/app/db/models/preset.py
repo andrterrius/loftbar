@@ -2,7 +2,7 @@ import uuid as uuid_pkg
 
 from typing import Optional, List
 
-from sqlalchemy import text, Boolean, ForeignKey, String, Float
+from sqlalchemy import text, Boolean, ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -22,9 +22,8 @@ class DBPreset(TimestampMixin, Base):
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
-    price: Mapped[float] = mapped_column(Float, nullable=False)
     description: Mapped[str] = mapped_column(String(64), nullable=True)
-    image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="preset",
@@ -50,6 +49,13 @@ class DBPreset(TimestampMixin, Base):
         nullable=True
     )
 
+    settings_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("settings.id", ondelete="SET NULL"),
+        nullable=False,
+        server_default=text("1")
+    )
+
     liquid: Mapped[Optional["DBLiquid"]] = relationship(
         "DBLiquid",
         backref="presets"
@@ -62,5 +68,12 @@ class DBPreset(TimestampMixin, Base):
         "DBUser",
         back_populates="presets"
     )
+
+    settings: Mapped[Optional["DBSettings"]] = relationship(
+        "DBSettings",
+        backref="presets",
+        lazy="selectin"
+    )
+
     def __str__(self) -> str:
         return self.name

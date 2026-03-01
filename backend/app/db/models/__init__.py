@@ -5,6 +5,7 @@ from .liquid import DBLiquid
 from .flavor import DBFlavor
 from .bowl import DBBowl
 from .preset_flavor import DBPresetFlavor
+from .settings import DBSettings
 
 __all__ = [
     "Base",
@@ -13,5 +14,6 @@ __all__ = [
     "DBLiquid",
     "DBFlavor",
     "DBBowl",
-    "DBPresetFlavor"
+    "DBPresetFlavor",
+    "DBSettings"
 ]

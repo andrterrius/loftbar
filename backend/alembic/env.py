@@ -93,3 +93,8 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
+
+# op.execute("""
+#            INSERT INTO settings (id, preset_base_price)
+#            VALUES (1, 0)
+#        """)

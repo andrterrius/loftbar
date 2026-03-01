@@ -24,7 +24,7 @@ class DBFlavor(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     brand: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
-    hex_color: Mapped[str] = mapped_column(String(32), nullable=True)
+    hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(

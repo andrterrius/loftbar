@@ -59,10 +59,6 @@ class ILiquidsRepository(Protocol):
     async def get_by_color(self, hex_color: str) -> Sequence[Any]:
         ...
 
-    async def get_with_image(self) -> Sequence[Any]:
-        ...
-
-
 class LiquidsRepository(SQLAlchemyRepository[DBLiquid], ILiquidsRepository):
 
     def __init__(self, session: AsyncSession) -> None:
@@ -112,7 +108,3 @@ class LiquidsRepository(SQLAlchemyRepository[DBLiquid], ILiquidsRepository):
 
     async def get_by_color(self, hex_color: str) -> Sequence[DBLiquid]:
         return await self.get_all(hex_color=hex_color)
-
-    async def get_with_image(self) -> Sequence[DBLiquid]:
-        stmt = select(DBLiquid).where(DBLiquid.image_url.isnot(None))
-        return (await self._session.scalars(stmt)).all()
