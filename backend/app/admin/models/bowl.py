@@ -16,7 +16,7 @@ class BowlAdmin(ModelView, model=DBBowl):
         "name": "Название",
         "category": "Категория",
         "price": "Цена",
-        "is_available": "Доступна",
+        "is_available": "В наличии",
         "icon": "Иконка",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
@@ -82,8 +82,12 @@ class BowlAdmin(ModelView, model=DBBowl):
 
     column_formatters = {
         DBBowl.price: _price_formatter,
-        DBBowl.is_available: _available_formatter
+        DBBowl.is_available: _available_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
+
+    column_formatters_detail = column_formatters
 
     async def on_before_form(self, request: Request, obj=None):
         request.state.custom_css = add_css_styles()
@@ -91,5 +95,5 @@ class BowlAdmin(ModelView, model=DBBowl):
 
     can_create = True
     can_edit = True
-    can_delete = True
+    can_delete = False
     can_view_details = True

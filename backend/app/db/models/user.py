@@ -29,10 +29,18 @@ class DBUser(TimestampMixin, Base):
     photo_url: Mapped[str] = mapped_column(String(255), nullable=True)
     language_code: Mapped[str] = mapped_column(String(10), nullable=True)
     is_premium: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
+    is_banned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
 
     presets: Mapped[List["DBPreset"]] = relationship(
         "DBPreset",
         back_populates="created_by",
+        cascade="all, delete-orphan"
+    )
+
+    orders: Mapped[List["DBOrder"]] = relationship(
+        "DBOrder",
+        back_populates="user",
         cascade="all, delete-orphan"
     )
 

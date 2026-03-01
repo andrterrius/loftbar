@@ -48,8 +48,12 @@ class SettingsAdmin(ModelView, model=DBSettings):
         return f"{m.preset_base_price:.2f} ₽"
 
     column_formatters = {
-        DBSettings.preset_base_price: _price_formatter
+        DBSettings.preset_base_price: _price_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
+
+    column_formatters_detail = column_formatters
 
     async def on_before_form(self, request: Request, obj=None):
         request.state.custom_css = add_css_styles()

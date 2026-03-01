@@ -66,7 +66,6 @@ class PresetAdmin(ModelView, model=DBPreset):
     ]
 
     column_sortable_list = [
-        DBPreset.name,
         DBPreset.category,
         "price",
         DBPreset.is_available,
@@ -161,7 +160,9 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl": _bowl_formatter,
         "settings": _settings_formatter,
         "created_by": _creator_formatter,
-        "hex_color": _color_formatter
+        "hex_color": _color_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
 
     column_formatters_detail = {
@@ -171,7 +172,9 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl": _bowl_formatter,
         "settings": _settings_formatter,
         "created_by": _creator_formatter,
-        "hex_color": _color_formatter
+        "hex_color": _color_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
 
     _list_relations = [
@@ -250,3 +253,5 @@ class PresetAdmin(ModelView, model=DBPreset):
         )
 
         return pagination
+
+    can_delete = False

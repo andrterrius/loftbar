@@ -36,7 +36,9 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     ]
 
     column_searchable_list = [DBFlavor.name, DBFlavor.brand, DBFlavor.category]
-    column_sortable_list = [DBFlavor.name, DBFlavor.brand, DBFlavor.created_at]
+    column_sortable_list = [
+        DBFlavor.is_available,
+        DBFlavor.created_at]
     column_default_sort = [(DBFlavor.is_available, True), (DBFlavor.updated_at, True)]
 
     form_create_rules = [
@@ -105,11 +107,14 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         DBFlavor.hex_color: _color_formatter,
         DBFlavor.is_available: _available_formatter,
         DBFlavor.image_url: _image_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
+    column_formatters_detail = column_formatters
 
     async def on_before_form(self, request: Request, obj=None):
         request.state.custom_css = add_css_styles()
         request.state.custom_js = add_image_preview_js()
         return await super().on_before_form(request, obj)
 
-    column_formatters_detail = column_formatters
+    can_delete = False

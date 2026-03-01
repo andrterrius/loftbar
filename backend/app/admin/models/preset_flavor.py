@@ -49,6 +49,8 @@ class PresetFlavorAdmin(ModelView, model=DBPresetFlavor):
     column_formatters = {
         DBPresetFlavor.percent: _percent_formatter,
         DBPresetFlavor.preset: _preset_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
 
     column_formatters_detail = column_formatters

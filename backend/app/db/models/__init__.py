@@ -6,6 +6,8 @@ from .flavor import DBFlavor
 from .bowl import DBBowl
 from .preset_flavor import DBPresetFlavor
 from .settings import DBSettings
+from .table import DBTable
+from .order import DBOrder
 
 __all__ = [
     "Base",
@@ -15,5 +17,7 @@ __all__ = [
     "DBFlavor",
     "DBBowl",
     "DBPresetFlavor",
-    "DBSettings"
+    "DBSettings",
+    "DBTable",
+    "DBOrder"
 ]

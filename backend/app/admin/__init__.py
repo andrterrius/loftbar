@@ -18,6 +18,8 @@ from .models import (
     PresetAdmin,
     UserAdmin,
     PresetFlavorAdmin,
+    TableAdmin,
+    OrderAdmin,
     SettingsAdmin
 )
 
@@ -27,6 +29,8 @@ _views = [
     PresetFlavorAdmin,
     BowlAdmin,
     LiquidAdmin,
+    TableAdmin,
+    OrderAdmin,
     UserAdmin,
     SettingsAdmin
 ]

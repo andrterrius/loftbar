@@ -32,7 +32,12 @@ class LiquidAdmin(ModelView, model=DBLiquid):
     ]
 
     column_searchable_list = [DBLiquid.name, DBLiquid.category]
-    column_sortable_list = [DBLiquid.name, DBLiquid.price, DBLiquid.created_at]
+    column_sortable_list = [
+        DBLiquid.price,
+        DBLiquid.category,
+        DBLiquid.created_at,
+        DBLiquid.is_available
+    ]
     column_default_sort = [(DBLiquid.is_available, True), (DBLiquid.updated_at, True)]
 
     form_create_rules = [
@@ -93,10 +98,16 @@ class LiquidAdmin(ModelView, model=DBLiquid):
     column_formatters = {
         DBLiquid.price: _price_formatter,
         DBLiquid.hex_color: _color_formatter,
-        DBLiquid.is_available: _available_formatter
+        DBLiquid.is_available: _available_formatter,
+        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }
+
+    column_formatters_detail = column_formatters
 
     async def on_before_form(self, request: Request, obj=None):
         request.state.custom_css = add_css_styles()
         request.state.custom_js = add_image_preview_js()
         return await super().on_before_form(request, obj)
+
+    can_delete = False

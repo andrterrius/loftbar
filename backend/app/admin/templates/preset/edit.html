@@ -80,7 +80,7 @@
                                         {% for liquid in liquids %}
                                         <option value="{{ liquid.id }}"
                                                 {% if obj and obj.liquid_id and obj.liquid_id|string == liquid.id|string %}selected{% endif %}>
-                                            {{ liquid.name }} ({{ liquid.category }}) - {{ "✅" if liquid.is_available else "❌" }}
+                                            {{ liquid.name }} {{ liquid.category }} ({{ liquid.price }}₽) - {{ "✅" if liquid.is_available else "❌" }}
                                         </option>
                                         {% endfor %}
                                     </select>
@@ -93,7 +93,7 @@
                                         {% for bowl in bowls %}
                                         <option value="{{ bowl.id }}"
                                                 {% if obj and obj.bowl_id and obj.bowl_id|string == bowl.id|string %}selected{% endif %}>
-                                            {{ bowl.name }} ({{ bowl.category }}) - {{ "✅" if bowl.is_available else "❌" }}
+                                            {{ bowl.name }} {{ bowl.category }} ({{ bowl.price }}₽) - {{ "✅" if bowl.is_available else "❌" }}
                                         </option>
                                         {% endfor %}
                                     </select>
