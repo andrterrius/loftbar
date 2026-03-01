@@ -6,6 +6,7 @@ import { Flame, ArrowRight, Droplets } from "lucide-react";
 import Nav from "./nav";
 
 const MainSection = () => {
+
   return (
     <section className="mt-8 px-5 flex flex-col items-center text-center">
       {/* --- Navigation --- */}

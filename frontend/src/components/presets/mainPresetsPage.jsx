@@ -1,17 +1,24 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Image as ImageIcon, Heart, Filter } from "lucide-react";
 import Nav from "../nav";
-import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS, PRESETS } from "../moks/moks";
+import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS } from "../moks/moks";
+import { getAvailableFlavours, getAvailablePresets } from "@/utils/api";
 
 const MainPresetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('All');
+    const [availableFlavors, setAvailableFlavors] = useState([]);
+    const [availablePresets, setAvailablePresets] = useState([]);
+    useEffect(() => {
+        getAvailableFlavours().then(setAvailableFlavors).catch(console.error);
+        getAvailablePresets().then(setAvailablePresets).catch(console.error);
+    }, []);
 
     // Логика фильтрации
-    const displayedPresets = PRESETS.filter(preset => {
+    const displayedPresets = availablePresets.filter(preset => {
       const matchesSearch = preset.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             preset.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTab = activeTab === 'All' || preset.category === activeTab;
@@ -139,7 +146,7 @@ const MainPresetsPage = () => {
                                         </div>
 
                                         <div className="space-y-2 flex-1">
-                                            {preset.ingredients.slice(0, 3).map((ing, i) => {
+                                            {(preset.ingredients || []).slice(0, 3).map((ing, i) => {
                                                 const f = FLAVORS.find(fl => fl.id === ing.flavorId);
                                                 return (
                                                     <div key={i} className="flex justify-between text-xs text-neutral-300">

@@ -24,7 +24,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
 
             <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                    <span className="text-neutral-300">Ratio</span>
+                    <span className="text-neutral-300">Процент</span>
                     <span className="font-mono text-cyan-400">{Math.round(percentage)}%</span>
                 </div>
                 <input
