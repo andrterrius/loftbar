@@ -1,4 +1,5 @@
 import uuid
+from uuid import UUID
 from fastapi import HTTPException, APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -11,7 +12,7 @@ from typing import List, Optional
 from dishka.integrations.fastapi import FromDishka, DishkaRoute
 
 from app.db.uow import BaseUnitOfWork
-from app.services.abc import BasePresetService, BaseFlavorService
+from app.services.abc import BasePresetService, BaseFlavorService, BaseBowlService, BaseLiquidService
 
 from app.schemas.preset import PresetUpdate, PresetCreate
 
@@ -26,28 +27,6 @@ def create_admin_middleware_dependency(admin: Admin):
             raise HTTPException(status_code=302, headers={"Location": "/admin"})
 
     return admin_middleware_dependency
-
-class MockItem:
-    def __init__(self, id, name, **kwargs):
-        self.id = id
-        self.name = name
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-def get_mock_data():
-    """Создает мок-данные для тестирования"""
-    return {
-        "liquids": [
-            MockItem(uuid.uuid4(), "Малиновый лимонад", category="фруктовый", is_available=True, price=299.99),
-            MockItem(uuid.uuid4(), "Клубничный чизкейк", category="десертный", is_available=True, price=349.99),
-            MockItem(uuid.uuid4(), "Мятная свежесть", category="мятный", is_available=False, price=279.99),
-        ],
-        "bowls": [
-            MockItem(uuid.uuid4(), "Стандартная чаша", category="стандартная", is_available=True, price=199.99),
-            MockItem(uuid.uuid4(), "Премиум чаша", category="премиум", is_available=True, price=399.99),
-            MockItem(uuid.uuid4(), "Стеклянная чаша", category="стекло", is_available=False, price=599.99),
-        ]
-    }
 
 def create_admin_router(admin: Admin):
     admin_middleware = create_admin_middleware_dependency(admin)
@@ -66,13 +45,16 @@ def create_admin_router(admin: Admin):
             request: Request,
             preset_service: FromDishka[BasePresetService],
             flavor_service: FromDishka[BaseFlavorService],
+            bowl_service: FromDishka[BaseBowlService],
+            liquid_service: FromDishka[BaseLiquidService],
             uow: FromDishka[BaseUnitOfWork],
     ):
         """Создание нового пресета"""
         admin: Admin = request.state.admin
-        mock_data = get_mock_data()
 
-        flavors = await flavor_service.get_available(uow)
+        flavors = await flavor_service.get_all(uow)
+        bowls = await bowl_service.get_all(uow)
+        liquids = await liquid_service.get_all(uow)
 
         return templates.TemplateResponse(
             "preset/edit.html",
@@ -80,8 +62,8 @@ def create_admin_router(admin: Admin):
                 "admin": admin,
                 "request": request,
                 "obj": None,
-                "liquids": mock_data["liquids"],
-                "bowls": mock_data["bowls"],
+                "liquids": liquids,
+                "bowls": bowls,
                 "flavors": flavors,
             }
         )
@@ -89,18 +71,20 @@ def create_admin_router(admin: Admin):
     @router.get("/edit/{preset_id}", response_class=HTMLResponse)
     async def edit_preset(
             request: Request,
-            preset_id: str,
+            preset_id: UUID,
             preset_service: FromDishka[BasePresetService],
             flavor_service: FromDishka[BaseFlavorService],
+            bowl_service: FromDishka[BaseBowlService],
+            liquid_service: FromDishka[BaseLiquidService],
             uow: FromDishka[BaseUnitOfWork],
     ):
         """Редактирование существующего пресета"""
-
-        mock_data = get_mock_data()
         admin: Admin = request.state.admin
 
         obj = await preset_service.get_by_id(uow, preset_id)
         flavors = await flavor_service.get_all(uow)
+        bowls = await bowl_service.get_all(uow)
+        liquids = await liquid_service.get_all(uow)
 
         return templates.TemplateResponse(
             "preset/edit.html",
@@ -108,8 +92,8 @@ def create_admin_router(admin: Admin):
                 "admin": admin,
                 "request": request,
                 "obj": obj,
-                "liquids": mock_data["liquids"],
-                "bowls": mock_data["bowls"],
+                "liquids": liquids,
+                "bowls": bowls,
                 "flavors": flavors,
             }
         )
@@ -118,10 +102,13 @@ def create_admin_router(admin: Admin):
     async def insert_preset(
             request: Request,
             data: PresetCreate,
+            preset_service: FromDishka[BasePresetService],
+            uow: FromDishka[BaseUnitOfWork]
     ):
         """Сохранение пресета"""
 
         admin: Admin = request.state.admin
+        result = await preset_service.create(uow, data)
 
         print(data)
         return RedirectResponse(url="/admin/db-preset/list", status_code=302)
@@ -129,15 +116,17 @@ def create_admin_router(admin: Admin):
     @router.put("/save/{preset_id}")
     async def update_preset(
             request: Request,
-            preset_id: str,
+            preset_id: UUID,
             data: PresetUpdate,
+            preset_service: FromDishka[BasePresetService],
+            uow: FromDishka[BaseUnitOfWork]
     ):
         """Сохранение пресета"""
 
         admin: Admin = request.state.admin
-
-        print(data)
-        # Перенаправляем обратно в список пресетов
-        return RedirectResponse(url="/admin/db-preset/list", status_code=302)
+        result = await preset_service.update(uow, preset_id, data)
+        print("result", result)
+        if not result:
+            raise HTTPException(status_code=404, detail="Preset not found")
 
     return router

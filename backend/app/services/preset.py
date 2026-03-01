@@ -4,13 +4,15 @@ from typing import List, Optional, Sequence
 from app.db.uow import BaseUnitOfWork
 from app.db.models import DBPreset, DBPresetFlavor
 from app.schemas.preset import (
-    PresetCreate, PresetUpdate, PresetOut, PresetOut, FlavorDetail
+    PresetCreate,
+    PresetUpdate,
+    PresetOut,
+    FlavorDetail
 )
 from app.services.abc.abc_preset import BasePresetService
 
 
 class PresetService(BasePresetService):
-
     async def get_all(self, uow: BaseUnitOfWork) -> List[PresetOut]:
         async with uow:
             presets = await uow.presets.get_all_with_relations()
@@ -21,7 +23,7 @@ class PresetService(BasePresetService):
             presets = await uow.presets.get_all_with_relations()
             return [self._preset_to_detail_out(p) for p in presets if self._is_available(p)]
 
-    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: str) -> Optional[PresetOut]:
+    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
         async with uow:
             preset = await uow.presets.get_with_relations(preset_id)
             if not preset:
@@ -33,9 +35,7 @@ class PresetService(BasePresetService):
             preset = DBPreset(
                 name=data.name,
                 category=data.category,
-                price=data.price,
                 description=data.description,
-                image_url=data.image_url,
                 liquid_id=data.liquid_id,
                 bowl_id=data.bowl_id,
             )
@@ -50,10 +50,7 @@ class PresetService(BasePresetService):
             preset_with_rels = await uow.presets.get_with_relations(preset.id)
             return self._preset_to_detail_out(preset_with_rels)
 
-    async def update(self, uow: BaseUnitOfWork, preset_id: str, data: PresetUpdate) -> Optional[PresetOut]:
-
-        raise Exception
-        #Да, плохо, но пока заглушка, потому что нужно будет добавить проверки на доступность жидкости, чаши
+    async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
 
         async with uow:
             preset = await uow.presets.get_by_id(preset_id)
@@ -86,7 +83,7 @@ class PresetService(BasePresetService):
             updated = await uow.presets.get_with_relations(preset_id)
             return self._preset_to_detail_out(updated)
 
-    async def delete(self, uow: BaseUnitOfWork, preset_id: str) -> None:
+    async def delete(self, uow: BaseUnitOfWork, preset_id: UUID) -> None:
         async with uow:
             await uow.presets.delete(preset_id)
 
@@ -111,7 +108,7 @@ class PresetService(BasePresetService):
     def _preset_to_detail_out(self, preset: DBPreset) -> PresetOut:
         flavors = [
             FlavorDetail(
-                id=pf.flavor_id,
+                flavor_id=pf.flavor_id,
                 percent=pf.percent,
                 is_available=pf.flavor.is_available,
                 name=pf.flavor.name if pf.flavor else "Unknown",
@@ -124,9 +121,9 @@ class PresetService(BasePresetService):
             id=preset.id,
             name=preset.name,
             category=preset.category,
-            price=preset.price,
+            price=0,
             description=preset.description,
-            image_url=preset.image_url,
+            hex_color=preset.hex_color,
             liquid_id=preset.liquid_id,
             bowl_id=preset.bowl_id,
             is_available=self._is_available(preset),

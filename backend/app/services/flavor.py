@@ -1,7 +1,6 @@
 from uuid import UUID
 from typing import Optional, Sequence
 from app.db.uow import BaseUnitOfWork
-from app.db.repositories.flavors import IFlavorsRepository
 from app.schemas.flavor import FlavorCreate, FlavorUpdate, FlavorOut
 from app.db.models import DBFlavor
 

@@ -1,3 +1,7 @@
+from .liquid import LiquidOut
+from .flavor import FlavorOut
+from .bowl import BowlOut
+
 from uuid import UUID
 from typing import Optional, List
 from pydantic import ConfigDict, BaseModel, Field, field_validator
@@ -5,7 +9,7 @@ from pydantic import ConfigDict, BaseModel, Field, field_validator
 
 class FlavorInPreset(BaseModel):
     """Схема для вкуса внутри пресета (при создании/обновлении)"""
-    id: UUID
+    flavor_id: UUID
     percent: float = Field(..., ge=0, le=100, description="Процент вкуса от 0 до 100")
 
 
@@ -13,10 +17,9 @@ class PresetBase(BaseModel):
     """Базовые поля пресета"""
     name: str
     category: str
-    price: float
     is_available: bool = True
     description: Optional[str] = None
-    image_url: Optional[str] = None
+    hex_color: Optional[str] = None
 
 class PresetCreate(PresetBase):
     """Схема для создания пресета"""
@@ -34,6 +37,15 @@ class PresetCreate(PresetBase):
 
     @field_validator('flavors')
     @classmethod
+    def validate_flavors_unique(cls, v: List[FlavorInPreset]) -> List[FlavorInPreset]:
+        """Проверка, что список вкусов не пустой"""
+        flavor_ids = [item.flavor_id for item in v]
+        if len(flavor_ids) != len(set(flavor_ids)):
+            raise ValueError('Вкусы не могут повторяться несколько раз')
+        return v
+
+    @field_validator('flavors')
+    @classmethod
     def validate_flavors_percent_sum(cls, v: List[FlavorInPreset]) -> List[FlavorInPreset]:
         """Проверка, что сумма процентов равна 100"""
         if v:
@@ -42,17 +54,9 @@ class PresetCreate(PresetBase):
                 raise ValueError(f'Сумма процентов вкусов может быть максимум 100%, у вас {total_percent}%')
         return v
 
-class PresetUpdate(BaseModel):
+class PresetUpdate(PresetCreate):
     """Схема для обновления пресета"""
-    name: Optional[str]
-    flavors: Optional[List[FlavorInPreset]]
-    liquid_id: Optional[UUID]
-    bowl_id: Optional[UUID]
-    price: Optional[float]
-    is_available: Optional[bool] = True
-    category: Optional[str] = None
-    description: Optional[str] = None
-    image_url: Optional[str] = None
+    pass
 
 class FlavorDetail(FlavorInPreset):
     """Детальная информация о вкусе в пресете"""
@@ -64,6 +68,7 @@ class FlavorDetail(FlavorInPreset):
 class PresetOut(PresetBase):
     """Базовая схема для ответа (список пресетов)"""
     id: UUID
+    price: float
     is_available: bool
     liquid_id: Optional[UUID]
     bowl_id: Optional[UUID]
@@ -74,3 +79,12 @@ class PresetOut(PresetBase):
     flavors: List[FlavorDetail] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+class PresetsEditOut(BaseModel):
+    presets: List[PresetOut]
+
+class PresetEditData(BaseModel):
+    preset: PresetOut
+    liquids: List[LiquidOut]
+    flavors: List[FlavorOut]
+    bowls: List[BowlOut]

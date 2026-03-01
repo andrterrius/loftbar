@@ -17,14 +17,18 @@ from .models import (
     LiquidAdmin,
     PresetAdmin,
     UserAdmin,
+    PresetFlavorAdmin,
+    SettingsAdmin
 )
 
 _views = [
     PresetAdmin,
-    BowlAdmin,
     FlavorAdmin,
+    PresetFlavorAdmin,
+    BowlAdmin,
     LiquidAdmin,
     UserAdmin,
+    SettingsAdmin
 ]
 
 def get_admin_app(app: FastAPI, admin_config: AdminConfig, dishka_container: AsyncContainer, postgres_dsn: str, secret_key: str):

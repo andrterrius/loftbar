@@ -16,7 +16,7 @@ class BasePresetService(Protocol):
         """Получить только доступные пресеты (is_available=True)"""
         ...
 
-    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: str) -> Optional[PresetOut]:
+    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
         """Получить пресет по ID со всеми связями"""
         ...
 
@@ -24,10 +24,10 @@ class BasePresetService(Protocol):
         """Создать новый пресет"""
         ...
 
-    async def update(self, uow: BaseUnitOfWork, preset_id: str, data: PresetUpdate) -> Optional[PresetOut]:
+    async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
         """Обновить существующий пресет"""
         ...
 
-    async def delete(self, uow: BaseUnitOfWork, preset_id: str) -> None:
+    async def delete(self, uow: BaseUnitOfWork, preset_id: UUID) -> None:
         """Удалить пресет"""
         ...

@@ -15,21 +15,6 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <!-- Отладочная информация -->
-                    <div class="alert alert-info">
-                        <h4>Отладочная информация:</h4>
-                        <p><strong>liquids.count:</strong> {{ liquids|length }}</p>
-                        <p><strong>bowls.count:</strong> {{ bowls|length }}</p>
-                        <p><strong>flavors.count:</strong> {{ flavors|length }}</p>
-                        {% if obj %}
-                        <p><strong>obj.id:</strong> {{ obj.id }}</p>
-                        <p><strong>obj.liquid_id:</strong> {{ obj.liquid_id }}</p>
-                        <p><strong>obj.bowl_id:</strong> {{ obj.bowl_id }}</p>
-                        {% if obj.flavors %}
-                            <p><strong>obj.flavors count:</strong> {{ obj.flavors|length }}</p>
-                        {% endif %}
-                        {% endif %}
-                    </div>
 
                     <form method="POST" id="presetForm">
                         {% if obj and obj.id %}
@@ -61,20 +46,27 @@
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="price">Цена</label>
-                                    <input type="number" step="0.01" class="form-control" id="price" name="price"
-                                           value="{{ obj.price if obj and obj.price else '' }}">
-                                </div>
-
-                                <div class="form-group mb-3">
                                     <label for="description">Описание</label>
                                     <textarea class="form-control" id="description" name="description" rows="3">{{ obj.description if obj and obj.description else '' }}</textarea>
                                 </div>
 
+                                <!-- НОВОЕ ПОЛЕ: Выбор HEX цвета -->
                                 <div class="form-group mb-3">
-                                    <label for="image_url">URL изображения</label>
-                                    <input type="url" class="form-control" id="image_url" name="image_url"
-                                           value="{{ obj.image_url if obj and obj.image_url else '' }}">
+                                    <label for="hex_color">Цвет пресета (HEX)</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color"
+                                               id="hex_color_picker"
+                                               value="{{ obj.hex_color if obj and obj.hex_color else '#000000' }}"
+                                               title="Выберите цвет"
+                                               style="max-width: 60px; height: 38px; padding: 2px;">
+                                        <input type="text" class="form-control" id="hex_color" name="hex_color"
+                                               value="{{ obj.hex_color if obj and obj.hex_color else '' }}"
+                                               placeholder="#RRGGBB"
+                                               pattern="^#[0-9A-Fa-f]{6}$"
+                                               title="HEX код цвета в формате #RRGGBB">
+                                        <span class="input-group-text" id="color-preview" style="width: 50px; background-color: {{ obj.hex_color if obj and obj.hex_color else '#ffffff' }}; border-left: 1px solid #ced4da;"></span>
+                                    </div>
+                                    <small class="form-text text-muted">Выберите цвет для пресета или введите HEX код вручную (например, #FF5733)</small>
                                 </div>
                             </div>
 
@@ -117,13 +109,13 @@
                                     <!-- Создаем строки для существующих вкусов прямо в HTML -->
                                     {% if obj and obj.flavors and obj.flavors|length > 0 %}
                                         {% for pf in obj.flavors %}
-                                        <div class="row mb-2 flavor-row" data-flavor-record-id="{{ pf.id if pf.id else '' }}">
+                                        <div class="row mb-2 flavor-row" data-flavor-record-id="{{ pf.flavor_id if pf.flavor_id else '' }}">
                                             <div class="col-md-5">
                                                 <select class="form-control flavor-select" required>
                                                     <option value="">-- Выберите вкус --</option>
                                                     {% for flavor in flavors %}
                                                     <option value="{{ flavor.id }}"
-                                                            {% if pf.id and pf.id|string == flavor.id|string %}selected{% endif %}
+                                                            {% if pf.flavor_id and pf.flavor_id|string == flavor.id|string %}selected{% endif %}
                                                             data-available="{{ 'true' if flavor.is_available else 'false' }}">
                                                         {{ flavor.name }} ({{ flavor.brand }}) - {{ "✅" if flavor.is_available else "❌" }}
                                                     </option>
@@ -217,7 +209,7 @@ function collectFlavorsData() {
 
         if (select && select.value && percentInput && percentInput.value) {
             const flavorData = {
-                id: select.value,
+                flavor_id: select.value,
                 percent: parseFloat(percentInput.value)
             };
 
@@ -248,14 +240,22 @@ function collectFormData() {
     const category = document.getElementById('category');
     if (category && category.value) formData.category = category.value;
 
-    const price = document.getElementById('price');
-    if (price && price.value) formData.price = parseFloat(price.value);
-
     const description = document.getElementById('description');
     if (description && description.value) formData.description = description.value;
 
-    const imageUrl = document.getElementById('image_url');
-    if (imageUrl && imageUrl.value) formData.image_url = imageUrl.value;
+    // НОВОЕ ПОЛЕ: HEX цвет
+    const hexColor = document.getElementById('hex_color');
+    if (hexColor && hexColor.value) {
+        // Проверяем формат HEX цвета
+        const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+        if (hexRegex.test(hexColor.value)) {
+            formData.hex_color = hexColor.value;
+        } else {
+            // Если формат неверный, показываем предупреждение
+            document.getElementById('validation-warnings').innerHTML = '<div class="alert alert-warning">Неверный формат HEX цвета. Используйте формат #RRGGBB</div>';
+            return null;
+        }
+    }
 
     const liquidId = document.getElementById('liquid_id');
     if (liquidId && liquidId.value) formData.liquid_id = liquidId.value;
@@ -321,9 +321,12 @@ function validatePercentages() {
         const select = row.querySelector('.flavor-select');
         const percent = row.querySelector('.flavor-percent');
 
+
         if (!select.value) {
             allSelected = false;
         }
+
+        console.log(select.value, percent.value, select);
 
         if (percent.value && percent.value.trim() !== '') {
             total += parseFloat(percent.value) || 0;
@@ -392,14 +395,13 @@ function attachRowHandlers(row) {
 
 // Функция создания новой строки вкуса
 function createNewFlavorRow() {
-    const container = document.getElementById('flavors-container');
     const newRow = document.createElement('div');
     newRow.className = 'row mb-2 flavor-row';
 
     // Получаем HTML первой строки для шаблона
     const firstRow = document.querySelector('.flavor-row');
     if (firstRow) {
-        newRow.innerHTML = firstRow.outerHTML;
+        newRow.innerHTML = firstRow.innerHTML;
         // Очищаем выбранные значения
         const select = newRow.querySelector('.flavor-select');
         if (select) select.value = '';
@@ -415,6 +417,33 @@ function createNewFlavorRow() {
     }
 
     return newRow;
+}
+
+// НОВЫЕ ФУНКЦИИ: для работы с HEX цветом
+function updateColorPreview() {
+    const hexInput = document.getElementById('hex_color');
+    const colorPicker = document.getElementById('hex_color_picker');
+    const colorPreview = document.getElementById('color-preview');
+
+    if (hexInput && hexInput.value) {
+        // Обновляем color picker, если введен корректный HEX
+        const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+        if (hexRegex.test(hexInput.value)) {
+            colorPicker.value = hexInput.value;
+            colorPreview.style.backgroundColor = hexInput.value;
+        }
+    }
+}
+
+function updateHexFromPicker() {
+    const colorPicker = document.getElementById('hex_color_picker');
+    const hexInput = document.getElementById('hex_color');
+    const colorPreview = document.getElementById('color-preview');
+
+    if (colorPicker && hexInput) {
+        hexInput.value = colorPicker.value;
+        colorPreview.style.backgroundColor = colorPicker.value;
+    }
 }
 
 // Инициализация при загрузке страницы
@@ -441,6 +470,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // НОВЫЕ ОБРАБОТЧИКИ: для HEX цвета
+    const hexInput = document.getElementById('hex_color');
+    const colorPicker = document.getElementById('hex_color_picker');
+
+    if (hexInput) {
+        hexInput.addEventListener('input', updateColorPreview);
+    }
+
+    if (colorPicker) {
+        colorPicker.addEventListener('input', updateHexFromPicker);
+    }
+
+    // Инициализация предпросмотра цвета
+    updateColorPreview();
+
     // Перехватываем отправку формы
     const form = document.getElementById('presetForm');
     if (form) {
@@ -454,6 +498,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const jsonData = collectFormData();
+
+            // Проверяем, не вернула ли collectFormData null (ошибка валидации HEX)
+            if (!jsonData) {
+                return false;
+            }
+
             const config = getRequestConfig();
             
             console.log("Режим:", config.method === 'PUT' ? 'Обновление' : 'Создание');
@@ -494,30 +544,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Первоначальная валидация
     setTimeout(validatePercentages, 200);
-
-    // Тестовая кнопка
-    const testBtn = document.createElement('button');
-    testBtn.type = 'button';
-    testBtn.className = 'btn btn-info mt-3 ms-2';
-    testBtn.innerHTML = 'Проверить данные формы';
-    testBtn.onclick = function() {
-        const jsonData = collectFormData();
-        const config = getRequestConfig();
-
-        console.log("=== ТЕКУЩИЕ ДАННЫЕ ===");
-        console.log("Режим:", config.method === 'PUT' ? 'Обновление' : 'Создание');
-        console.log("URL:", config.url);
-        console.log("Метод:", config.method);
-        console.log("Данные (JSON):", JSON.stringify(jsonData, null, 2));
-
-        // Проверяем конкретные поля
-        console.log("liquid_id выбран:", document.getElementById('liquid_id').value);
-        console.log("bowl_id выбран:", document.getElementById('bowl_id').value);
-        console.log("flavors количество:", jsonData.flavors.length);
-
-        alert('Данные выведены в консоль (F12)');
-    };
-    document.querySelector('.card-body').appendChild(testBtn);
 });
 </script>
 {% endblock %}
