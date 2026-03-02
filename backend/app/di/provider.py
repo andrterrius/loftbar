@@ -14,11 +14,9 @@ from app.core.config import Config
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from sqladmin import Admin
-
 from app.admin import get_admin_app
 
 class MainProvider(Provider):
-
     @provide(scope=Scope.APP)
     def get_session_maker(self, config: Config) -> async_sessionmaker[AsyncSession]:
         return new_session_maker(config.postgres.build_dsn())

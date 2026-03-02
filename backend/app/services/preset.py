@@ -7,7 +7,9 @@ from app.schemas.preset import (
     PresetCreate,
     PresetUpdate,
     PresetOut,
-    FlavorDetail
+    FlavorInPresetOut,
+    BowlOut,
+    LiquidOut
 )
 from app.services.abc.abc_preset import BasePresetService
 
@@ -20,8 +22,8 @@ class PresetService(BasePresetService):
 
     async def get_available(self, uow: BaseUnitOfWork) -> List[PresetOut]:
         async with uow:
-            presets = await uow.presets.get_all_with_relations()
-            return [self._preset_to_detail_out(p) for p in presets if self._is_available(p)]
+            presets = await uow.presets.get_available_with_relations()
+            return [self._preset_to_detail_out(p) for p in presets if p.is_fully_available]
 
     async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
         async with uow:
@@ -87,49 +89,28 @@ class PresetService(BasePresetService):
         async with uow:
             await uow.presets.delete(preset_id)
 
-    def _is_available(self, preset: DBPreset) -> bool:
-        if preset.liquid and not getattr(preset.liquid, 'is_available', True):
-            return False
-        if preset.bowl and not getattr(preset.bowl, 'is_available', True):
-            return False
 
-        final_percent = 0
+    def _calculate_final_price(self, preset: DBPreset) -> int:
+        total_price = preset.settings.preset_base_price
+        if preset.liquid and getattr(preset.liquid, 'is_available', True):
+            total_price += preset.liquid.price
+        if preset.bowl and getattr(preset.bowl, 'is_available', True):
+            total_price += preset.bowl.price
 
-        for pf in preset.preset_flavors:
-            if pf.flavor and not getattr(pf.flavor, 'is_available', True):
-                return False
-            final_percent += pf.percent
-
-        if final_percent != 100:
-            return False
-
-        return preset.is_available
+        return total_price
 
     def _preset_to_detail_out(self, preset: DBPreset) -> PresetOut:
-        flavors = [
-            FlavorDetail(
-                flavor_id=pf.flavor_id,
-                percent=pf.percent,
-                is_available=pf.flavor.is_available,
-                name=pf.flavor.name if pf.flavor else "Unknown",
-                brand=pf.flavor.brand if pf.flavor else "Unknown"
-            )
-            for pf in preset.preset_flavors
-        ]
+        flavors = [FlavorInPresetOut(flavor=pf.flavor, percent=pf.percent) for pf in preset.preset_flavors]
 
         return PresetOut(
             id=preset.id,
             name=preset.name,
             category=preset.category,
-            price=0,
+            price=self._calculate_final_price(preset),
             description=preset.description,
             hex_color=preset.hex_color,
-            liquid_id=preset.liquid_id,
-            bowl_id=preset.bowl_id,
-            is_available=self._is_available(preset),
-            liquid_name=preset.liquid.name if preset.liquid else None,
-            liquid_available=getattr(preset.liquid, 'is_available', None) if preset.liquid else None,
-            bowl_name=preset.bowl.name if preset.bowl else None,
-            bowl_available=getattr(preset.bowl, 'is_available', None) if preset.bowl else None,
+            liquid=LiquidOut.model_validate(preset.liquid),
+            bowl=BowlOut.model_validate(preset.bowl),
+            is_available=preset.is_fully_available,
             flavors=flavors
         )

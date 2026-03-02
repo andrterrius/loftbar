@@ -12,6 +12,10 @@ class FlavorInPreset(BaseModel):
     flavor_id: UUID
     percent: float = Field(..., ge=0, le=100, description="Процент вкуса от 0 до 100")
 
+class FlavorInPresetOut(BaseModel):
+    """Выходная информация о вкусе в пресете"""
+    flavor: FlavorOut
+    percent: float = Field(..., ge=0, le=100, description="Процент вкуса от 0 до 100")
 
 class PresetBase(BaseModel):
     """Базовые поля пресета"""
@@ -58,25 +62,14 @@ class PresetUpdate(PresetCreate):
     """Схема для обновления пресета"""
     pass
 
-class FlavorDetail(FlavorInPreset):
-    """Детальная информация о вкусе в пресете"""
-    name: str
-    brand: str
-    is_available: bool
-
-
 class PresetOut(PresetBase):
     """Базовая схема для ответа (список пресетов)"""
     id: UUID
     price: float
     is_available: bool
-    liquid_id: Optional[UUID]
-    bowl_id: Optional[UUID]
-    liquid_name: Optional[str] = None
-    liquid_available: Optional[bool] = None
-    bowl_name: Optional[str] = None
-    bowl_available: Optional[bool] = None
-    flavors: List[FlavorDetail] = []
+    bowl: BowlOut
+    liquid: LiquidOut
+    flavors: List[FlavorInPresetOut] = []
 
     model_config = ConfigDict(from_attributes=True)
 
