@@ -33,6 +33,9 @@ class IPresetsRepository(Protocol):
     async def get_all_with_relations(self) -> Sequence[DBPreset]:
         ...
 
+    async def get_available_with_relations(self) -> Sequence[DBPreset]:
+        ...
+
     async def get_by_name(self, name: str) -> Optional[Any]:
         ...
 
@@ -92,6 +95,18 @@ class PresetsRepository(SQLAlchemyRepository[DBPreset], IPresetsRepository):
     async def get_all_with_relations(self) -> Sequence[DBPreset]:
         stmt = (
             select(DBPreset)
+            .options(
+                selectinload(DBPreset.liquid),
+                selectinload(DBPreset.bowl),
+                selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor)
+            )
+        )
+        return (await self._session.scalars(stmt)).all()
+
+    async def get_available_with_relations(self) -> Sequence[DBPreset]:
+        stmt = (
+            select(DBPreset)
+            .where(DBPreset.is_available == True)
             .options(
                 selectinload(DBPreset.liquid),
                 selectinload(DBPreset.bowl),

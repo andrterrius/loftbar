@@ -1,6 +1,6 @@
 import uuid as uuid_pkg
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from sqlalchemy import text, Boolean, ForeignKey, String, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,7 +27,6 @@ class DBPreset(TimestampMixin, Base):
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="preset",
-        cascade="all, delete-orphan",
         lazy="selectin"
     )
 
@@ -74,6 +73,65 @@ class DBPreset(TimestampMixin, Base):
         backref="presets",
         lazy="selectin"
     )
+
+    @property
+    def availability_info(self) -> Tuple[bool, Optional[str]]:
+        """
+        Возвращает кортеж (доступен, причина)
+        Для админки и API
+        """
+        # Базовая проверка
+        if not self.is_available:
+            return False, "Пресет отключен"
+
+        # Проверка жидкости
+        if self.liquid and not self.liquid.is_available:
+            return False, f"Недоступна жидкость: {self.liquid.name}"
+
+        # Проверка чаши
+        if self.bowl and not self.bowl.is_available:
+            return False, f"Недоступна чаша: {self.bowl.name}"
+
+        # Проверка вкусов
+        total_percent = 0
+        for pf in self.preset_flavors:
+            if not pf.flavor:
+                return False, f"Вкус не найден (ID: {pf.flavor_id})"
+            if not pf.flavor.is_available:
+                return False, f"Недоступен вкус: {pf.flavor.name}"
+            total_percent += pf.percent
+
+        # Проверка суммы процентов
+        if abs(total_percent - 100) > 0.01:
+            return False, f"Сумма процентов {total_percent:.1f}% (должно быть 100%)"
+
+        return True, None
+
+    @property
+    def is_fully_available(self) -> bool:
+        """Только булево значение для API"""
+        return self.availability_info[0]
+
+    @property
+    def unavailability_reason(self) -> Optional[str]:
+        """Причина недоступности для админки"""
+        return self.availability_info[1]
+
+    @property
+    def total_price(self) -> int:
+        """Расчет полной цены пресета"""
+        if not self.settings:
+            return 0
+
+        total = self.settings.preset_base_price
+
+        if self.liquid and self.liquid.is_available:
+            total += self.liquid.price
+
+        if self.bowl and self.bowl.is_available:
+            total += self.bowl.price
+
+        return total
 
     def __str__(self) -> str:
         return self.name
