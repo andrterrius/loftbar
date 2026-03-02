@@ -12,6 +12,7 @@ dependencies = [
     "markupsafe>=3.0.3",
     "pydantic-settings>=2.13.0",
     "sqladmin[full]==0.23.0",
+    "telegram-init-data>=1.0.2",
     "uuid>=1.30",
     "uvicorn[standard,standart]>=0.41.0",
 ]

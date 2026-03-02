@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from dishka.integrations.fastapi import setup_dishka
 
-from app.di.provider import MainProvider
+from app.di import MainProvider, TelegramProvider
 from app.admin import get_admin_app
 
 from app.core.config import Config, create_config
@@ -42,7 +42,11 @@ app.add_middleware(
 )
 
 
-container = make_async_container(MainProvider(), FastapiProvider(), context={Config: config})
+container = make_async_container(
+    MainProvider(),
+    TelegramProvider(),
+    FastapiProvider(),
+    context={Config: config})
 
 admin_for_router = get_admin_app(
     FastAPI(),
