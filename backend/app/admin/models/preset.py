@@ -107,18 +107,10 @@ class PresetAdmin(ModelView, model=DBPreset):
     @staticmethod
     def _available_formatter(m, a):
         """Форматтер доступности"""
-        if not m.is_available:
-            return Markup('<span style="color: red;">❌ Нет</span>')
+        is_available, reason = m.availability_info
 
-        for pf in m.preset_flavors:
-            if not pf.flavor or not pf.flavor.is_available:
-                return Markup(f'<span style="color: red;">❌ Нет (недоступен вкус {pf.flavor.name})</span>')
-
-        if not m.bowl or not m.bowl.is_available:
-            return Markup('<span style="color: red;">❌ Нет (недоступна чаша)</span>')
-
-        if not m.liquid or not m.liquid.is_available:
-            return Markup('<span style="color: red;">❌ Нет (недоступна жидкость)</span>')
+        if not is_available:
+            return Markup(f'<span style="color: red;">❌ Нет {reason}</span>')
 
         return Markup('<span style="color: green;">✅ Да</span>')
 

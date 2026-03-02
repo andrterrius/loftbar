@@ -65,8 +65,8 @@ class BowlAdmin(ModelView, model=DBBowl):
         },
         "icon": {
             "label": "Иконка",
-            "description": "Название иконки из библиотеки Font Awesome",
-            "render_kw": {"placeholder": "fa-solid fa-bowl-food", "class": "form-control"}
+            "description": "Эмодзи иконки или любой текст",
+            "render_kw": {"placeholder": "🥥", "class": "form-control"}
         }
     }
 

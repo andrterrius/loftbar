@@ -79,7 +79,7 @@
                                         <option value="">-- Выберите жидкость --</option>
                                         {% for liquid in liquids %}
                                         <option value="{{ liquid.id }}"
-                                                {% if obj and obj.liquid_id and obj.liquid_id|string == liquid.id|string %}selected{% endif %}>
+                                                {% if obj and obj.liquid.id and obj.liquid.id == liquid.id %}selected{% endif %}>
                                             {{ liquid.name }} {{ liquid.category }} ({{ liquid.price }}₽) - {{ "✅" if liquid.is_available else "❌" }}
                                         </option>
                                         {% endfor %}
@@ -92,7 +92,7 @@
                                         <option value="">-- Выберите чашу --</option>
                                         {% for bowl in bowls %}
                                         <option value="{{ bowl.id }}"
-                                                {% if obj and obj.bowl_id and obj.bowl_id|string == bowl.id|string %}selected{% endif %}>
+                                                {% if obj and obj.bowl.id and obj.bowl.id == bowl.id %}selected{% endif %}>
                                             {{ bowl.name }} {{ bowl.category }} ({{ bowl.price }}₽) - {{ "✅" if bowl.is_available else "❌" }}
                                         </option>
                                         {% endfor %}
@@ -115,7 +115,7 @@
                                                     <option value="">-- Выберите вкус --</option>
                                                     {% for flavor in flavors %}
                                                     <option value="{{ flavor.id }}"
-                                                            {% if pf.flavor_id and pf.flavor_id|string == flavor.id|string %}selected{% endif %}
+                                                            {% if pf.flavor.id and pf.flavor.id == flavor.id %}selected{% endif %}
                                                             data-available="{{ 'true' if flavor.is_available else 'false' }}">
                                                         {{ flavor.name }} ({{ flavor.brand }}) - {{ "✅" if flavor.is_available else "❌" }}
                                                     </option>
