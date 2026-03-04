@@ -1,7 +1,10 @@
+from uuid import UUID
+
 from typing import AsyncIterable
 
 from dishka import Provider, Scope, provide
-from sqlalchemy.sql.annotation import Annotated
+
+from app.db.models import DBUser
 
 from app.services import (
     FlavorService,
@@ -63,3 +66,9 @@ class MainProvider(Provider):
     @provide(scope=Scope.REQUEST, provides=BaseOrderService)
     def get_order_service(self) -> OrderService:
         return OrderService()
+
+    @provide(scope=Scope.REQUEST, provides=UUID)
+    async def get_current_user(self, uow: BaseUnitOfWork) -> UUID:
+        async with uow:
+            user = await uow.users.get_by_id(UUID("b7fd3e87-1c3a-4d96-8415-394d0cb2be8b"))
+            return user.id

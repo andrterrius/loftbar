@@ -22,6 +22,9 @@ class AdminConfig(BaseSettings, env_prefix="ADMIN_"):
 
 class SecurityConfig(BaseSettings, env_prefix="SECURITY_"):
     session_secret_key: SecretStr
+    jwt_secret_key: SecretStr
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60
 
 
 class PostgresConfig(BaseSettings, env_prefix="POSTGRES_"):

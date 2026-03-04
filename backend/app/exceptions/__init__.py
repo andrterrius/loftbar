@@ -1,1 +1,1 @@
-from .base import BaseServiceException
+from .base import BaseServiceException, BaseAuthException

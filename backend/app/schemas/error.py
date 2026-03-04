@@ -13,7 +13,7 @@ class ErrorResponse(BaseModel):
             "example": {
                 "success": False,
                 "message": "Описание ошибки",
-                "error_type": "service_error",
+                "error_type": "_error",
                 "details": {"additional": "info"},
                 "field": "field_name"
             }

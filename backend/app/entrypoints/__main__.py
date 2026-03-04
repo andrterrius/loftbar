@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from dishka.integrations.fastapi import setup_dishka
 
-from app.di import MainProvider, TelegramProvider
+from app.di import MainProvider, TelegramProvider, AuthProvider
 from app.admin import get_admin_app
 
 from app.core.config import Config, create_config
@@ -15,8 +15,6 @@ from app.admin.routers import include_admin_router
 
 from dishka.integrations.fastapi import FastapiProvider
 from dishka import make_async_container
-
-config = create_config()
 
 app = FastAPI(
      title="LoftBar",
@@ -29,6 +27,8 @@ app = FastAPI(
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+config = create_config()
 
 app.add_middleware(
     CORSMiddleware,
@@ -46,6 +46,7 @@ container = make_async_container(
     MainProvider(),
     TelegramProvider(),
     FastapiProvider(),
+    AuthProvider(),
     context={Config: config})
 
 admin_for_router = get_admin_app(

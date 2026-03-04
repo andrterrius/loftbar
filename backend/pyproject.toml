@@ -11,6 +11,7 @@ dependencies = [
     "fastapi>=0.129.0",
     "markupsafe>=3.0.3",
     "pydantic-settings>=2.13.0",
+    "pyjwt>=2.11.0",
     "sqladmin[full]==0.23.0",
     "telegram-init-data>=1.0.2",
     "uuid>=1.30",
