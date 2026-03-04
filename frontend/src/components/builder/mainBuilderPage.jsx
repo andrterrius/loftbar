@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-        X, Save, Search, Plus, RussianRuble, 
+        X, Search, Plus, RussianRuble, 
     } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
-import { apiRequest, getAvailableFlavours } from "@/utils/api";
+import { apiRequest, getBowls, getFlavours } from "@/utils/api";
 
 const MainBuilderPage = () => {
     const [flavors, setFlavors] = useState([]);
@@ -19,10 +19,12 @@ const MainBuilderPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [mixName, setMixName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [bowlOptions, setBowlOptions] = useState([]);
 
 
     useEffect(() => {
-        getAvailableFlavours().then(data => setFlavors(data));
+        getFlavours().then(data => setFlavors(data));
+        getBowls().then(data => setBowlOptions(data)).catch(console.error);
     }, [])
 
     // Функции
@@ -84,7 +86,7 @@ const MainBuilderPage = () => {
     };
   
     const calculatePrice = () => {
-        const bowl = BOWL_OPTIONS.find(b => b.type === selectedBowl);
+        const bowl = bowlOptions.find(b => b.type === selectedBowl);
         return SETTINGS.basePrice + (bowl?.price ?? 0)
     };
   
@@ -227,7 +229,7 @@ const MainBuilderPage = () => {
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                             <h3 className="text-lg font-semibold text-white mb-4">Вид Чаши</h3>
                             <div className="grid grid-cols-4 gap-2">
-                            {BOWL_OPTIONS.map((bowl) => (
+                            {bowlOptions.map((bowl) => (
                                 <button
                                 key={bowl.type}
                                 onClick={() => setSelectedBowl(bowl.type)}
@@ -243,9 +245,9 @@ const MainBuilderPage = () => {
                                 </button>
                             ))}
                             </div>
-                            {BOWL_OPTIONS.find(b => b.type === selectedBowl)?.isFruit && (
+                            {bowlOptions.find(b => b.type === selectedBowl)?.isFruit && (
                                 <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
-                                    +${BOWL_OPTIONS.find(b => b.type === selectedBowl)?.price} Fruit Bowl
+                                    +${bowlOptions.find(b => b.type === selectedBowl)?.price} Fruit Bowl
                                 </div>
                             )}
                         </div>

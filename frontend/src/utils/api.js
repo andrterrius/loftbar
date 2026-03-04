@@ -18,14 +18,15 @@ export async function apiRequest(endpoint, options = {}) {
   };
 
 
-  const response = await fetch(`https://andrterrius.lol${endpoint}`, config);
+  const response = await fetch(`https://andrterrius.lol/api/v1${endpoint}`, config);
 
   if (!response.ok) throw new Error('Ошибка запроса');
 
   return response.json();
 }
 
-export const getFlavours = () => apiRequest('/api/v1/flavors/', { method: 'GET' });
-export const getAvailableFlavours = () => apiRequest('/api/v1/flavors/available', { method: 'GET' }); 
-export const getAvailablePresets = () => apiRequest('/api/v1/presets/available', { method: 'GET' });
-export const savePreset = (presetData) => apiRequest('/api/v1/presets/', { method: 'POST', body: JSON.stringify(presetData) });
+export const getFlavours = () => apiRequest('/flavors/', { method: 'GET' });
+export const getAvailablePresets = () => apiRequest('/presets/available', { method: 'GET' });
+export const getLiquids = () => apiRequest('/liquids/', { method: 'GET' });
+export const getPresets = () => apiRequest('/presets/', { method: 'GET' });
+export const getBowls = () => apiRequest('/bowls/', { method: 'GET' });

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Image as ImageIcon, Heart, Filter } from "lucide-react";
 import Nav from "../nav";
 import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS } from "../moks/moks";
-import { getAvailableFlavours, getAvailablePresets } from "@/utils/api";
+import { getPresets, getFlavours } from "@/utils/api";
 
 const MainPresetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -13,8 +13,8 @@ const MainPresetsPage = () => {
     const [availableFlavors, setAvailableFlavors] = useState([]);
     const [availablePresets, setAvailablePresets] = useState([]);
     useEffect(() => {
-        getAvailableFlavours().then(setAvailableFlavors).catch(console.error);
-        getAvailablePresets().then(setAvailablePresets).catch(console.error);
+        getFlavours().then(setAvailableFlavors).catch(console.error);
+        getPresets().then(setAvailablePresets).catch(console.error);
     }, []);
 
     // Логика фильтрации
@@ -27,9 +27,8 @@ const MainPresetsPage = () => {
     });
 
     const handleOrder = (preset) => {
-        alert(`Order placed for ${preset.name}! Total: $${SETTINGS.basePrice}`);
+        alert(`Order placed for ${preset.name}! Total: ${SETTINGS.basePrice}`);
     };
-
     return (
         <section className="min-h-screen bg-neutral-950 flex flex-col items-center w-full overflow-hidden">
             <Nav />
