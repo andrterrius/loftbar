@@ -3,8 +3,20 @@ from typing import AsyncIterable
 from dishka import Provider, Scope, provide
 from sqlalchemy.sql.annotation import Annotated
 
-from app.services import FlavorService, PresetService, BowlService, LiquidService
-from app.services.abc import BaseFlavorService, BasePresetService, BaseBowlService, BaseLiquidService
+from app.services import (
+    FlavorService,
+    PresetService,
+    BowlService,
+    LiquidService,
+    OrderService
+)
+from app.services.abc import (
+    BaseFlavorService,
+    BasePresetService,
+    BaseBowlService,
+    BaseLiquidService,
+    BaseOrderService
+)
 from app.db.session_maker import new_session_maker
 
 from app.db.uow import BaseUnitOfWork, UnitOfWork
@@ -47,3 +59,7 @@ class MainProvider(Provider):
     @provide(scope=Scope.REQUEST, provides=BasePresetService)
     def get_preset_service(self) -> PresetService:
         return PresetService()
+
+    @provide(scope=Scope.REQUEST, provides=BaseOrderService)
+    def get_order_service(self) -> OrderService:
+        return OrderService()

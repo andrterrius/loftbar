@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -7,6 +9,8 @@ from app.db.repositories import (
     FlavorsRepository,
     BowlsRepository,
     LiquidsRepository,
+    TablesRepository,
+    OrdersRepository
 )
 
 
@@ -16,6 +20,7 @@ class UnitOfWork(BaseUnitOfWork):
     def __init__(self, session_maker: async_sessionmaker[AsyncSession], auto_commit: bool = True):
         self.session_maker = session_maker
         self.auto_commit = auto_commit
+        self.session: Optional[AsyncSession] = None
 
     async def __aenter__(self):
         self.session = self.session_maker()
@@ -24,6 +29,8 @@ class UnitOfWork(BaseUnitOfWork):
         self.presets = PresetsRepository(self.session)
         self.bowls = BowlsRepository(self.session)
         self.liquids = LiquidsRepository(self.session)
+        self.tables = TablesRepository(self.session)
+        self.orders = OrdersRepository(self.session)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         try:
@@ -35,6 +42,7 @@ class UnitOfWork(BaseUnitOfWork):
             await self.rollback()
             raise
         finally:
+            self._in_transaction = False
             await self.close()
 
     async def commit(self):

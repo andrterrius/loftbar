@@ -20,8 +20,15 @@ class BasePresetService(Protocol):
         """Получить пресет по ID со всеми связями"""
         ...
 
-    async def create(self, uow: BaseUnitOfWork, data: PresetCreate) -> PresetOut:
+    async def get_by_id_(self, uow_inited: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+        """Получить пресет по ID со всеми связями с уже инициализированным uow"""
+
+    async def create(self, uow: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
         """Создать новый пресет"""
+        ...
+
+    async def create_(self, uow_inited: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
+        """Создать новый пресет с уже инициализированным uow"""
         ...
 
     async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:

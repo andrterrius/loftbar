@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Protocol, Optional, Sequence, Any
+from typing import List, Protocol, Optional, Sequence, Any
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,6 +27,9 @@ class IFlavorsRepository(Protocol):
         ...
 
     async def delete(self, _id: UUID) -> None:
+        ...
+
+    async def get_by_ids(self, ids: List[UUID]) -> List[DBFlavor]:
         ...
 
     async def get_by_name(self, name: str, brand: Optional[str] = None) -> Optional[Any]:
@@ -68,6 +71,12 @@ class IFlavorsRepository(Protocol):
 class FlavorsRepository(SQLAlchemyRepository[DBFlavor], IFlavorsRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, DBFlavor)
+
+    async def get_by_ids(self, ids: List[UUID]) -> List[DBFlavor]:
+        query = select(self.model).where(self.model.id.in_(ids))
+
+        result = await self._session.execute(query)
+        return list(result.scalars().all())
 
     async def get_by_name(self, name: str, brand: Optional[str] = None) -> Optional[DBFlavor]:
         filters = {"name": name}

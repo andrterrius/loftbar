@@ -9,7 +9,7 @@ from app.di import MainProvider, TelegramProvider
 from app.admin import get_admin_app
 
 from app.core.config import Config, create_config
-from app.api import include_routers
+from app.api import include_routers, include_exception_handlers
 
 from app.admin.routers import include_admin_router
 
@@ -66,6 +66,7 @@ app.add_middleware(
 
 include_admin_router(app, admin_for_router)
 include_routers(app)
+include_exception_handlers(app)
 
 admin = get_admin_app(
     app,

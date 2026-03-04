@@ -27,30 +27,40 @@ class PresetService(BasePresetService):
 
     async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
         async with uow:
-            preset = await uow.presets.get_with_relations(preset_id)
-            if not preset:
-                return None
-            return self._preset_to_detail_out(preset)
+            return await self.get_by_id_(uow, preset_id)
 
-    async def create(self, uow: BaseUnitOfWork, data: PresetCreate) -> PresetOut:
+    async def get_by_id_(self, uow_inited: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+        preset = await uow_inited.presets.get_with_relations(preset_id)
+        if not preset:
+            return None
+        return self._preset_to_detail_out(preset)
+
+    async def create(self, uow: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
         async with uow:
-            preset = DBPreset(
-                name=data.name,
-                category=data.category,
-                description=data.description,
-                liquid_id=data.liquid_id,
-                bowl_id=data.bowl_id,
-            )
-            await uow.presets.create(preset)
+            return await self.create_(uow, data, created_by_id)
 
-            for flavor in data.flavors:
-                await uow.presets.add_flavor_to_preset(
-                    preset_id=preset.id,
-                    flavor_id=flavor.flavor_id,
-                    percent=flavor.percent
-                )
-            preset_with_rels = await uow.presets.get_with_relations(preset.id)
-            return self._preset_to_detail_out(preset_with_rels)
+    async def create_(self, uow_inited: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
+        preset = DBPreset(
+            name=data.name,
+            is_available=data.is_available,
+            description=data.description,
+            hex_color=data.hex_color,
+            category=data.category,
+            liquid_id=data.liquid_id,
+            bowl_id=data.bowl_id,
+            created_by_id=created_by_id
+        )
+        await uow_inited.presets.create(preset)
+
+        for flavor in data.flavors:
+            await uow_inited.presets.add_flavor_to_preset(
+                preset_id=preset.id,
+                flavor_id=flavor.flavor_id,
+                percent=flavor.percent
+            )
+        preset_with_rels = await uow_inited.presets.get_with_relations(preset.id)
+        return self._preset_to_detail_out(preset_with_rels)
+
 
     async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
 

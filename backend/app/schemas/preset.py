@@ -58,6 +58,39 @@ class PresetCreate(PresetBase):
                 raise ValueError(f'Сумма процентов вкусов может быть максимум 100%, у вас {total_percent}%')
         return v
 
+class PresetCreateInOrder(BaseModel):
+    """Схема для создания пресета"""
+    liquid_id: Optional[UUID] = None
+    bowl_id: Optional[UUID] = None
+    flavors: List[FlavorInPreset]
+
+    @field_validator('flavors')
+    @classmethod
+    def validate_flavors_not_empty(cls, v: List[FlavorInPreset]) -> List[FlavorInPreset]:
+        """Проверка, что список вкусов не пустой"""
+        if not v:
+            raise ValueError('Вкусы не найдены')
+        return v
+
+    @field_validator('flavors')
+    @classmethod
+    def validate_flavors_unique(cls, v: List[FlavorInPreset]) -> List[FlavorInPreset]:
+        """Проверка, что список вкусов не пустой"""
+        flavor_ids = [item.flavor_id for item in v]
+        if len(flavor_ids) != len(set(flavor_ids)):
+            raise ValueError('Вкусы не могут повторяться несколько раз')
+        return v
+
+    @field_validator('flavors')
+    @classmethod
+    def validate_flavors_percent_sum(cls, v: List[FlavorInPreset]) -> List[FlavorInPreset]:
+        """Проверка, что сумма процентов равна 100"""
+        if v:
+            total_percent = sum(flavor.percent for flavor in v)
+            if abs(total_percent - 100) > 0.01:
+                raise ValueError(f'Сумма процентов вкусов может быть максимум 100%, у вас {total_percent}%')
+        return v
+
 class PresetUpdate(PresetCreate):
     """Схема для обновления пресета"""
     pass
