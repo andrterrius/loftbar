@@ -16,7 +16,7 @@ presets_router = APIRouter(
 )
 
 
-@presets_router.get("/",
+@presets_router.get("",
                     response_model=List[PresetOut],
                     responses={
                         401: {"model": ErrorResponse, "description": "Ошибка авторизации. error_type=auth_error"}

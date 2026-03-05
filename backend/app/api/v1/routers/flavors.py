@@ -13,7 +13,7 @@ flavors_router = APIRouter(
     route_class=DishkaRoute
 )
 
-@flavors_router.get("/", response_model=list[FlavorOut])
+@flavors_router.get("", response_model=list[FlavorOut])
 async def get_available(
     service: FromDishka[BaseFlavorService],
     uow: FromDishka[BaseUnitOfWork],

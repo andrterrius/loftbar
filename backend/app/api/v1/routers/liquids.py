@@ -13,7 +13,7 @@ liquids_router = APIRouter(
     route_class=DishkaRoute
 )
 
-@liquids_router.get("/", response_model=list[LiquidOut])
+@liquids_router.get("", response_model=list[LiquidOut])
 async def get_available(
     service: FromDishka[BaseLiquidService],
     uow: FromDishka[BaseUnitOfWork],
