@@ -8,7 +8,7 @@ import {
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { LIQUIDS, SETTINGS } from "../moks/moks";
-import { apiRequest, getBowls, getFlavours, getBasePrice } from "@/utils/api";
+import { apiRequest, getBowls, getFlavours, getBasePrice, getLiquids } from "@/utils/api";
 
 // Скелетон-заглушка для карточки вкуса
 const FlavorCardSkeleton = () => (
@@ -40,6 +40,7 @@ const MainBuilderPage = () => {
     const [bowlOptions, setBowlOptions] = useState([]);
     const [bowlsLoading, setBowlsLoading] = useState(true);
     const [basePrice, setBasePrice] = useState(0);
+    const [liquids, setLiquids] = useState([]);
 
 
     useEffect(() => {
@@ -51,7 +52,13 @@ const MainBuilderPage = () => {
             .catch(console.error)
             .finally(() => setBowlsLoading(false));
         getBasePrice()
-            .then(data => setBasePrice(data.price))
+            .then(data => setBasePrice(data.base_price))
+            .catch(console.error);
+        getLiquids()
+            .then(data => {
+                setLiquids(data);
+                setSelectedLiquid(data[0]?.id || null);
+            })
             .catch(console.error);
     }, [])
 
@@ -261,14 +268,14 @@ console.log();
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                             <h3 className="text-lg font-semibold text-white mb-4">Стандартное наполнение</h3>
-                            {LIQUIDS.length === 0 ? (
+                            {liquids.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
                                     <span className="text-3xl">💧</span>
                                     <p className="text-sm text-center">Жидкости не добавлены</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 gap-2">
-                                {LIQUIDS.map((liquid) => (
+                                {liquids.map((liquid) => (
                                     <button
                                     key={liquid.id}
                                     onClick={() => setSelectedLiquid(liquid.id)}
