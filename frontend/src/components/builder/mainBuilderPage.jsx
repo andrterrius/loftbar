@@ -10,8 +10,27 @@ import Nav from "../nav";
 import { LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
 import { apiRequest, getBowls, getFlavours } from "@/utils/api";
 
+// Скелетон-заглушка для карточки вкуса
+const FlavorCardSkeleton = () => (
+    <div className="relative p-4 rounded-xl bg-white/5 border border-white/10 animate-pulse min-h-[120px]">
+        <div className="flex justify-between items-start mb-4">
+            <div className="space-y-2">
+                <div className="h-4 w-28 bg-white/10 rounded" />
+                <div className="h-3 w-16 bg-white/5 rounded" />
+            </div>
+        </div>
+        <div className="h-2 w-full bg-white/10 rounded-lg mt-6" />
+    </div>
+);
+
+// Скелетон-заглушка для кнопки чаши
+const BowlSkeleton = () => (
+    <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
+);
+
 const MainBuilderPage = () => {
     const [flavors, setFlavors] = useState([]);
+    const [flavorsLoading, setFlavorsLoading] = useState(true);
     const [selectedFlavors, setSelectedFlavors] = useState([]);
     const [selectedLiquid, setSelectedLiquid] = useState(null);
     const [selectedBowl, setSelectedBowl] = useState('Classic');
@@ -20,11 +39,17 @@ const MainBuilderPage = () => {
     const [mixName, setMixName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bowlOptions, setBowlOptions] = useState([]);
+    const [bowlsLoading, setBowlsLoading] = useState(true);
 
 
     useEffect(() => {
-        getFlavours().then(data => setFlavors(data));
-        getBowls().then(data => setBowlOptions(data)).catch(console.error);
+        getFlavours()
+            .then(data => setFlavors(data))
+            .finally(() => setFlavorsLoading(false));
+        getBowls()
+            .then(data => setBowlOptions(data))
+            .catch(console.error)
+            .finally(() => setBowlsLoading(false));
     }, [])
 
     // Функции
@@ -95,7 +120,6 @@ const MainBuilderPage = () => {
         if (selectedFlavors.length === 0) return alert('Add flavors first');
         if (!selectedLiquid) return alert('Select a base liquid');
 
-        // Имитация сохранения
         const savedMix = {
             name: mixName,
             ingredients: selectedFlavors,
@@ -168,21 +192,6 @@ const MainBuilderPage = () => {
                         <h1 className="text-3xl font-bold text-white mb-2">Конструктор Миксов</h1>
                         <p className="text-neutral-400 text-sm md:text-base">Создай свою идеальную чашу</p>
                     </div>
-                    {/* <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                        <input 
-                            type="text" 
-                            placeholder="Название микса..." 
-                            value={mixName}
-                            onChange={(e) => setMixName(e.target.value)}
-                            className="flex-1 sm:w-64 bg-neutral-900 border border-white/10 rounded-lg px-4 py-3 sm:py-2 text-white focus:outline-none focus:border-cyan-500"
-                        />
-                        <button 
-                            onClick={handleSave}
-                            className="flex items-center justify-center gap-2 px-6 py-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-colors active:scale-95"
-                        >
-                            <Save size={18} /> Сохранить
-                        </button>
-                    </div> */}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
@@ -206,6 +215,7 @@ const MainBuilderPage = () => {
                             })}
                             </AnimatePresence>
                             
+                            {/* Заглушка: пустое состояние — всегда занимает место */}
                             {selectedFlavors.length === 0 && (
                             <div className="p-8 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-neutral-500 h-64">
                                 <Plus size={48} className="mb-4 opacity-50" />
@@ -226,49 +236,73 @@ const MainBuilderPage = () => {
 
                     <div className="space-y-6">
                         
+                        {/* Секция чаш — скелетон пока грузится, сообщение если пусто */}
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                             <h3 className="text-lg font-semibold text-white mb-4">Вид Чаши</h3>
-                            <div className="grid grid-cols-4 gap-2">
-                            {bowlOptions.map((bowl) => (
-                                <button
-                                key={bowl.type}
-                                onClick={() => setSelectedBowl(bowl.type)}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all aspect-square ${
-                                    selectedBowl === bowl.type
-                                    ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]'
-                                    : 'bg-white/5 border-transparent hover:bg-white/10 text-neutral-400'
-                                }`}
-                                title={bowl.type}
-                                >
-                                <span className="text-2xl mb-1">{bowl.icon}</span>
-                                <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.type}</span>
-                                </button>
-                            ))}
-                            </div>
-                            {bowlOptions.find(b => b.type === selectedBowl)?.isFruit && (
-                                <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
-                                    +${bowlOptions.find(b => b.type === selectedBowl)?.price} Fruit Bowl
+
+                            {bowlsLoading ? (
+                                <div className="grid grid-cols-4 gap-2">
+                                    {Array.from({ length: 8 }).map((_, i) => (
+                                        <BowlSkeleton key={i} />
+                                    ))}
                                 </div>
+                            ) : bowlOptions.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-8 text-neutral-600 gap-2">
+                                    <span className="text-3xl">🏺</span>
+                                    <p className="text-sm text-center">Чаши не добавлены администратором</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-4 gap-2">
+                                    {bowlOptions.map((bowl) => (
+                                        <button
+                                        key={bowl.type ?? bowl.id}
+                                        onClick={() => setSelectedBowl(bowl.type)}
+                                        className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all aspect-square ${
+                                            selectedBowl === bowl.type
+                                            ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]'
+                                            : 'bg-white/5 border-transparent hover:bg-white/10 text-neutral-400'
+                                        }`}
+                                        title={bowl.type}
+                                        >
+                                        <span className="text-2xl mb-1">{bowl.icon}</span>
+                                        <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.type}</span>
+                                        </button>
+                                    ))}
+                                    </div>
+                                    {bowlOptions.find(b => b.type === selectedBowl)?.isFruit && (
+                                        <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
+                                            +{bowlOptions.find(b => b.type === selectedBowl)?.price}₽ Fruit Bowl
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                             <h3 className="text-lg font-semibold text-white mb-4">Стандартное наполнение</h3>
-                            <div className="grid grid-cols-2 gap-2">
-                            {LIQUIDS.map((liquid) => (
-                                <button
-                                key={liquid.id}
-                                onClick={() => setSelectedLiquid(liquid.id)}
-                                className={`flex flex-col items-start p-3 rounded-lg border transition-all ${
-                                    selectedLiquid === liquid.id 
-                                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' 
-                                    : 'bg-transparent border-white/5 hover:bg-white/5 text-neutral-400'
-                                }`}
-                                >
-                                <span className="text-sm font-medium">{liquid.name}</span>
-                                </button>
-                            ))}
-                            </div>
+                            {LIQUIDS.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
+                                    <span className="text-3xl">💧</span>
+                                    <p className="text-sm text-center">Жидкости не добавлены</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-2">
+                                {LIQUIDS.map((liquid) => (
+                                    <button
+                                    key={liquid.id}
+                                    onClick={() => setSelectedLiquid(liquid.id)}
+                                    className={`flex flex-col items-start p-3 rounded-lg border transition-all ${
+                                        selectedLiquid === liquid.id 
+                                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' 
+                                        : 'bg-transparent border-white/5 hover:bg-white/5 text-neutral-400'
+                                    }`}
+                                    >
+                                    <span className="text-sm font-medium">{liquid.name}</span>
+                                    </button>
+                                ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-6 shadow-xl">
@@ -296,6 +330,7 @@ const MainBuilderPage = () => {
                     {isSearchOpen && (
                     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
                         <motion.div
+                        key="search-modal"
                         initial={{ opacity: 0, y: '100%' }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: '100%' }}
@@ -323,8 +358,20 @@ const MainBuilderPage = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-2">
-                            {filteredFlavors.length === 0 ? (
-                            <div className="p-8 text-center text-neutral-500">Вкусы не найдены.</div>
+                            {flavorsLoading ? (
+                                <div className="space-y-1 p-2">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg animate-pulse">
+                                            <div className="w-10 h-10 rounded-full bg-white/10 shrink-0" />
+                                            <div className="space-y-2 flex-1">
+                                                <div className="h-3 w-24 bg-white/10 rounded" />
+                                                <div className="h-2 w-32 bg-white/5 rounded" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : filteredFlavors.length === 0 ? (
+                                <div className="p-8 text-center text-neutral-500">Вкусы не найдены.</div>
                             ) : (
                             <div className="grid grid-cols-1 gap-1">
                                 {filteredFlavors.map(flavor => (

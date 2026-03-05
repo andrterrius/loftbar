@@ -1,4 +1,5 @@
 'use client'
+import { apiRequest } from "@/utils/api";
 import { useEffect } from "react";
 
 const InitTelegramAuth = () => {
@@ -16,18 +17,12 @@ const InitTelegramAuth = () => {
         }
 
         try {
-            const res = await fetch('api/auth/tg', {
+            const res = await apiRequest('/users/login', {
                 method: "POST",
-                headers: 
-                    {
-                        "Content-Type": "application/json"
-                    },
-                body: JSON.stringify({
-                    initData: tgDataInit
-                })
+                headers: { "X-Init-Data": tgDataInit }
             })
             const data = await res.json();
-            localStorage.setItem('jwt', data.token);
+            localStorage.setItem('jwt', data.access_token);
         } catch (err) {
             console.log("Ошибка", err)
         }
