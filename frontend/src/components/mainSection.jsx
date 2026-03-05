@@ -19,10 +19,8 @@ const MainSection = () => {
         transition={{ duration: 0.6 }}
         className="mt-20 text-4xl font-bold text-white leading-tight"
       >
-        <span className="block">Craft Your Perfect</span>
-        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400">
-          Shisha Mix
-        </span>
+        <span className="block">Создай свой идеальный</span>
+        <span className="block  text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400">микс вкусов</span>
       </motion.h1>
 
       <motion.p
@@ -31,7 +29,7 @@ const MainSection = () => {
         transition={{ delay: 0.2 }}
         className="mt-4 max-w-sm text-zinc-400 text-sm leading-relaxed"
       >
-        Discover thousands of flavor combinations and explore community favorites.
+        Открой для себя тысячи комбинаций вкусов и исследуй любимые сообщества.
       </motion.p>
 
       <div className="mt-10 flex flex-col gap-4 w-full max-w-[300px]">
