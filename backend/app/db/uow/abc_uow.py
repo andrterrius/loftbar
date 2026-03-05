@@ -7,7 +7,8 @@ from app.db.repositories import (
     BowlsRepository,
     LiquidsRepository,
     TablesRepository,
-    OrdersRepository
+    OrdersRepository,
+    SettingsRepository
 )
 
 
@@ -19,6 +20,7 @@ class BaseUnitOfWork(Protocol):
     liquids: LiquidsRepository
     tables: TablesRepository
     orders: OrdersRepository
+    settings: SettingsRepository
 
     async def __aenter__(self):
         ...

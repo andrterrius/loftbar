@@ -114,3 +114,7 @@ class PresetEditData(BaseModel):
     liquids: List[LiquidOut]
     flavors: List[FlavorOut]
     bowls: List[BowlOut]
+
+
+class PresetBasePrice(BaseModel):
+    base_price: float

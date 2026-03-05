@@ -11,14 +11,16 @@ from app.services import (
     PresetService,
     BowlService,
     LiquidService,
-    OrderService
+    OrderService,
+    SettingsService
 )
 from app.services.abc import (
     BaseFlavorService,
     BasePresetService,
     BaseBowlService,
     BaseLiquidService,
-    BaseOrderService
+    BaseOrderService,
+    BaseSettingsService
 )
 from app.db.session_maker import new_session_maker
 
@@ -66,6 +68,10 @@ class MainProvider(Provider):
     @provide(scope=Scope.REQUEST, provides=BaseOrderService)
     def get_order_service(self) -> OrderService:
         return OrderService()
+
+    @provide(scope=Scope.REQUEST, provides=BaseSettingsService)
+    def get_settings_service(self) -> SettingsService:
+        return SettingsService()
 
     @provide(scope=Scope.REQUEST, provides=UUID)
     async def get_current_user(self, uow: BaseUnitOfWork) -> UUID:

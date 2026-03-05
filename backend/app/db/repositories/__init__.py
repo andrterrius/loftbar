@@ -5,3 +5,4 @@ from .bowls import BowlsRepository
 from .liquids import LiquidsRepository
 from .tables import TablesRepository
 from .orders import OrdersRepository
+from .settings import SettingsRepository
