@@ -43,6 +43,14 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
         return apiRequest(endpoint, options, attempt + 1);
     }
 
+    if (response.status === 422) {
+      const errorData = await response.json();
+      const err = new Error('Validation error');
+      err.status = 422;
+      err.detail = errorData.detail;
+      throw err;
+    }
+
     if (!response.ok) throw new Error('Ошибка запроса');
     return response.json();
 }
@@ -54,3 +62,5 @@ export const getAvailablePresets = () => apiRequest('/presets/available', { meth
 export const getLiquids = () => apiRequest('/liquids/', { method: 'GET' });
 export const getPresets = () => apiRequest('/presets/', { method: 'GET' });
 export const getBowls = () => apiRequest('/bowls/', { method: 'GET' });
+export const createOrder = (data) => apiRequest('/orders/', { method: 'POST', body: JSON.stringify(data) });
+export const getBasePrice = () => apiRequest('/presets/price', { method: 'GET' });

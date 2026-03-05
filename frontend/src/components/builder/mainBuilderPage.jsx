@@ -7,8 +7,8 @@ import {
     } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
-import { LIQUIDS, SETTINGS, BOWL_OPTIONS } from "../moks/moks";
-import { apiRequest, getBowls, getFlavours } from "@/utils/api";
+import { LIQUIDS, SETTINGS } from "../moks/moks";
+import { apiRequest, getBowls, getFlavours, getBasePrice } from "@/utils/api";
 
 // Скелетон-заглушка для карточки вкуса
 const FlavorCardSkeleton = () => (
@@ -36,10 +36,10 @@ const MainBuilderPage = () => {
     const [selectedBowl, setSelectedBowl] = useState('Classic');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [mixName, setMixName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bowlOptions, setBowlOptions] = useState([]);
     const [bowlsLoading, setBowlsLoading] = useState(true);
+    const [basePrice, setBasePrice] = useState(0);
 
 
     useEffect(() => {
@@ -50,6 +50,9 @@ const MainBuilderPage = () => {
             .then(data => setBowlOptions(data))
             .catch(console.error)
             .finally(() => setBowlsLoading(false));
+        getBasePrice()
+            .then(data => setBasePrice(data.price))
+            .catch(console.error);
     }, [])
 
     // Функции
@@ -112,62 +115,39 @@ const MainBuilderPage = () => {
   
     const calculatePrice = () => {
         const bowl = bowlOptions.find(b => b.type === selectedBowl);
-        return SETTINGS.basePrice + (bowl?.price ?? 0)
+        return basePrice + (bowl?.price ?? 0);
     };
   
-    const handleSave = () => {
-        if (!mixName) return alert('Please name your mix');
-        if (selectedFlavors.length === 0) return alert('Add flavors first');
-        if (!selectedLiquid) return alert('Select a base liquid');
 
-        const savedMix = {
-            name: mixName,
-            ingredients: selectedFlavors,
-            liquidId: selectedLiquid,
-            bowlType: selectedBowl
-        };
-        console.log('Mix saved to DB:', savedMix);
-        
-        alert('Mix saved successfully!');
-        setMixName('');
-        setSelectedFlavors([]);
-        setSelectedLiquid(null);
-        setSelectedBowl('Classic');
-    };
+console.log();
 
     const handleOrder = async () => {
         if (selectedFlavors.length === 0) return alert('Mix is empty!');
         if (!selectedLiquid) return alert('Select base liquid!');
         setIsSubmitting(true);
-        
         const orderData = {
-            name: mixName || "Unnamed Mix",
-            ingredients: selectedFlavors.map(f => ({
-                flavorId: f.flavorId,
-                percentage: f.percentage,
-            })),
-            liquidId: selectedLiquid,
-            bowlType: selectedBowl,
-            totalPrice: calculatePrice(),
-            createdAt: new Date().toISOString()
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param,
+            preset: {
+                liquid_id: selectedLiquid,
+                bowl_id: bowlOptions.find(b => b.type === selectedBowl)?.id,
+                flavors: selectedFlavors.map(f => ({flavor_id: f.flavorId, percent: f.percentage}))
+            }
         };
 
         try {
-            const response = await apiRequest('api/orders', {
+            const res = await apiRequest('/orders', {
                 method: "POST", 
                 body: JSON.stringify(orderData),
             });
-            if (!response.ok) {
+            if (!res.ok) {
                 throw new Error("Ошибка при создании заказа")
             }
-            const result = response.json()
+            const result = await res.json();
 
             alert(`Заказ #${result.id || ''} успешно оформлен!`);
 
             setSelectedFlavors([]);
             setSelectedLiquid(null);
-            setMixName('');
-
         } catch (error) {
             console.error("Order error:", error);
             alert('Не удалось отправить заказ. Попробуйте позже.');

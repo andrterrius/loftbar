@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Image as ImageIcon, Heart, Filter } from "lucide-react";
 import Nav from "../nav";
 import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS } from "../moks/moks";
-import { getPresets, getFlavours } from "@/utils/api";
+import { getPresets, getFlavours, apiRequest } from "@/utils/api";
 
 // Скелетон карточки пресета
 const PresetCardSkeleton = () => (
@@ -58,7 +58,24 @@ const MainPresetsPage = () => {
     });
 
     const handleOrder = (preset) => {
-        alert(`Order placed for ${preset.name}! Total: ${SETTINGS.basePrice}`);
+        const orderData = {
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param,
+            preset_id: preset.id
+        }
+        apiRequest('/orders', {
+            method: "POST", 
+            body: JSON.stringify(orderData),
+        })
+        .then(res => {
+            alert(`Заказ #${res.id || ''} успешно оформлен!`);
+        })
+        .catch(error => {
+            if (error.status === 422) {
+            alert(error.detail?.[0]?.msg || 'Ошибка валидации');
+        } else {
+            alert('Не удалось отправить заказ. Попробуйте позже.');
+        }
+});
     };
 
     return (
