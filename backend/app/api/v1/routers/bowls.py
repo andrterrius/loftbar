@@ -13,7 +13,7 @@ bowls_router = APIRouter(
     route_class=DishkaRoute
 )
 
-@bowls_router.get("/", response_model=list[BowlOut])
+@bowls_router.get("", response_model=list[BowlOut])
 async def get_available(
     service: FromDishka[BaseBowlService],
     uow: FromDishka[BaseUnitOfWork],

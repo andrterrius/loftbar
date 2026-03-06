@@ -16,14 +16,14 @@ orders_router = APIRouter(
 
 
 @orders_router.post(
-    "/",
+    "",
     response_model=OrderOut,
     responses={
         400: {"model": ErrorResponse, "description": "Ошибка валидации. error_type=service_error"},
         401: {"model": ErrorResponse, "description": "Ошибка авторизации. error_type=auth_error"},
     }
 )
-async def test(
+async def make_order(
         order: OrderCreate,
         order_service: FromDishka[BaseOrderService],
         preset_service: FromDishka[BasePresetService],
