@@ -125,15 +125,12 @@ const MainBuilderPage = () => {
         return basePrice + (bowl?.price ?? 0);
     };
   
-
-console.log();
-
     const handleOrder = async () => {
         if (selectedFlavors.length === 0) return alert('Mix is empty!');
         if (!selectedLiquid) return alert('Select base liquid!');
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param,
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param, 
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: bowlOptions.find(b => b.type === selectedBowl)?.id,
