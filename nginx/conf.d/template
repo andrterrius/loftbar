@@ -46,7 +46,7 @@ server {
         limit_req_log_level warn;
         limit_req_status 429;
 
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend:$backend_port/admin/login;
     }
 
     location /api {
@@ -54,7 +54,7 @@ server {
     }
 
     location /admin {
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend:$backend_port/admin;
     }
 
     location = /health {
