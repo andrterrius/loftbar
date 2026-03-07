@@ -8,7 +8,7 @@ import {
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { LIQUIDS, SETTINGS } from "../moks/moks";
-import { apiRequest, getBowls, getFlavours, getBasePrice, getLiquids } from "@/utils/api";
+import { apiRequest, getBowls, getFlavours, getBasePrice, getLiquids, createOrder } from "@/utils/api";
 
 // Скелетон-заглушка для карточки вкуса
 const FlavorCardSkeleton = () => (
@@ -130,7 +130,7 @@ const MainBuilderPage = () => {
         if (!selectedLiquid) return alert('Select base liquid!');
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param, 
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: bowlOptions.find(b => b.type === selectedBowl)?.id,
@@ -139,17 +139,8 @@ const MainBuilderPage = () => {
         };
 
         try {
-            const res = await apiRequest('/orders', {
-                method: "POST", 
-                body: JSON.stringify(orderData),
-            });
-            if (!res.ok) {
-                throw new Error("Ошибка при создании заказа")
-            }
-            const result = await res.json();
-
+            const result = await createOrder(orderData);
             alert(`Заказ #${result.id || ''} успешно оформлен!`);
-
             setSelectedFlavors([]);
             setSelectedLiquid(null);
         } catch (error) {

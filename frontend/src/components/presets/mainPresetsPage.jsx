@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Image as ImageIcon, Heart, Filter } from "lucide-react";
 import Nav from "../nav";
 import { PRESET_TABS, BOWL_OPTIONS, FLAVORS, SETTINGS } from "../moks/moks";
-import { getPresets, getFlavours, apiRequest } from "@/utils/api";
+import { getPresets, getFlavours, createOrder } from "@/utils/api";
 
 // Скелетон карточки пресета
 const PresetCardSkeleton = () => (
@@ -57,26 +57,19 @@ const MainPresetsPage = () => {
       return matchesSearch && matchesTab;
     });
 
-    const handleOrder = (preset) => {
+    const handleOrder = async (preset) => {
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param,
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
             preset_id: preset.id
+        };
+        try {
+            const result = await createOrder(orderData);
+            alert(`Заказ #${result.id || ''} успешно оформлен!`);
+        } catch (error) {
+            alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
+            console.error(error, response.detail[0].msg);
         }
-        apiRequest('/orders', {
-            method: "POST", 
-            body: JSON.stringify(orderData),
-        })
-        .then(res => {
-            alert(`Заказ #${res.id || ''} успешно оформлен!`);
-        })
-        .catch(error => {
-            if (error.status === 422) {
-            alert(error.detail?.[0]?.msg || 'Ошибка валидации');
-        } else {
-            alert('Не удалось отправить заказ. Попробуйте позже.');
-        }
-});
-    };
+    }
 
     return (
         <section className="min-h-screen bg-neutral-950 flex flex-col items-center w-full overflow-hidden">
