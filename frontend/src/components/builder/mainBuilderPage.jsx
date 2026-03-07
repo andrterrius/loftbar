@@ -16,7 +16,7 @@ const MainBuilderPage = () => {
     const [flavorsLoading, setFlavorsLoading] = useState(true);
     const [selectedFlavors, setSelectedFlavors] = useState([]);
     const [selectedLiquid, setSelectedLiquid] = useState(null);
-    const [selectedBowl, setSelectedBowl] = useState('Classic');
+    const [selectedBowl, setSelectedBowl] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +30,7 @@ const MainBuilderPage = () => {
             .then(data => setFlavors(data))
             .finally(() => setFlavorsLoading(false));
         getBowls()
-            .then(data => setBowlOptions(data))
+            .then(data => { setBowlOptions(data); setSelectedBowl(data[0]?.id || null); })
             .catch(console.error)
             .finally(() => setBowlsLoading(false));
         getBasePrice()
@@ -83,7 +83,7 @@ const MainBuilderPage = () => {
     };
 
     const calculatePrice = () => {
-        const bowl = bowlOptions.find(b => b.type === selectedBowl);
+        const bowl = bowlOptions.find(b => b.id === selectedBowl);
         return basePrice + (bowl?.price ?? 0);
     };
 
@@ -95,7 +95,7 @@ const MainBuilderPage = () => {
             table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
             preset: {
                 liquid_id: selectedLiquid,
-                bowl_id: bowlOptions.find(b => b.type === selectedBowl)?.id,
+                bowl_id: selectedBowl,
                 flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage }))
             }
         };
@@ -116,6 +116,8 @@ const MainBuilderPage = () => {
         f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         f.brand.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
 
     return (
         <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
@@ -185,23 +187,23 @@ const MainBuilderPage = () => {
                                     <div className="grid grid-cols-4 gap-2">
                                         {bowlOptions.map((bowl) => (
                                             <button
-                                                key={bowl.type ?? bowl.id}
-                                                onClick={() => setSelectedBowl(bowl.type)}
+                                                key={bowl.id}
+                                                onClick={() => setSelectedBowl(bowl.id)}
                                                 className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all aspect-square ${
-                                                    selectedBowl === bowl.type
+                                                    selectedBowl === bowl.id
                                                         ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]'
                                                         : 'bg-white/5 border-transparent hover:bg-white/10 text-neutral-400'
                                                 }`}
-                                                title={bowl.type}
+                                                title={bowl.name}
                                             >
                                                 <span className="text-2xl mb-1">{bowl.icon}</span>
-                                                <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.type}</span>
+                                                <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.name}</span>
                                             </button>
                                         ))}
                                     </div>
-                                    {bowlOptions.find(b => b.type === selectedBowl)?.isFruit && (
+                                    {selectedBowlData?.category === 'fruit' && (
                                         <div className="mt-4 text-xs text-fuchsia-300 text-center font-medium bg-fuchsia-500/10 py-2 rounded-lg">
-                                            +{bowlOptions.find(b => b.type === selectedBowl)?.price}₽ Fruit Bowl
+                                            +{selectedBowlData.price}₽ Fruit Bowl
                                         </div>
                                     )}
                                 </>
@@ -253,10 +255,10 @@ const MainBuilderPage = () => {
                     </div>
                 </div>
 
-                {/* Модалка поиска — оставляем AnimatePresence для плавного slide-up */}
                 <AnimatePresence>
                     {isSearchOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
+                        <div
+                            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
                             onClick={(e) => e.target === e.currentTarget && setIsSearchOpen(false)}
                         >
                             <div className="w-full h-[85vh] sm:h-auto sm:max-h-[80vh] sm:max-w-lg bg-neutral-900 border-t sm:border border-white/10 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-[slideUp_0.3s_ease]">
