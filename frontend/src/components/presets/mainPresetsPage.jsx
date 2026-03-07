@@ -143,22 +143,22 @@ const MainPresetsPage = () => {
                                                         {preset.bowl.icon} {preset.bowl.name}
                                                     </span>
                                                 )}
-                                                {preset.liquid && (
-                                                    <span
-                                                        className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border"
-                                                        style={{
-                                                            backgroundColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}20`
-                                                                : 'rgba(255,255,255,0.05)',
-                                                            borderColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}50`
-                                                                : 'rgba(255,255,255,0.1)',
-                                                            color: preset.liquid.hex_color || '#a3a3a3'
-                                                        }}
-                                                    >
-                                                        💧 {preset.liquid.name}
-                                                    </span>
-                                                )}
+                                               {preset.liquid && (
+                                                        <span
+                                                            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border text-white"
+                                                            style={{
+                                                                backgroundColor: preset.liquid.hex_color
+                                                                    ? `${preset.liquid.hex_color}30`
+                                                                    : 'rgba(255,255,255,0.05)',
+                                                                borderColor: preset.liquid.hex_color
+                                                                    ? `${preset.liquid.hex_color}70`
+                                                                    : 'rgba(255,255,255,0.1)',
+                                                            }}
+                                                        >
+                                                            💧 {preset.liquid.name}
+                                                        </span>
+                                                    )
+                                                }
                                             </div>
 
                                             <div className="pt-4 border-t border-white/5 flex justify-between items-center mt-auto">
