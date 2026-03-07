@@ -3,7 +3,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
-COPY .. /app/
+COPY . /app/
 
 RUN uv sync
 ENV PATH="/app/.venv/bin:${PATH}"
