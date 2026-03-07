@@ -4,3 +4,4 @@ from .abc_bowl import BaseBowlService
 from .abc_liquid import BaseLiquidService
 from .abc_order import BaseOrderService
 from .abc_settings import BaseSettingsService
+from .abc_telegram_auth import BaseTgAuthService
