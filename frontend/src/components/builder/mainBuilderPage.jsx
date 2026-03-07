@@ -18,6 +18,7 @@ const MainBuilderPage = () => {
     const [selectedLiquid, setSelectedLiquid] = useState(null);
     const [selectedBowl, setSelectedBowl] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [bowlOptions, setBowlOptions] = useState([]);
@@ -81,14 +82,19 @@ const MainBuilderPage = () => {
         const currentSum = remaining.reduce((acc, f) => acc + f.percentage, 0);
         setSelectedFlavors(remaining.map(f => ({ ...f, percentage: (f.percentage / currentSum) * 100 })));
     };
+
     const calculatePrice = () => {
         const bowl = bowlOptions.find(b => b.id === selectedBowl);
-        return basePrice + (bowl?.price ?? 0) + liquids.find(l => l.id === selectedLiquid)?.price || 0;
+        return basePrice + (bowl?.price ?? 0) + (liquids.find(l => l.id === selectedLiquid)?.price ?? 0);
     };
 
     const handleOrder = async () => {
         if (selectedFlavors.length === 0) return alert('Mix is empty!');
         if (!selectedLiquid) return alert('Select base liquid!');
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmedOrder = async () => {
         setIsSubmitting(true);
         const orderData = {
             table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
@@ -103,6 +109,7 @@ const MainBuilderPage = () => {
             alert(`Заказ #${result.id || ''} успешно оформлен!`);
             setSelectedFlavors([]);
             setSelectedLiquid(null);
+            setIsConfirmOpen(false);
         } catch (error) {
             console.error("Order error:", error);
             alert('Не удалось отправить заказ. Попробуйте позже.');
@@ -117,6 +124,7 @@ const MainBuilderPage = () => {
     );
 
     const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
+    const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
 
     return (
         <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
@@ -254,6 +262,7 @@ const MainBuilderPage = () => {
                     </div>
                 </div>
 
+                {/* Модалка поиска */}
                 <AnimatePresence>
                     {isSearchOpen && (
                         <div
@@ -327,6 +336,72 @@ const MainBuilderPage = () => {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Модалка подтверждения заказа */}
+            {isConfirmOpen && (
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                    onClick={(e) => e.target === e.currentTarget && setIsConfirmOpen(false)}
+                >
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+                        <h3 className="text-lg font-bold text-white mb-1">Подтвердить заказ</h3>
+                        <p className="text-neutral-400 text-sm mb-4">Ваш микс:</p>
+
+                        <div className="space-y-1 mb-4 bg-white/5 rounded-xl p-3">
+                            {selectedFlavors.map((sf) => {
+                                const flavor = flavors.find(f => f.id === sf.flavorId);
+                                return (
+                                    <div key={sf.flavorId} className="flex justify-between text-xs text-neutral-300">
+                                        <span className="flex items-center gap-2">
+                                            <span
+                                                className="w-2 h-2 rounded-full inline-block"
+                                                style={{ backgroundColor: flavor?.hex_color || '#ccc' }}
+                                            />
+                                            {flavor?.name || 'Неизвестный вкус'}
+                                        </span>
+                                        <span className="text-neutral-500">{Math.round(sf.percentage)}%</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex gap-2 flex-wrap mb-4">
+                            {selectedBowlData && (
+                                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-white/5 border border-white/10 text-neutral-400">
+                                    {selectedBowlData.icon} {selectedBowlData.name}
+                                </span>
+                            )}
+                            {selectedLiquidData && (
+                                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-white/5 border border-white/10 text-neutral-400">
+                                    💧 {selectedLiquidData.name}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between mb-6">
+                            <span className="text-neutral-500 text-sm">Итого</span>
+                            <span className="text-white font-bold text-xl">{calculatePrice()}₽</span>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsConfirmOpen(false)}
+                                disabled={isSubmitting}
+                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-sm font-medium disabled:opacity-50"
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                onClick={handleConfirmedOrder}
+                                disabled={isSubmitting}
+                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                                {isSubmitting ? 'Отправка...' : 'Заказать'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };
