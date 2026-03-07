@@ -1,3 +1,11 @@
+upstream backend {
+    server backend:${BACKEND_PORT};
+}
+
+upstream frontend {
+    server frontend:${FRONTEND_PORT};
+}
+
 server {
     listen 80 default_server;
     listen 443 ssl default_server;
@@ -39,33 +47,82 @@ server {
 
     include /etc/nginx/proxy-common.conf;
 
-    set $backend_port ${BACKEND_PORT};
-
     location = /admin/login {
         limit_req zone=admin_login burst=10 nodelay;
         limit_req_log_level warn;
         limit_req_status 429;
 
-        proxy_pass http://backend:$backend_port/admin/login;
+        proxy_pass http://backend/admin/login;
     }
 
     location /api {
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend;
     }
 
     location /admin {
-        proxy_pass http://backend:$backend_port/admin;
+        proxy_pass http://backend/admin;
     }
 
     location = /health {
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend;
     }
 
     location = /docs {
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend;
     }
 
     location = /openapi.json {
-        proxy_pass http://backend:$backend_port;
+        proxy_pass http://backend;
+    }
+
+    location /_next/static {
+        include /etc/nginx/proxy-common.conf;
+        proxy_pass http://frontend/_next/static;
+
+        add_header Cache-Control "public, immutable, max-age=31536000";
+        expires 1y;
+
+        access_log off;
+    }
+
+    location /static {
+        include /etc/nginx/proxy-common.conf;
+        proxy_pass http://frontend/static;
+
+        add_header Cache-Control "public, immutable, max-age=31536000";
+        expires 1y;
+        access_log off;
+    }
+
+    location = /favicon.ico {
+        include /etc/nginx/proxy-common.conf;
+        proxy_pass http://frontend/favicon.ico;
+
+        add_header Cache-Control "public, immutable, max-age=86400";
+        expires 1d;
+        access_log off;
+    }
+
+    location = /robots.txt {
+        include /etc/nginx/proxy-common.conf;
+        proxy_pass http://frontend/robots.txt;
+
+        add_header Cache-Control "public, max-age=3600";
+        expires 1h;
+        access_log off;
+    }
+
+    location / {
+        include /etc/nginx/proxy-common.conf;
+        proxy_pass http://frontend;
+
+        proxy_set_header X-Original-URI $request_uri;
+        proxy_set_header X-Original-Method $request_method;
+
+        proxy_set_header X-Forwarded-Host $server_name;
+        proxy_set_header X-Forwarded-Port $server_port;
+
+        proxy_cache off;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
     }
 }

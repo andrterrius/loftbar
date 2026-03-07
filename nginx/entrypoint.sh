@@ -8,6 +8,6 @@ else
     export SERVER_NAMES="localhost ${APP_DOMAIN}"
 fi
 
-envsubst '${BACKEND_PORT} ${APP_DOMAIN} ${SERVER_NAMES}' < /etc/nginx/conf.d/template > /etc/nginx/conf.d/default.conf
+envsubst '${BACKEND_PORT} ${FRONTEND_PORT} ${APP_DOMAIN} ${SERVER_NAMES}' < /etc/nginx/conf.d/template > /etc/nginx/conf.d/default.conf
 
 nginx -g 'daemon off;'

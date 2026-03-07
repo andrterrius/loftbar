@@ -34,7 +34,7 @@ config = create_config()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=
-        [f"https://{config.app.domain}/", "http://localhost:3000"]
+        ["*"]
         if not config.app.production
         else [f"https://{config.app.domain}/"],
     allow_credentials=True,
