@@ -22,6 +22,7 @@ app = FastAPI(
           "Telegram Mini App for hookah bar orders"
      ),
      version="1.0.0",
+
 )
 
 @app.get("/health")
@@ -32,10 +33,11 @@ config = create_config()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://andrterrius.lol",
-        "http://localhost:3000",
-    ],
+    allow_origins=(
+        [f"https://{config.app.domain}", "http://localhost:3000"]
+        if not config.app.production
+        else [f"https://{config.app.domain}"]
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,6 +66,7 @@ app.add_middleware(
         same_site="lax",
         https_only=True,
     )
+
 
 include_admin_router(app, admin_for_router)
 include_routers(app)

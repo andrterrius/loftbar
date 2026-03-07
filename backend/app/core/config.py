@@ -11,6 +11,9 @@ class BaseSettings(_BaseSettings):
         env_file_encoding="utf-8",
     )
 
+class AppConfig(BaseSettings, env_prefix="APP_"):
+    domain: str
+    production: bool
 
 class CommonConfig(BaseSettings, env_prefix="COMMON_"):
     bot_token: SecretStr
@@ -59,6 +62,7 @@ class Config(BaseModel):
     postgres: PostgresConfig
     admin: AdminConfig
     security: SecurityConfig
+    app: AppConfig
 
 
 def create_config() -> Config:
@@ -66,5 +70,6 @@ def create_config() -> Config:
                   redis=RedisConfig(),
                   postgres=PostgresConfig(),
                   admin=AdminConfig(),
-                  security=SecurityConfig()
+                  security=SecurityConfig(),
+                  app=AppConfig()
                   )
