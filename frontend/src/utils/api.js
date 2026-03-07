@@ -1,6 +1,8 @@
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 async function login() {
     const tgData = window.Telegram?.WebApp?.initData || '';
-    const res = await fetch('https://andrterrius.lol/api/v1/users/login', {
+    const res = await fetch(`${BASE_URL}/users/login`, {
         method: 'POST',
         headers: { 'X-Init-Data': tgData },
     });
@@ -23,7 +25,7 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
         },
     };
 
-    const response = await fetch(`https://andrterrius.lol/api/v1${endpoint}`, config);
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
     // если 401 — запускаем retry
     if (response.status === 401) {
