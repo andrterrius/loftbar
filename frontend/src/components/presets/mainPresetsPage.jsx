@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter } from "lucide-react";
 import Nav from "../nav";
-import { getPresets, getFlavours, createOrder } from "@/utils/api";
+import { getPresets, createOrder } from "@/utils/api";
 
 const PresetCardSkeleton = () => (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col w-full animate-pulse">
@@ -34,6 +34,8 @@ const MainPresetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [availablePresets, setAvailablePresets] = useState([]);
     const [presetsLoading, setPresetsLoading] = useState(true);
+    const [confirmPreset, setConfirmPreset] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         getPresets()
@@ -48,6 +50,7 @@ const MainPresetsPage = () => {
     );
 
     const handleOrder = async (preset) => {
+        setIsSubmitting(true);
         const orderData = {
             table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
             preset_id: preset.id
@@ -55,9 +58,12 @@ const MainPresetsPage = () => {
         try {
             const result = await createOrder(orderData);
             alert(`Заказ #${result.id || ''} успешно оформлен!`);
+            setConfirmPreset(null);
         } catch (error) {
             alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
             console.error(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -122,43 +128,40 @@ const MainPresetsPage = () => {
                                                 </p>
                                             </div>
 
-                                            {/* Вкусы */}
                                             <div className="space-y-2 flex-1 min-h-[4rem]">
                                                 {(preset.flavors || []).length === 0 ? (
                                                     <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
                                                 ) : (
                                                     (preset.flavors || []).slice(0, 3).map((ing, i) => (
                                                         <div key={i} className="flex justify-between text-xs text-neutral-300">
-                                                            <span>{ing.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
+                                                            <span>{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
                                                             <span className="text-neutral-500">{ing.percent}%</span>
                                                         </div>
                                                     ))
                                                 )}
                                             </div>
 
-                                            {/* Чаша и жидкость */}
                                             <div className="flex gap-2 flex-wrap">
                                                 {preset.bowl && (
                                                     <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-white/5 border border-white/10 text-neutral-400">
                                                         {preset.bowl.icon} {preset.bowl.name}
                                                     </span>
                                                 )}
-                                               {preset.liquid && (
-                                                        <span
-                                                            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border text-white"
-                                                            style={{
-                                                                backgroundColor: preset.liquid.hex_color
-                                                                    ? `${preset.liquid.hex_color}30`
-                                                                    : 'rgba(255,255,255,0.05)',
-                                                                borderColor: preset.liquid.hex_color
-                                                                    ? `${preset.liquid.hex_color}70`
-                                                                    : 'rgba(255,255,255,0.1)',
-                                                            }}
-                                                        >
-                                                            💧 {preset.liquid.name}
-                                                        </span>
-                                                    )
-                                                }
+                                                {preset.liquid && (
+                                                    <span
+                                                        className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] border text-white"
+                                                        style={{
+                                                            backgroundColor: preset.liquid.hex_color
+                                                                ? `${preset.liquid.hex_color}30`
+                                                                : 'rgba(255,255,255,0.05)',
+                                                            borderColor: preset.liquid.hex_color
+                                                                ? `${preset.liquid.hex_color}70`
+                                                                : 'rgba(255,255,255,0.1)',
+                                                        }}
+                                                    >
+                                                        💧 {preset.liquid.name}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <div className="pt-4 border-t border-white/5 flex justify-between items-center mt-auto">
@@ -167,7 +170,7 @@ const MainPresetsPage = () => {
                                                     <span className="text-lg font-bold text-white">{preset.price ?? '—'}₽</span>
                                                 </div>
                                                 <button
-                                                    onClick={() => handleOrder(preset)}
+                                                    onClick={() => setConfirmPreset(preset)}
                                                     className="px-4 py-2 bg-white/10 hover:bg-fuchsia-600 hover:text-white text-neutral-300 rounded-lg text-sm font-medium transition-all"
                                                 >
                                                     Заказать
@@ -188,6 +191,52 @@ const MainPresetsPage = () => {
                     </>
                 )}
             </div>
+
+            {confirmPreset && (
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                    onClick={(e) => e.target === e.currentTarget && setConfirmPreset(null)}
+                >
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+                        <h3 className="text-lg font-bold text-white mb-1">Подтвердить заказ</h3>
+                        <p className="text-neutral-400 text-sm mb-1">Вы хотите заказать:</p>
+                        <p className="text-white font-semibold mb-4">{confirmPreset.name}</p>
+
+                        {(confirmPreset.flavors || []).length > 0 && (
+                            <div className="space-y-1 mb-4 bg-white/5 rounded-xl p-3">
+                                {confirmPreset.flavors.map((ing, i) => (
+                                    <div key={i} className="flex justify-between text-xs text-neutral-300">
+                                        <span>{ing.flavor?.name || 'Неизвестный вкус'}</span>
+                                        <span className="text-neutral-500">{ing.percent}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between mb-6">
+                            <span className="text-neutral-500 text-sm">Итого</span>
+                            <span className="text-white font-bold text-xl">{confirmPreset.price ?? '—'}₽</span>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setConfirmPreset(null)}
+                                disabled={isSubmitting}
+                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-sm font-medium disabled:opacity-50"
+                            >
+                                Отмена
+                            </button>
+                            <button
+                                onClick={() => handleOrder(confirmPreset)}
+                                disabled={isSubmitting}
+                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                                {isSubmitting ? 'Отправка...' : 'Заказать'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

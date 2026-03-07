@@ -81,7 +81,6 @@ const MainBuilderPage = () => {
         const currentSum = remaining.reduce((acc, f) => acc + f.percentage, 0);
         setSelectedFlavors(remaining.map(f => ({ ...f, percentage: (f.percentage / currentSum) * 100 })));
     };
-    console.log(liquids, bowlOptions, basePrice);
     const calculatePrice = () => {
         const bowl = bowlOptions.find(b => b.id === selectedBowl);
         return basePrice + (bowl?.price ?? 0) + liquids.find(l => l.id === selectedLiquid)?.price || 0;
