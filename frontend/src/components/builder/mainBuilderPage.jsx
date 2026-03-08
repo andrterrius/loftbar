@@ -43,7 +43,7 @@ const MainBuilderPage = () => {
                 setSelectedLiquid(data[0]?.id || null);
             })
             .catch(console.error);
-    }, []);
+    }, []); 
 
     const handlePercentageChange = (id, newPercentage) => {
         if (selectedFlavors.length <= 1) return;
@@ -315,10 +315,25 @@ const MainBuilderPage = () => {
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <div
-                                                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-black/60 shrink-0"
-                                                            style={{ backgroundColor: flavor.hex_color || '#ccc' }}
+                                                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-black/60 shrink-0 overflow-hidden"
+                                                            style={!flavor.image_url ? { backgroundColor: flavor.hex_color || '#ccc' } : {}}
                                                         >
-                                                            {flavor.name[0]}
+                                                            {flavor.image_url ? (
+                                                                <img
+                                                                    src={flavor.image_url}
+                                                                    alt={flavor.name}
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        const parent = e.currentTarget.parentElement;
+                                                                        if (parent) {
+                                                                            parent.style.backgroundColor = flavor.hex_color || '#ccc';
+                                                                            parent.innerHTML = flavor.name[0];
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                flavor.name[0]
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="font-medium text-white group-hover:text-cyan-400 transition-colors">{flavor.name}</div>
