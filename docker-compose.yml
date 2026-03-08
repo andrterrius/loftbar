@@ -46,6 +46,13 @@ services:
     networks:
       - app-network
 
+  certbot-init:
+    image: certbot/certbot
+    entrypoint: /bin/sh
+    command: -c 'test -d /etc/letsencrypt/live/${APP_DOMAIN} || certbot certonly -v --standalone -v -d $APP_DOMAIN -m $LETSENCRYPT_EMAIL --force-renewal --agree-tos'
+    volumes:
+      - cert_volume:/etc/letsencrypt
+
   nginx:
     build:
       context: ./nginx
@@ -55,23 +62,36 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - APP_DOMAIN=${APP_DOMAIN}
-      - BACKEND_PORT=${BACKEND_PORT}
-      - FRONTEND_PORT=${FRONTEND_PORT}
+      APP_DOMAIN: ${APP_DOMAIN}
+      BACKEND_PORT: ${BACKEND_PORT}
+      FRONTEND_PORT: ${FRONTEND_PORT}
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
+      - cert_volume:/etc/letsencrypt
+      - acme_challenge:/usr/share/nginx/html/.well-known
     depends_on:
-      - backend
-      - frontend
+      certbot-init:
+          condition: service_completed_successfully
     networks:
       - app-network
     env_file:
       - .env
 
+  certbot:
+    image: certbot/certbot
+    entrypoint: /bin/sh
+    command: -c 'trap exit TERM; while :; do certbot renew; sleep 24h && wait $${!}; done;'
+    depends_on:
+      nginx:
+        condition: service_started
+    volumes:
+      - cert_volume:/etc/letsencrypt
+      - acme_challenge:/usr/share/nginx/html/.well-known
+
 volumes:
   postgres_data:
+  cert_volume:
+  acme_challenge:
 
 networks:
   app-network:

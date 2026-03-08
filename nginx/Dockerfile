@@ -12,8 +12,10 @@ RUN if [ ! -f /etc/nginx/ssl/dummy.crt ]; then \
     else \
     echo "Dummy certificate already exists"; \
     fi
+#P.S. дарова, если что, это в принципе нафиг не нужно))) можно будет потом присобачить к локалхосту для развертывания во время разработки
 
 COPY proxy-common.conf /etc/nginx/proxy-common.conf
+COPY ./conf.d/ /etc/nginx/conf.d/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
 
