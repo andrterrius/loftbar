@@ -97,7 +97,7 @@ const MainBuilderPage = () => {
     const handleConfirmedOrder = async () => {
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'unknown_table',
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param || 'unknown_table',
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
