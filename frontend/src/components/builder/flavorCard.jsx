@@ -13,11 +13,35 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
             className="relative p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm group hover:border-white/20 transition-all text-left"
         >
             <div className="flex justify-between items-start mb-4">
-                <div>
-                    <h3 className="font-bold text-white text-lg">{item.name}</h3>
-                    <p className="text-xs text-neutral-400">{item.brand}</p>
+                <div className="flex items-center gap-3">
+                    {/* Аватар: картинка если есть, иначе цветной круг с буквой */}
+                    <div
+                        className="w-10 h-10 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-black/60"
+                        style={!item.image_url ? { backgroundColor: color || '#ccc' } : {}}
+                    >
+                        {item.image_url ? (
+                            <img
+                                src={item.image_url}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    const parent = e.currentTarget.parentElement;
+                                    if (parent) {
+                                        parent.style.backgroundColor = color || '#ccc';
+                                        parent.innerHTML = item.name[0];
+                                    }
+                                }}
+                            />
+                        ) : (
+                            item.name[0]
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
+                        <p className="text-xs text-neutral-400">{item.brand}</p>
+                    </div>
                 </div>
-                <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors">
+                <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors ml-2 mt-1">
                     <X size={18} />
                 </button>
             </div>
