@@ -14,6 +14,14 @@ class TableNotFoundException(OrderServiceException):
             details={"table_id": str(table_id)}
         )
 
+class TableUnavailableException(OrderServiceException):
+    """Столик не найден"""
+    def __init__(self, table_id: Any):
+        super().__init__(
+            message=f"Столик с ID {table_id} недоступен",
+            details={"table_id": str(table_id)}
+        )
+
 class PresetNotFoundException(OrderServiceException):
     """Пресет не найден"""
     def __init__(self, preset_id: Any):

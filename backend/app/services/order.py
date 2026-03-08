@@ -11,7 +11,8 @@ from app.exceptions.order import (
     TableNotFoundException,
     PresetNotFoundException,
     PresetUnavailableException,
-    OrderCreateException
+    OrderCreateException,
+    TableUnavailableException
 )
 
 from .abc import BasePresetService, BaseOrderService
@@ -23,6 +24,8 @@ class OrderService(BaseOrderService):
             table = await uow.tables.get_by_id(order.table_id)
             if not table:
                 raise TableNotFoundException(order.table_id)
+            if not table.is_available:
+                raise TableUnavailableException(order.table_id)
 
             preset = None
             composition_snapshot = {}
@@ -80,13 +83,12 @@ class OrderService(BaseOrderService):
                 )
 
                 preset = await preset_service.create_(uow, converted_preset, user_id)
-
                 composition_snapshot = {
                     "preset_id": str(preset.id),
                     "name": preset.name,
                     "description": preset.description,
                     "total_price": preset.price,
-                    "preset_flavors": preset.flavors,
+                    "preset_flavors": [flavor.model_dump(mode='json') for flavor in converted_preset.flavors],
                     "is_custom": True,
                 }
                 total_price = preset.price
