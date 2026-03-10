@@ -36,10 +36,11 @@ const MainPresetsPage = () => {
     const [presetsLoading, setPresetsLoading] = useState(true);
     const [confirmPreset, setConfirmPreset] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [successOrderId, setSuccessOrderId] = useState(null);
 
     useEffect(() => {
         getPresets()
-            .then(data => setAvailablePresets(Array.isArray(data) ? data : []))
+            .then(setAvailablePresets)
             .catch(console.error)
             .finally(() => setPresetsLoading(false));
     }, []);
@@ -57,8 +58,9 @@ const MainPresetsPage = () => {
         };
         try {
             const result = await createOrder(orderData);
-            alert(`Заказ #${result.id || ''} успешно оформлен!`);
             setConfirmPreset(null);
+            setSuccessOrderId(result.id || '');
+            setTimeout(() => window.Telegram?.WebApp?.close(), 1500);
         } catch (error) {
             alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
             console.error(error);
@@ -123,8 +125,8 @@ const MainPresetsPage = () => {
                                                 <h3 className="text-base font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors leading-snug">
                                                     {preset.name || 'Без названия'}
                                                 </h3>
-                                                <p className="text-[11px] text-neutral-500 mt-1.5 line-clamp-2 min-h-[2rem] leading-relaxed">
-                                                    {preset.description || <span className="italic text-neutral-600">Описание не добавлено</span>}
+                                                <p className="text-[11px] italic text-neutral-600 mt-1.5 line-clamp-2 min-h-[2rem] leading-relaxed">
+                                                    {preset.description || 'Описание не добавлено'}
                                                 </p>
                                             </div>
 
@@ -134,32 +136,32 @@ const MainPresetsPage = () => {
                                                 ) : (
                                                     (preset.flavors || []).slice(0, 3).map((ing, i) => (
                                                         <div key={i} className="flex justify-between items-center">
-                                                            <span className="text-[13px] font-medium text-neutral-200 tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
-                                                            <span className="text-[11px] font-mono text-neutral-500 tabular-nums">{ing.percent}%</span>
+                                                            <span className="text-[14px] font-semibold text-white tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
+                                                            <span className="text-[12px] font-mono text-neutral-300 tabular-nums">{ing.percent}%</span>
                                                         </div>
                                                     ))
                                                 )}
                                             </div>
 
-                                            <div className="flex gap-1.5 flex-wrap">
+                                            <div className="flex gap-2 flex-wrap">
                                                 {preset.bowl && (
-                                                    <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/5 border border-white/10 text-neutral-300">
-                                                        {preset.bowl.icon} {preset.bowl.name}
+                                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
+                                                        <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
                                                     </span>
                                                 )}
                                                 {preset.liquid && (
                                                     <span
-                                                        className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border text-white"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
                                                         style={{
                                                             backgroundColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}30`
-                                                                : 'rgba(255,255,255,0.05)',
+                                                                ? `${preset.liquid.hex_color}20`
+                                                                : 'rgba(6,182,212,0.1)',
                                                             borderColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}70`
-                                                                : 'rgba(255,255,255,0.1)',
+                                                                ? `${preset.liquid.hex_color}50`
+                                                                : 'rgba(6,182,212,0.3)',
                                                         }}
                                                     >
-                                                        💧 {preset.liquid.name}
+                                                        <span className="text-base leading-none">💧</span> {preset.liquid.name}
                                                     </span>
                                                 )}
                                             </div>
@@ -171,7 +173,7 @@ const MainPresetsPage = () => {
                                                 </div>
                                                 <button
                                                     onClick={() => setConfirmPreset(preset)}
-                                                    className="px-5 py-2 bg-white/8 hover:bg-fuchsia-600 hover:text-white text-neutral-300 rounded-xl text-[13px] font-semibold tracking-tight transition-all border border-white/10 hover:border-fuchsia-500"
+                                                    className="px-5 py-2.5 hover:bg-fuchsia-600 hover:text-white text-white rounded-xl text-[13px] font-semibold tracking-tight transition-all border border-white/15 hover:border-fuchsia-500 bg-white/8"
                                                 >
                                                     Заказать
                                                 </button>
@@ -198,42 +200,63 @@ const MainPresetsPage = () => {
                     onClick={(e) => e.target === e.currentTarget && setConfirmPreset(null)}
                 >
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-                        <h3 className="text-lg font-bold text-white mb-1">Подтвердить заказ</h3>
-                        <p className="text-neutral-400 text-sm mb-1">Вы хотите заказать:</p>
-                        <p className="text-white font-semibold mb-4">{confirmPreset.name}</p>
+                        <h3 className="text-xl font-bold tracking-tight text-white mb-0.5">Подтвердить заказ</h3>
+                        <p className="text-[11px] uppercase tracking-widest text-neutral-600 font-medium mb-1">Вы заказываете</p>
+                        <p className="text-white font-bold text-base tracking-tight mb-4">{confirmPreset.name}</p>
 
                         {(confirmPreset.flavors || []).length > 0 && (
-                            <div className="space-y-1 mb-4 bg-white/5 rounded-xl p-3">
+                            <div className="space-y-2 mb-4 bg-white/5 rounded-xl p-3">
                                 {confirmPreset.flavors.map((ing, i) => (
-                                    <div key={i} className="flex justify-between text-xs text-neutral-300">
-                                        <span>{ing.flavor?.name || 'Неизвестный вкус'}</span>
-                                        <span className="text-neutral-500">{ing.percent}%</span>
+                                    <div key={i} className="flex justify-between items-center">
+                                        <span className="text-[14px] font-semibold text-white">{ing.flavor?.name || 'Неизвестный вкус'}</span>
+                                        <span className="font-mono text-[12px] text-neutral-300 tabular-nums">{ing.percent}%</span>
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        <div className="flex items-center justify-between mb-6">
-                            <span className="text-neutral-500 text-sm">Итого</span>
-                            <span className="text-white font-bold text-xl">{confirmPreset.price ?? '—'}₽</span>
+                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
+                            <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
+                            <span className="text-white font-bold text-2xl tracking-tight leading-none">{confirmPreset.price ?? '—'}<span className="text-neutral-400 text-lg font-semibold">₽</span></span>
                         </div>
 
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setConfirmPreset(null)}
                                 disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-sm font-medium disabled:opacity-50"
+                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-[13px] font-semibold disabled:opacity-50"
                             >
                                 Отмена
                             </button>
                             <button
                                 onClick={() => handleOrder(confirmPreset)}
                                 disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
+                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-[13px] tracking-tight shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
                             >
                                 {isSubmitting ? 'Отправка...' : 'Заказать'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {successOrderId !== null && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+                        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+                            <span className="text-3xl">✅</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
+                        <p className="text-neutral-400 text-sm mb-1">
+                            {successOrderId ? `Заказ #${successOrderId}` : 'Ваш заказ'} успешно оформлен.
+                        </p>
+                        <p className="text-neutral-500 text-xs mb-6">Ожидайте — ваш микс уже готовится 🔥</p>
+                        <button
+                            onClick={() => window.Telegram?.WebApp?.close()}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform"
+                        >
+                            Закрыть
+                        </button>
                     </div>
                 </div>
             )}

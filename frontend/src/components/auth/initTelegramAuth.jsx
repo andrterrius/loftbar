@@ -5,6 +5,7 @@ import { useEffect } from "react";
 const InitTelegramAuth = () => {
     useEffect(() => {
         const initAuth = async () => {
+            return; // TODO: включить перед деплоем
             const existingToken = localStorage.getItem('jwt') 
             if (existingToken) {
                 return;

@@ -16,25 +16,28 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                 <div className="flex items-center gap-3">
                     {/* Аватар: картинка если есть, иначе цветной круг с буквой */}
                     <div
-                        className="w-10 h-10 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-black/60"
-                        style={!item.image_url ? { backgroundColor: color || '#ccc' } : {}}
+                        style={{
+                            width: '40px',
+                            height: '40px',
+                            minWidth: '40px',
+                            maxWidth: '40px',
+                            maxHeight: '40px',
+                            flex: 'none',
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            backgroundColor: color || '#ccc',
+                            backgroundImage: item.image_url ? `url(${item.image_url})` : 'none',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            color: 'rgba(0,0,0,0.6)',
+                        }}
                     >
-                        {item.image_url ? (
-                            <img
-                                src={item.image_url}
-                                alt={item.name}
-                                style={{ width: '40px', height: '40px', objectFit: 'cover', objectPosition: 'center', display: 'block', flexShrink: 0 }}
-                                onError={(e) => {
-                                    const parent = e.currentTarget.parentElement;
-                                    if (parent) {
-                                        parent.style.backgroundColor = color || '#ccc';
-                                        parent.innerHTML = item.name[0];
-                                    }
-                                }}
-                            />
-                        ) : (
-                            item.name[0]
-                        )}
+                        {!item.image_url && item.name[0]}
                     </div>
                     <div>
                         <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
