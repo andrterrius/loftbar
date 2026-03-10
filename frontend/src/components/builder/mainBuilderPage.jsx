@@ -111,7 +111,7 @@ const MainBuilderPage = () => {
             setSelectedLiquid(null);
             setIsConfirmOpen(false);
             setSuccessOrderId(result.id || '');
-            setTimeout(() => window.Telegram?.WebApp?.close(), 1500);
+            setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
         } catch (error) {
             console.error("Order error:", error);
             alert('Не удалось отправить заказ. Попробуйте позже.');

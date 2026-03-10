@@ -60,7 +60,7 @@ const MainPresetsPage = () => {
             const result = await createOrder(orderData);
             setConfirmPreset(null);
             setSuccessOrderId(result.id || '');
-            setTimeout(() => window.Telegram?.WebApp?.close(), 1500);
+            setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
         } catch (error) {
             alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
             console.error(error);
