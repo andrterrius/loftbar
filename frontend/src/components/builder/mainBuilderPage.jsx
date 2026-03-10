@@ -36,7 +36,7 @@ const MainBuilderPage = () => {
             .catch(console.error)
             .finally(() => setBowlsLoading(false));
         getBasePrice()
-            .then(data => setBasePrice(data.base_price))
+            .then(data => setBasePrice(data?.base_price ?? 0))
             .catch(console.error);
         getLiquids()
             .then(data => {
@@ -323,7 +323,7 @@ const MainBuilderPage = () => {
                                                                 <img
                                                                     src={flavor.image_url}
                                                                     alt={flavor.name}
-                                                                    className="w-full h-full object-cover"
+                                                                    style={{ width: '40px', height: '40px', objectFit: 'cover', objectPosition: 'center', display: 'block', flexShrink: 0 }}
                                                                     onError={(e) => {
                                                                         const parent = e.currentTarget.parentElement;
                                                                         if (parent) {

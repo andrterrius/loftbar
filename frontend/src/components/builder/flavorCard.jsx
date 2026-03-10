@@ -23,7 +23,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                             <img
                                 src={item.image_url}
                                 alt={item.name}
-                                className="w-full h-full object-cover"
+                                style={{ width: '40px', height: '40px', objectFit: 'cover', objectPosition: 'center', display: 'block', flexShrink: 0 }}
                                 onError={(e) => {
                                     const parent = e.currentTarget.parentElement;
                                     if (parent) {
