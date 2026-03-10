@@ -1,16 +1,16 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// async function login() {
-//     const tgData = window.Telegram?.WebApp?.initData || '';
-//     const res = await fetch(`${BASE_URL}/users/login`, {
-//         method: 'POST',
-//         headers: { 'X-Init-Data': tgData },
-//     });
-//     if (!res.ok) throw new Error('Login failed');
-//     const data = await res.json();
-//     localStorage.setItem('jwt', data.access_token);
-//     return data.access_token;
-// }
+async function login() {
+    const tgData = window.Telegram?.WebApp?.initData || '';
+    const res = await fetch(`${BASE_URL}/users/login`, {
+        method: 'POST',
+        headers: { 'X-Init-Data': tgData },
+    });
+    if (!res.ok) throw new Error('Login failed');
+    const data = await res.json();
+    localStorage.setItem('jwt', data.access_token);
+    return data.access_token;
+}
 
 export async function apiRequest(endpoint, options = {}, attempt = 1) {
     const MAX_ATTEMPTS = 3;
