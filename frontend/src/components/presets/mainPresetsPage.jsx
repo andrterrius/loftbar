@@ -36,6 +36,7 @@ const MainPresetsPage = () => {
     const [presetsLoading, setPresetsLoading] = useState(true);
     const [confirmPreset, setConfirmPreset] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [successOrderId, setSuccessOrderId] = useState(null);
 
     useEffect(() => {
         getPresets()
@@ -57,8 +58,8 @@ const MainPresetsPage = () => {
         };
         try {
             const result = await createOrder(orderData);
-            alert(`Заказ #${result.id || ''} успешно оформлен!`);
             setConfirmPreset(null);
+            setSuccessOrderId(result.id || '');
         } catch (error) {
             alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
             console.error(error);
@@ -234,6 +235,30 @@ const MainPresetsPage = () => {
                                 {isSubmitting ? 'Отправка...' : 'Заказать'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Модалка успешного заказа */}
+            {successOrderId !== null && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+                        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+                            <span className="text-3xl">✅</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
+                        <p className="text-neutral-400 text-sm mb-1">
+                            {successOrderId ? `Заказ #${successOrderId}` : 'Ваш заказ'} успешно оформлен.
+                        </p>
+                        <p className="text-neutral-500 text-xs mb-6">
+                            Ожидайте — ваш микс уже готовится 🔥
+                        </p>
+                        <button
+                            onClick={() => window.Telegram?.WebApp?.close()}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform"
+                        >
+                            Закрыть
+                        </button>
                     </div>
                 </div>
             )}
