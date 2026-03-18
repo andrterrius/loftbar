@@ -27,7 +27,7 @@ services:
     volumes:
       - ./backend/app:/app/app
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${BACKEND_PORT}"
     networks:
       - app-network
 
