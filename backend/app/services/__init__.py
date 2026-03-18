@@ -4,4 +4,7 @@ from .bowl import BowlService
 from .liquid import LiquidService
 from .order import OrderService
 from .settings import SettingsService
+from .user import UserService
 from .telegram_auth import TgAuthService
+from .notification import NotificationTextService
+from .tg_notification import TelegramNotificationService

@@ -17,7 +17,7 @@ class AppConfig(BaseSettings, env_prefix="APP_"):
 
 class CommonConfig(BaseSettings, env_prefix="COMMON_"):
     bot_token: SecretStr
-    admins: list[int]
+    bot_secret_key: SecretStr
 
 class AdminConfig(BaseSettings, env_prefix="ADMIN_"):
     login: SecretStr
@@ -49,16 +49,8 @@ class PostgresConfig(BaseSettings, env_prefix="POSTGRES_"):
             database=self.db,
         ).render_as_string(hide_password=False)
 
-class RedisConfig(BaseSettings, env_prefix="REDIS_"):
-    use_redis: bool = True
-
-    host: str
-    port: int
-    password: str
-
 class Config(BaseModel):
     common: CommonConfig
-    redis: RedisConfig
     postgres: PostgresConfig
     admin: AdminConfig
     security: SecurityConfig
@@ -67,7 +59,6 @@ class Config(BaseModel):
 
 def create_config() -> Config:
     return Config(common=CommonConfig(),
-                  redis=RedisConfig(),
                   postgres=PostgresConfig(),
                   admin=AdminConfig(),
                   security=SecurityConfig(),

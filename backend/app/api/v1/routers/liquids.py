@@ -6,6 +6,7 @@ from dishka.integrations.fastapi import FromDishka, DishkaRoute
 from app.db.uow import BaseUnitOfWork
 from app.services.abc import BaseLiquidService
 from app.schemas.liquid import LiquidOut
+from app.schemas.auth import CurrentUser
 
 liquids_router = APIRouter(
     prefix="/liquids",
@@ -17,6 +18,7 @@ liquids_router = APIRouter(
 async def get_available(
     service: FromDishka[BaseLiquidService],
     uow: FromDishka[BaseUnitOfWork],
+    current_user: FromDishka[CurrentUser]
 ):
     """Получить список всех доступных жидкостей"""
     result = await service.get_available(uow)

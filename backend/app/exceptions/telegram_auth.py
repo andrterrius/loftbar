@@ -13,3 +13,10 @@ class MissedInitDataHeader(BaseTelegramAuthException):
         super().__init__(
             message="X-Init-Data header пропущен в вашем запросе!"
         )
+
+class InvalidBotSecretException(BaseTelegramAuthException):
+    """X-BOT-SECRET header в запросе не совпадает с настоящим"""
+    def __init__(self):
+        super().__init__(
+            message="Ошибка авторизации!"
+        )

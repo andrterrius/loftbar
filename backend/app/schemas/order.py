@@ -3,7 +3,9 @@ from datetime import datetime
 from uuid import UUID
 from typing import Optional, Any, Dict, List
 from enum import Enum
-from .preset import PresetCreateInOrder
+from .preset import PresetCreateInOrder, PresetOut
+from .user import UserBase
+from .table import TableBase
 
 class OrderStatus(str, Enum):
     PENDING = "pending"
@@ -30,10 +32,16 @@ class OrderCreate(BaseModel):
 
 
 class OrderStatusUpdate(BaseModel):
+    id: UUID
     status: OrderStatus = Field(..., description="Новый статус заказа")
+
+class OrderStatusUpdateTelegram(OrderStatusUpdate):
+    chat_id: int
+    message_id: int
 
 class OrderUpdate(BaseModel):
     """Обновление данных заказа (для администратора)"""
+    id: UUID
     table_id: Optional[UUID] = None
     special_requests: Optional[str] = Field(None, max_length=500)
     status: Optional[OrderStatus] = None
@@ -42,12 +50,12 @@ class OrderUpdate(BaseModel):
     completed_at: Optional[datetime] = None
 
 
-class OrderOut(BaseModel):
-    """Полная информация о заказе для ответа API"""
+class OrderOutAdmin(BaseModel):
+    """Полная информация о заказе для ответа администратору"""
     id: UUID
-    user_id: Optional[UUID] = None
-    table_id: Optional[UUID] = None
-    preset_id: Optional[UUID] = None
+    preset: Optional[PresetOut] = Field(None, description="Информация о пресете")
+    user: Optional[UserBase] = Field(None, description="Информация о пользователе")
+    table: Optional[TableBase] = Field(None, description="Информация о столике")
     status: OrderStatus
     total_price: float = Field(..., description="Итоговая цена (рассчитывается в сервисе)")
     special_requests: Optional[str] = None
@@ -66,6 +74,8 @@ class OrderOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class OrderOut(BaseModel):
+    id: UUID
 
 class OrderListItem(BaseModel):
     """Краткая информация о заказе для списков"""

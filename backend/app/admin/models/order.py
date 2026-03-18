@@ -194,9 +194,9 @@ class OrderAdmin(ModelView, model=DBOrder):
         DBOrder.total_price: _price_formatter,
         DBOrder.is_custom: _order_type_formatter,
         DBOrder.admin_notification_sent: _notification_formatter,
-        "confirmed_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
-        "ready_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
-        "completed_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
+        "confirmed_at": lambda m, a: m.confirmed_at.strftime("%d.%m.%Y %H:%M") if m.confirmed_at else "—",
+        "ready_at": lambda m, a: m.ready_at.strftime("%d.%m.%Y %H:%M") if m.ready_at else "—",
+        "completed_at": lambda m, a: m.completed_at.strftime("%d.%m.%Y %H:%M") if m.completed_at else "—",
         "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
         "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
     }

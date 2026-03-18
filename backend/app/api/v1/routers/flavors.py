@@ -6,6 +6,8 @@ from dishka.integrations.fastapi import FromDishka, DishkaRoute
 from app.db.uow import BaseUnitOfWork
 from app.services.abc import BaseFlavorService
 from app.schemas.flavor import FlavorCreate, FlavorUpdate, FlavorOut
+from app.schemas.auth import CurrentUser
+
 
 flavors_router = APIRouter(
     prefix="/flavors",
@@ -17,6 +19,7 @@ flavors_router = APIRouter(
 async def get_available(
     service: FromDishka[BaseFlavorService],
     uow: FromDishka[BaseUnitOfWork],
+    current_user: FromDishka[CurrentUser]
 ):
     """Получить список всех доступных вкусов"""
     result = await service.get_available(uow)

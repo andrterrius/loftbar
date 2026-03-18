@@ -12,7 +12,10 @@ from app.services import (
     BowlService,
     LiquidService,
     OrderService,
-    SettingsService
+    SettingsService,
+    UserService,
+    TelegramNotificationService,
+    NotificationTextService
 )
 from app.services.abc import (
     BaseFlavorService,
@@ -20,7 +23,10 @@ from app.services.abc import (
     BaseBowlService,
     BaseLiquidService,
     BaseOrderService,
-    BaseSettingsService
+    BaseSettingsService,
+    BaseUserService,
+    BaseNotificationService,
+    BaseNotificationTextService,
 )
 from app.db.session_maker import new_session_maker
 
@@ -73,8 +79,14 @@ class MainProvider(Provider):
     def get_settings_service(self) -> SettingsService:
         return SettingsService()
 
-    @provide(scope=Scope.REQUEST, provides=UUID)
-    async def get_current_user(self, uow: BaseUnitOfWork) -> UUID:
-        async with uow:
-            user = await uow.users.get_by_id(UUID("b7fd3e87-1c3a-4d96-8415-394d0cb2be8b"))
-            return user.id
+    @provide(scope=Scope.REQUEST, provides=BaseUserService)
+    def get_user_service(self) -> UserService:
+        return UserService()
+
+    @provide(scope=Scope.REQUEST, provides=BaseNotificationService)
+    def get_order_notification_service(self, text_service: BaseNotificationTextService) -> TelegramNotificationService:
+        return TelegramNotificationService(text_service=text_service)
+
+    @provide(scope=Scope.REQUEST, provides=BaseNotificationTextService)
+    def get_notification_text_service(self) -> NotificationTextService:
+        return NotificationTextService()

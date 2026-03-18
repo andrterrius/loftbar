@@ -1,13 +1,21 @@
 from dishka import Provider, Scope, provide
 from dishka.integrations.fastapi import inject
+from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
+
 from fastapi import Request, HTTPException
 from typing import Optional
 from telegram_init_data import validate, parse, TelegramInitDataError, InitData
-from app.core.config import Config  # ваш класс конфига
+from app.core.config import Config
 from app.services.abc import BaseTgAuthService
 from app.services import TgAuthService
-from app.exceptions.telegram_auth import InvalidInitDataException, MissedInitDataHeader
+from app.exceptions.telegram_auth import (
+    InvalidInitDataException,
+    MissedInitDataHeader,
+    InvalidBotSecretException
+)
 
+from app.schemas.tgbot import TgBotAuthInfo
 
 class TelegramProvider(Provider):
     """
@@ -41,3 +49,25 @@ class TelegramProvider(Provider):
     @provide(scope=Scope.REQUEST, provides=BaseTgAuthService)
     def get_tg_auth_service(self) -> TgAuthService:
         return TgAuthService()
+
+    @provide(scope=Scope.REQUEST)
+    def tg_bot_check_auth(
+            self,
+            request: Request,
+            config: Config,
+    ) -> TgBotAuthInfo:
+        init_data_header = request.headers.get("X-BOT-SECRET")
+        if init_data_header != config.common.bot_secret_key.get_secret_value():
+            raise InvalidBotSecretException()
+
+        return TgBotAuthInfo(is_authenticated=True)
+
+    @provide(scope=Scope.APP, provides=Bot)
+    def get_tg_bot(self, config: Config) -> Bot:
+        return Bot(
+            config.common.bot_token.get_secret_value(),
+            default=DefaultBotProperties(
+                parse_mode="HTML",
+                link_preview_is_disabled=True
+            )
+        )

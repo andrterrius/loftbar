@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 from dishka.integrations.fastapi import DishkaRoute
 
+from .routers.tgbot import tgbot_router
 from .routers.users import users_router
 from .routers.flavors import flavors_router
 from .routers.presets import presets_router
@@ -15,7 +16,8 @@ _routers = [
     presets_router,
     liquids_router,
     bowls_router,
-    orders_router
+    orders_router,
+    tgbot_router
 ]
 
 v1_router = APIRouter(

@@ -1,10 +1,15 @@
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from dishka.integrations.fastapi import FromDishka, DishkaRoute
+from sqlalchemy.sql.functions import current_user
+from aiogram import Bot
 from app.db.uow import BaseUnitOfWork
-from app.db.models import DBUser
-from app.services.abc import BaseOrderService, BasePresetService
-from app.schemas.order import OrderCreate, OrderOut
+from app.services.abc import (
+    BaseOrderService,
+    BasePresetService,
+    BaseNotificationService,
+)
+from app.schemas.order import OrderCreate, OrderOut, OrderOutAdmin
 from app.schemas.error import ErrorResponse
 from app.schemas.auth import CurrentUser
 
@@ -27,8 +32,19 @@ async def make_order(
         order: OrderCreate,
         order_service: FromDishka[BaseOrderService],
         preset_service: FromDishka[BasePresetService],
+        order_notification_service: FromDishka[BaseNotificationService],
         uow: FromDishka[BaseUnitOfWork],
+        tg_bot: FromDishka[Bot],
         current_user: FromDishka[CurrentUser],
+        background_tasks: BackgroundTasks,
 ):
     """Создать заказ"""
-    return await order_service.create_order(uow, order, preset_service, current_user.id)
+    order_out = await order_service.create_order(uow, order, preset_service, current_user.id)
+    background_tasks.add_task(
+        order_notification_service.notify_order_created,
+        uow=uow,
+        bot=tg_bot,
+        order=order_out,
+    )
+
+    return OrderOut(id=order_out.id)

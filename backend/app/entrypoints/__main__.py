@@ -5,7 +5,11 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from dishka.integrations.fastapi import setup_dishka
 
-from app.di import MainProvider, TelegramProvider, AuthProvider
+from app.di import (
+    MainProvider,
+    TelegramProvider,
+    AuthProvider
+)
 from app.admin import get_admin_app
 
 from app.core.config import Config, create_config

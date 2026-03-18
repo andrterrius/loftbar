@@ -1,8 +1,11 @@
 from uuid import UUID
+from typing import Optional
 
 from app.db.uow import BaseUnitOfWork
-from app.schemas.order import OrderCreate, OrderStatus, OrderOut
-from app.schemas.preset import PresetCreate, FlavorInPreset
+from app.schemas.order import OrderCreate, OrderStatus, OrderOutAdmin
+from app.schemas.preset import PresetCreate, PresetOut, FlavorInPreset
+from app.schemas.user import UserBase
+from app.schemas.table import TableBase
 from app.db.models import DBOrder
 from app.exceptions.order import (
     FlavorNotFoundException,
@@ -12,20 +15,33 @@ from app.exceptions.order import (
     PresetNotFoundException,
     PresetUnavailableException,
     OrderCreateException,
-    TableUnavailableException
+    TableUnavailableException,
+    OrderNotFoundException,
+    OrderStatusTransitionException,
+    UserNotFoundException
 )
 
 from .abc import BasePresetService, BaseOrderService
 
 
 class OrderService(BaseOrderService):
-    async def create_order(self, uow: BaseUnitOfWork, order: OrderCreate, preset_service: BasePresetService, user_id: UUID) -> OrderOut:
+    async def create_order(
+            self,
+            uow: BaseUnitOfWork,
+            order: OrderCreate,
+            preset_service: BasePresetService,
+            user_id: UUID
+    ) -> OrderOutAdmin:
         async with uow:
             table = await uow.tables.get_by_id(order.table_id)
             if not table:
                 raise TableNotFoundException(order.table_id)
             if not table.is_available:
                 raise TableUnavailableException(order.table_id)
+
+            user = await uow.users.get_by_id(user_id)
+            if not user:
+                raise UserNotFoundException(user_id)
 
             preset = None
             composition_snapshot = {}
@@ -108,4 +124,67 @@ class OrderService(BaseOrderService):
 
             created_order = await uow.orders.create(order)
 
-            return OrderOut.model_validate(created_order)
+            order_out = OrderOutAdmin(
+                id=created_order.id,
+                status=created_order.status,
+                total_price=created_order.total_price,
+                special_requests=created_order.special_requests,
+                is_custom=created_order.is_custom,
+                custom_name=created_order.custom_name,
+                composition_snapshot=created_order.composition_snapshot,
+                admin_notification_sent=created_order.admin_notification_sent,
+                created_at=created_order.created_at,
+                updated_at=created_order.updated_at,
+                confirmed_at=created_order.confirmed_at,
+                ready_at=created_order.ready_at,
+                completed_at=created_order.completed_at,
+                user=UserBase.model_validate(user),
+                table=TableBase.model_validate(table)
+            )
+
+            if preset:
+                full_preset = await preset_service.get_by_id_(uow, preset.id)
+                order_out.preset = full_preset
+
+            return order_out
+
+    async def update_order_status(self, uow: BaseUnitOfWork, order_id: UUID,
+                                  new_status: OrderStatus, user_id: Optional[UUID] = None) -> OrderOutAdmin:
+        async with uow:
+            order = await uow.orders.get_by_id(order_id)
+            if not order:
+                raise OrderNotFoundException()
+
+            # Проверяем возможность перехода статуса
+            if not self._can_transition_status(order.status, new_status):
+                raise OrderStatusTransitionException()
+
+            updated_order = await uow.orders.update_status(
+                order_id=order_id,
+                status=new_status
+            )
+
+            updated_order.preset.price = updated_order.preset.total_price
+
+            return OrderOutAdmin.model_validate(updated_order)
+
+    def _can_transition_status(self, current_status: OrderStatus, new_status: OrderStatus) -> bool:
+        # Словарь допустимых переходов
+        allowed_transitions = {
+            OrderStatus.PENDING: [
+                OrderStatus.CANCELLED,
+                OrderStatus.IN_PROGRESS
+            ],
+            OrderStatus.IN_PROGRESS: [
+                OrderStatus.READY,
+                OrderStatus.CANCELLED
+            ],
+            OrderStatus.READY: [
+                OrderStatus.COMPLETED,
+                OrderStatus.CANCELLED
+            ],
+            OrderStatus.COMPLETED: [],  # Из COMPLETED нельзя изменить статус
+            OrderStatus.CANCELLED: [],  # Из CANCELLED нельзя изменить статус
+        }
+
+        return new_status in allowed_transitions.get(current_status, [])

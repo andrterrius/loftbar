@@ -6,6 +6,14 @@ class OrderServiceException(BaseServiceException):
     """Базовое исключение для сервиса заказов"""
     pass
 
+class UserNotFoundException(OrderServiceException):
+    """Пользователь не найден"""
+    def __init__(self, user_id: Any):
+        super().__init__(
+            message=f"Пользователь с ID {user_id} не найден",
+            details={"user_id": str(user_id)}
+        )
+
 class TableNotFoundException(OrderServiceException):
     """Столик не найден"""
     def __init__(self, table_id: Any):
@@ -72,5 +80,21 @@ class OrderCreateException(OrderServiceException):
     def __init__(self):
         super().__init__(
             message=f"Не удалось сделать заказ",
+            details={}
+        )
+
+class OrderNotFoundException(OrderServiceException):
+    """Не удалось найти заказ"""
+    def __init__(self):
+        super().__init__(
+            message=f"Не удалось найти заказ",
+            details={}
+        )
+
+class OrderStatusTransitionException(OrderServiceException):
+    """Невозможно изменить статус заказа"""
+    def __init__(self):
+        super().__init__(
+            message=f"Невозможно изменить статус заказа",
             details={}
         )
