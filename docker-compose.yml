@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=https://${APP_DOMAIN}/api/v1
+        - NEXT_PUBLIC_API_URL=http://${APP_DOMAIN}:${BACKEND_PORT}/api/v1
     restart: unless-stopped
     env_file: .env
     depends_on:
@@ -27,7 +27,20 @@ services:
     volumes:
       - ./backend/app:/app/app
     ports:
-      - "${BACKEND_PORT}"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    networks:
+      - app-network
+
+  tgbot:
+    build:
+      context: ./tgbot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - backend
+    volumes:
+      - ./tgbot/app:/app/app
     networks:
       - app-network
 
@@ -40,7 +53,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_PORT}"
+      - "${POSTGRES_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -49,7 +62,7 @@ services:
   certbot-init:
     image: certbot/certbot
     entrypoint: /bin/sh
-    command: -c 'test -d /etc/letsencrypt/live/${APP_DOMAIN} || certbot certonly -v --standalone -v -d $APP_DOMAIN -m $LETSENCRYPT_EMAIL --force-renewal --agree-tos'
+    command: -c 'test -d /etc/letsencrypt/live/${APP_DOMAIN} || certbot certonly -v --standalone -v -d $APP_DOMAIN -m $LETSENCRYPT_EMAIL --force-renewal --agree-tos || true'
     volumes:
       - cert_volume:/etc/letsencrypt
 
@@ -89,6 +102,7 @@ services:
       - acme_challenge:/usr/share/nginx/html/.well-known
 
 volumes:
+  rabbitmq_data:
   postgres_data:
   cert_volume:
   acme_challenge:
