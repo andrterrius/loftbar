@@ -21,6 +21,7 @@ const MainBuilderPage = () => {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [successOrderId, setSuccessOrderId] = useState(null);
     const [bowlOptions, setBowlOptions] = useState([]);
     const [bowlsLoading, setBowlsLoading] = useState(true);
     const [basePrice, setBasePrice] = useState(0);
@@ -35,7 +36,7 @@ const MainBuilderPage = () => {
             .catch(console.error)
             .finally(() => setBowlsLoading(false));
         getBasePrice()
-            .then(data => setBasePrice(data.base_price))
+            .then(data => setBasePrice(data?.base_price ?? 0))
             .catch(console.error);
         getLiquids()
             .then(data => {
@@ -106,10 +107,11 @@ const MainBuilderPage = () => {
         };
         try {
             const result = await createOrder(orderData);
-            alert(`Заказ #${result.id || ''} успешно оформлен!`);
             setSelectedFlavors([]);
             setSelectedLiquid(null);
             setIsConfirmOpen(false);
+            setSuccessOrderId(result.id || '');
+            setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
         } catch (error) {
             console.error("Order error:", error);
             alert('Не удалось отправить заказ. Попробуйте позже.');
@@ -315,25 +317,28 @@ const MainBuilderPage = () => {
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <div
-                                                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-black/60 shrink-0 overflow-hidden"
-                                                            style={!flavor.image_url ? { backgroundColor: flavor.hex_color || '#ccc' } : {}}
+                                                            style={{
+                                                                width: '40px',
+                                                                height: '40px',
+                                                                minWidth: '40px',
+                                                                maxWidth: '40px',
+                                                                maxHeight: '40px',
+                                                                flex: 'none',
+                                                                borderRadius: '50%',
+                                                                overflow: 'hidden',
+                                                                backgroundColor: flavor.hex_color || '#ccc',
+                                                                backgroundImage: flavor.image_url ? `url(${flavor.image_url})` : 'none',
+                                                                backgroundSize: 'cover',
+                                                                backgroundPosition: 'center',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontSize: '14px',
+                                                                fontWeight: 'bold',
+                                                                color: 'rgba(0,0,0,0.6)',
+                                                            }}
                                                         >
-                                                            {flavor.image_url ? (
-                                                                <img
-                                                                    src={flavor.image_url}
-                                                                    alt={flavor.name}
-                                                                    className="w-full h-full object-cover"
-                                                                    onError={(e) => {
-                                                                        const parent = e.currentTarget.parentElement;
-                                                                        if (parent) {
-                                                                            parent.style.backgroundColor = flavor.hex_color || '#ccc';
-                                                                            parent.innerHTML = flavor.name[0];
-                                                                        }
-                                                                    }}
-                                                                />
-                                                            ) : (
-                                                                flavor.name[0]
-                                                            )}
+                                                            {!flavor.image_url && flavor.name[0]}
                                                         </div>
                                                         <div>
                                                             <div className="font-medium text-white group-hover:text-cyan-400 transition-colors">{flavor.name}</div>
@@ -352,68 +357,91 @@ const MainBuilderPage = () => {
                 </AnimatePresence>
             </div>
 
-            {/* Модалка подтверждения заказа */}
             {isConfirmOpen && (
                 <div
                     className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
                     onClick={(e) => e.target === e.currentTarget && setIsConfirmOpen(false)}
                 >
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-                        <h3 className="text-lg font-bold text-white mb-1">Подтвердить заказ</h3>
-                        <p className="text-neutral-400 text-sm mb-4">Ваш микс:</p>
+                        <h3 className="text-xl font-bold tracking-tight text-white mb-0.5">Подтвердить заказ</h3>
+                        <p className="text-[11px] uppercase tracking-widest text-neutral-600 font-medium mb-4">Ваш микс</p>
 
-                        <div className="space-y-1 mb-4 bg-white/5 rounded-xl p-3">
+                        <div className="space-y-2 mb-4 bg-white/5 rounded-xl p-3">
                             {selectedFlavors.map((sf) => {
                                 const flavor = flavors.find(f => f.id === sf.flavorId);
                                 return (
-                                    <div key={sf.flavorId} className="flex justify-between text-xs text-neutral-300">
-                                        <span className="flex items-center gap-2">
+                                    <div key={sf.flavorId} className="flex justify-between items-center">
+                                        <span className="flex items-center gap-2 text-[14px] font-semibold text-white">
                                             <span
-                                                className="w-2 h-2 rounded-full inline-block"
+                                                className="w-2 h-2 rounded-full inline-block shrink-0"
                                                 style={{ backgroundColor: flavor?.hex_color || '#ccc' }}
                                             />
                                             {flavor?.name || 'Неизвестный вкус'}
                                         </span>
-                                        <span className="text-neutral-500">{Math.round(sf.percentage)}%</span>
+                                        <span className="font-mono text-[12px] text-neutral-300 tabular-nums">{Math.round(sf.percentage)}%</span>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <div className="flex gap-2 flex-wrap mb-4">
+                        <div className="flex gap-1.5 flex-wrap mb-5">
                             {selectedBowlData && (
-                                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-white/5 border border-white/10 text-neutral-400">
+                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
                                     {selectedBowlData.icon} {selectedBowlData.name}
                                 </span>
                             )}
                             {selectedLiquidData && (
-                                <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-white/5 border border-white/10 text-neutral-400">
+                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
                                     💧 {selectedLiquidData.name}
                                 </span>
                             )}
                         </div>
 
-                        <div className="flex items-center justify-between mb-6">
-                            <span className="text-neutral-500 text-sm">Итого</span>
-                            <span className="text-white font-bold text-xl">{calculatePrice()}₽</span>
+                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
+                            <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
+                            <span className="text-white font-bold text-2xl tracking-tight leading-none">{calculatePrice()}<span className="text-neutral-400 text-lg font-semibold">₽</span></span>
                         </div>
 
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsConfirmOpen(false)}
                                 disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-sm font-medium disabled:opacity-50"
+                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-[13px] font-semibold disabled:opacity-50"
                             >
                                 Отмена
                             </button>
                             <button
                                 onClick={handleConfirmedOrder}
                                 disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
+                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-[13px] tracking-tight shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
                             >
                                 {isSubmitting ? 'Отправка...' : 'Заказать'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Модалка успешного заказа */}
+            {successOrderId !== null && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+                        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+                            <span className="text-3xl">✅</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
+                        <p className="text-neutral-400 text-sm mb-1">
+                            {successOrderId ? `Заказ #${successOrderId}` : 'Ваш заказ'} успешно оформлен.
+                        </p>
+                        <p className="text-neutral-500 text-xs mb-6">
+                            Ожидайте — ваш микс уже готовится 🔥
+                        </p>
+                        <button
+                            onClick={() => window.Telegram?.WebApp?.close()}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform"
+                        >
+                            Закрыть
+                        </button>
                     </div>
                 </div>
             )}
