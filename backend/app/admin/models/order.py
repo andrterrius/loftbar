@@ -7,7 +7,7 @@ from wtforms import SelectField as WTSelectField
 
 from app.db.models import DBOrder
 from app.db.models.order import OrderStatus
-
+from app.core.common import format_datetime_msk
 from app.admin.utils import add_css_styles
 
 class OrderAdmin(ModelView, model=DBOrder):
@@ -194,11 +194,11 @@ class OrderAdmin(ModelView, model=DBOrder):
         DBOrder.total_price: _price_formatter,
         DBOrder.is_custom: _order_type_formatter,
         DBOrder.admin_notification_sent: _notification_formatter,
-        "confirmed_at": lambda m, a: m.confirmed_at.strftime("%d.%m.%Y %H:%M") if m.confirmed_at else "—",
-        "ready_at": lambda m, a: m.ready_at.strftime("%d.%m.%Y %H:%M") if m.ready_at else "—",
-        "completed_at": lambda m, a: m.completed_at.strftime("%d.%m.%Y %H:%M") if m.completed_at else "—",
-        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
-        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
+        "confirmed_at": lambda m, a: format_datetime_msk(m.confirmed_at),
+        "ready_at": lambda m, a: format_datetime_msk(m.ready_at),
+        "completed_at": lambda m, a: format_datetime_msk(m.completed_at),
+        "created_at": lambda m, a: format_datetime_msk(m.created_at),
+        "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }
 
     column_formatters_detail = column_formatters

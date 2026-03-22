@@ -5,6 +5,7 @@ from sqlalchemy import Numeric
 import uuid as uuid_pkg
 
 from app.db.models import DBPresetFlavor
+from app.core.common import format_datetime_msk
 from app.admin.utils import add_css_styles
 
 
@@ -49,8 +50,8 @@ class PresetFlavorAdmin(ModelView, model=DBPresetFlavor):
     column_formatters = {
         DBPresetFlavor.percent: _percent_formatter,
         DBPresetFlavor.preset: _preset_formatter,
-        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
-        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—"
+        "created_at": lambda m, a: format_datetime_msk(m.created_at),
+        "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }
 
     column_formatters_detail = column_formatters

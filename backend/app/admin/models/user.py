@@ -3,6 +3,7 @@ from sqladmin import ModelView
 from markupsafe import Markup
 
 from app.db.models import DBUser
+from app.core.common import format_datetime_msk
 from app.admin.utils import add_css_styles
 
 
@@ -144,8 +145,8 @@ class UserAdmin(ModelView, model=DBUser):
         DBUser.is_banned: _banned_formatter,
         DBUser.is_premium: _premium_formatter,
         DBUser.photo_url: _photo_formatter,
-        "created_at": lambda m, a: m.created_at.strftime("%d.%m.%Y %H:%M") if m.created_at else "—",
-        "updated_at": lambda m, a: m.updated_at.strftime("%d.%m.%Y %H:%M") if m.updated_at else "—",
+        "created_at": lambda m, a: format_datetime_msk(m.created_at),
+        "updated_at": lambda m, a: format_datetime_msk(m.updated_at),
     }
 
     column_formatters_detail = column_formatters

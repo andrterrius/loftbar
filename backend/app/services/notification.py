@@ -1,9 +1,7 @@
 from typing import Optional
 from app.schemas.order import OrderOutAdmin, OrderStatus
+from app.core.common import format_datetime_msk
 
-import pytz
-
-moscow_tz = pytz.timezone('Europe/Moscow')
 
 class NotificationTextService:
     """Сервис для генерации текстов уведомлений о заказах"""
@@ -19,7 +17,6 @@ class NotificationTextService:
             "cancelled": "❌ Отменен"
         }
         status_str = status.value
-        print(status_str)
         return emoji_map.get(status_str, "🔄")
 
     def generate_order_notification(
@@ -42,24 +39,21 @@ class NotificationTextService:
         if order.user:
             text += self._format_user_info(order.user)
 
-        # Добавляем информацию о столике
         if order.table:
             text += self._format_table_info(order.table)
 
-        # Добавляем информацию о составе заказа
         if order.preset and not is_update:
             text += self._format_preset_info(order.preset)
         elif order.composition_snapshot:
             text += self._format_snapshot_info(order.composition_snapshot)
 
-        # Добавляем дополнительную информацию
         if order.is_custom and order.custom_name:
             text += f"\n🏷️ <b>Название:</b> {order.custom_name}\n"
 
         if order.special_requests:
             text += f"\n📝 <b>Пожелания:</b> {order.special_requests}\n"
 
-        text += f"\n⏰ <b>Создан:</b> {order.created_at.astimezone(moscow_tz).strftime('%d.%m.%Y %H:%M')}"
+        text += f"\n⏰ <b>Создан:</b> {format_datetime_msk(order.created_at)}"
 
         return text
 

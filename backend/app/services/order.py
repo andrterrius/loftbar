@@ -155,7 +155,6 @@ class OrderService(BaseOrderService):
             if not order:
                 raise OrderNotFoundException()
 
-            # Проверяем возможность перехода статуса
             if not self._can_transition_status(order.status, new_status):
                 raise OrderStatusTransitionException()
 
