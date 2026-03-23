@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Protocol, Optional, Sequence, Any
-from sqlalchemy import select, func, delete
+from sqlalchemy import asc, select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import SQLAlchemyRepository
@@ -72,7 +72,10 @@ class BowlsRepository(SQLAlchemyRepository[DBBowl], IBowlsRepository):
         return await self.get_all(**filters)
 
     async def get_available(self) -> Sequence[DBBowl]:
-        return await self.get_all(is_available=True)
+        return await self.get_all(
+            is_available=True,
+            order_by=asc(DBBowl.price)
+        )
 
     async def get_bowls_by_filters(
             self,
