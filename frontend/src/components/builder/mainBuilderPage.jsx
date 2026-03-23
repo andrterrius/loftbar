@@ -220,7 +220,7 @@ const MainBuilderPage = () => {
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Стандартное наполнение</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Наполнение колбы</h3>
                             {liquids.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
                                     <span className="text-3xl">💧</span>
