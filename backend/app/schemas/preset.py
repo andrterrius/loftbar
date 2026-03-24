@@ -21,6 +21,7 @@ class PresetBase(BaseModel):
     """Базовые поля пресета"""
     name: str
     category: str
+    strength: int = 1
     is_available: bool = True
     description: Optional[str] = None
     hex_color: Optional[str] = None
@@ -29,6 +30,7 @@ class PresetCreate(PresetBase):
     """Схема для создания пресета"""
     liquid_id: Optional[UUID] = None
     bowl_id: Optional[UUID] = None
+    strength: int = 1
     flavors: List[FlavorInPreset]
 
     @field_validator('flavors')
@@ -56,6 +58,15 @@ class PresetCreate(PresetBase):
             total_percent = sum(flavor.percent for flavor in v)
             if abs(total_percent - 100) > 0.01:
                 raise ValueError(f'Сумма процентов вкусов может быть максимум 100%, у вас {total_percent}%')
+        return v
+
+    @field_validator('strength')
+    @classmethod
+    def validate_strength_range(cls, v: int) -> int:
+        """Проверка, strength в пределах от 1 до 10"""
+        if v:
+            if not (1 <= v <= 10):
+                raise ValueError(f'Крепкость может быть только в интервале от 1 до 10 включительно')
         return v
 
 class PresetCreateInOrder(BaseModel):

@@ -8,3 +8,4 @@ from .user import UserService
 from .telegram_auth import TgAuthService
 from .notification import NotificationTextService
 from .tg_notification import TelegramNotificationService
+from .simple_auth import SimpleAuthService

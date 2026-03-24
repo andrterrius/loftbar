@@ -8,3 +8,4 @@ from .abc_user import BaseUserService
 from .abc_telegram_auth import BaseTgAuthService
 from .abc_notification import BaseNotificationTextService
 from .abc_order_notification import BaseNotificationService
+from .abc_simple_auth import BaseSimpleAuthService
