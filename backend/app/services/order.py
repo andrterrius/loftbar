@@ -182,6 +182,8 @@ class OrderService(BaseOrderService):
                 confirmed_at=updated_order.confirmed_at,
                 ready_at=updated_order.ready_at,
                 completed_at=updated_order.completed_at,
+                user=UserBase.model_validate(updated_order.user),
+                table=TableBase.model_validate(updated_order.table)
             )
             if updated_order.preset.id:
                 full_preset = await preset_service.get_by_id_(uow, updated_order.preset.id)
