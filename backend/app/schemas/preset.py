@@ -73,6 +73,7 @@ class PresetCreateInOrder(BaseModel):
     """Схема для создания пресета"""
     liquid_id: Optional[UUID] = None
     bowl_id: Optional[UUID] = None
+    strength: int = 1
     flavors: List[FlavorInPreset]
 
     @field_validator('flavors')

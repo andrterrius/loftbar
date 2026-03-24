@@ -68,7 +68,7 @@ class NotificationTextService:
     @staticmethod
     def _format_preset_info(preset) -> str:
         """Форматирует информацию о пресете"""
-        text = f"\n<b>📋 Пресет:</b> {preset.name}\n"
+        text = f"\n"
 
         if preset.liquid:
             text += f"🧪 <b>Колба:</b> {preset.liquid.name} ({preset.liquid.price} ₽)\n"
