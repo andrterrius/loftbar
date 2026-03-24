@@ -2,38 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Flame, ArrowRight, Droplets, QrCode } from "lucide-react";
+import { Flame, ArrowRight, Droplets } from "lucide-react";
 import Nav from "./nav";
 
 const MainSection = () => {
-  const [showQrModal, setShowQrModal] = useState(false);
-
-  useEffect(() => {
-    const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
-    if (!startParam) {
-      setShowQrModal(false);
-    }
-  }, []);
-
   return (
     <>
-      {showQrModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-fuchsia-500/20 flex items-center justify-center mb-4">
-              <QrCode size={32} className="text-fuchsia-400" />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Отсканируй QR-код</h3>
-            <p className="text-neutral-400 text-sm mb-6">
-              Для оформления заказа необходимо отсканировать QR-код на вашем столе.
-            </p>
-            <div className="w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-neutral-500 text-xs text-center">
-              📍 QR-код находится на столике
-            </div>
-          </div>
-        </div>
-      )}
-
       <section className="mt-8 px-5 flex flex-col items-center text-center">
         <Nav/>
 

@@ -33,25 +33,27 @@ export const PRESETS = [
         category: 'Fruity',
         description: 'A refreshing blend of sweet double apple and icy mint.',
         imageUrl: null,
-        liquidId: 'water',
-        ingredients: [
-            { flavorId: '1', percentage: 70 },
-            { flavorId: '2', percentage: 30 }
+        price: 150,
+        liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
+        flavors: [
+            { flavor: FLAVORS[0], percent: 70 },
+            { flavor: FLAVORS[1], percent: 30 }
         ],
-        bowl: BOWL_OPTIONS[0].type
+        bowl: { icon: BOWL_OPTIONS[0].icon, name: BOWL_OPTIONS[0].type }
     },
     {
         id: '2',
-        name: 'Tropical Breeze',
+        name: 'Double Apple',
         category: 'Tropical',
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
-        liquidId: 'water',
-        ingredients: [
-            { flavorId: '3', percentage: 80 },
-            { flavorId: '2', percentage: 20 }
+        price: 180,
+        liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
+        flavors: [
+            { flavor: FLAVORS[2], percent: 80 },
+            { flavor: FLAVORS[1], percent: 20 }
         ],
-        bowl: BOWL_OPTIONS[2].type
+        bowl: { icon: BOWL_OPTIONS[2].icon, name: BOWL_OPTIONS[2].type }
     }
 ];
 

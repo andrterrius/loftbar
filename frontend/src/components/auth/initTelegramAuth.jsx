@@ -1,15 +1,26 @@
 'use client'
 import { apiRequest } from "@/utils/api";
 import { useEffect, useState } from "react";
+import { QrCode } from "lucide-react";
 
 const InitTelegramAuth = () => {
     const [showNameInput, setShowNameInput] = useState(false);
+    const [showQrScan, setShowQrScan] = useState(false);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const initAuth = async () => {
             if (localStorage.getItem('jwt')) return;
+
+            // Проверяем table_id
+            const tableId = window.Telegram?.WebApp?.initDataUnsafe?.start_param
+                || new URLSearchParams(window.location.search).get('table_id');
+            
+            if (!tableId) {
+                setShowQrScan(true);
+                return;
+            }
 
             const tgDataInit = window.Telegram?.WebApp?.initData;
 
@@ -59,7 +70,26 @@ const InitTelegramAuth = () => {
         }
     };
 
-    if (!showNameInput) return null;
+    if (!showNameInput && !showQrScan) return null;
+
+    if (showQrScan) {
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-fuchsia-500/20 flex items-center justify-center mb-6">
+                        <QrCode size={48} className="text-fuchsia-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2">Отсканируйте QR</h3>
+                    <p className="text-neutral-400 text-sm mb-6">
+                        Покажите телефон камере QR кода на столе
+                    </p>
+                    <p className="text-neutral-500 text-xs">
+                        или откройте приложение через ссылку в Telegram
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
