@@ -146,13 +146,15 @@ const MainBuilderPage = () => {
     const handleConfirmedOrder = async () => {
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param || 'unknown_table',
-            special_requests: comment.trim() || undefined,
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
+                || new URLSearchParams(window.location.search).get('table_id')
+                || 'unknown_table',
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
                 flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
                 strength: strength,
+                special_requests: comment.trim() || undefined,
             }
         };
         try {
