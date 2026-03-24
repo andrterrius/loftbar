@@ -1,13 +1,15 @@
+// components/nav.jsx
 'use client'
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Flame, Grid, Home, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from 'next/navigation';
 import { getUrlWithParams } from '../utils/urlParams';
 
-const Nav = () => {
+// Отдельный компонент, который использует useSearchParams
+const NavContent = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const searchParams = useSearchParams();
 
@@ -18,7 +20,7 @@ const Nav = () => {
     ];
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
+        <>
             <div className="mx-auto flex h-14 max-w-sm items-center justify-between px-4">
                 <div className="text-lg font-bold text-white tracking-tight">
                     <Link href={getUrlWithParams('/', searchParams)}>
@@ -61,6 +63,26 @@ const Nav = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+        </>
+    );
+};
+
+// Основной компонент с Suspense
+const Nav = () => {
+    return (
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md">
+            <Suspense fallback={
+                <div className="mx-auto flex h-14 max-w-sm items-center justify-between px-4">
+                    <div className="text-lg font-bold text-white tracking-tight">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500">
+                            Loft bar
+                        </span>
+                    </div>
+                    <div className="w-8 h-8 bg-neutral-800 rounded animate-pulse" />
+                </div>
+            }>
+                <NavContent />
+            </Suspense>
         </nav>
     );
 }
