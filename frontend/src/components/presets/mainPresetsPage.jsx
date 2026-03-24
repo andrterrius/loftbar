@@ -53,7 +53,9 @@ const MainPresetsPage = () => {
     const handleOrder = async (preset) => {
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param || 'unknown_table',
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
+                || new URLSearchParams(window.location.search).get('table_id')
+                || 'unknown_table',
             preset_id: preset.id
         };
         try {
