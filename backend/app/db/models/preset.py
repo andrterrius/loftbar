@@ -22,6 +22,7 @@ class DBPreset(TimestampMixin, Base):
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
+    strength: Mapped[float] = mapped_column(Integer, default=1, nullable=False)
     description: Mapped[str] = mapped_column(String(64), nullable=True)
     hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
 

@@ -6,15 +6,35 @@ from telegram_init_data import InitData
 from app.core.security.abc_jwt_service import BaseJWTService
 from app.db.uow import BaseUnitOfWork
 
-from app.schemas.auth import SuccessAuth
+from app.schemas.auth import LoginSimpleRequest, SuccessAuth
 from app.schemas.error import ErrorResponse
-from app.services.abc import BaseTgAuthService
+from app.services.abc import (
+    BaseTgAuthService,
+    BaseSimpleAuthService
+)
+
 
 users_router = APIRouter(
      prefix="/users",
      tags=["users"],
      route_class=DishkaRoute
 )
+
+@users_router.post("/login/simple",
+                   response_model=SuccessAuth,
+                   responses={
+                       401: {"model": ErrorResponse, "description": "Ошибка авторизации. error_type=tauth_error"}
+                   }
+)
+async def login_simple(
+        login_data: LoginSimpleRequest,
+        uow: FromDishka[BaseUnitOfWork],
+        jwt_service: FromDishka[BaseJWTService],
+        simple_auth_service: FromDishka[BaseSimpleAuthService],
+):
+    """Обменять simple login body на jwt токен (access_token)"""
+    async with uow:
+        return await simple_auth_service.authenticate(uow, jwt_service, login_data)
 
 @users_router.post("/login",
                    response_model=SuccessAuth,

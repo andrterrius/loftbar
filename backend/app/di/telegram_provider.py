@@ -34,7 +34,7 @@ class TelegramProvider(Provider):
         init_data_header = request.headers.get("X-Init-Data")
 
         if not init_data_header:
-            raise MissedInitDataHeader()
+            return None
 
         try:
             validate(

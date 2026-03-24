@@ -4,6 +4,8 @@ from fastapi import Request
 from app.core.config import Config
 from app.core.security.jwt_service import JWTService
 from app.core.security.abc_jwt_service import BaseJWTService
+from app.services.abc import BaseSimpleAuthService
+from app.services import SimpleAuthService
 from app.db.uow import BaseUnitOfWork
 from app.schemas.auth import CurrentUser
 
@@ -67,3 +69,7 @@ class AuthProvider(Provider):
         return CurrentUser(
             id=user_id,
         )
+
+    @provide(scope=Scope.REQUEST, provides=BaseSimpleAuthService)
+    async def get_simple_auth_service(self):
+        return SimpleAuthService()

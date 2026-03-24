@@ -36,6 +36,9 @@ class IUsersRepository(Protocol):
     async def get_by_username(self, username: str) -> Optional[Any]:
         ...
 
+    async def get_by_first_name(self, first_name: str) -> Optional[Any]:
+        ...
+
     async def get_admins(self) -> Sequence[Any]:
         ...
 
@@ -88,6 +91,9 @@ class UsersRepository(SQLAlchemyRepository[DBUser], IUsersRepository):
 
     async def get_by_username(self, username: str) -> Optional[DBUser]:
         return await self.get_one(username=username)
+
+    async def get_by_first_name(self, first_name: str) -> Optional[DBUser]:
+        return await self.get_one(first_name=first_name)
 
     async def get_admins(self) -> Sequence[DBUser]:
         return await self.get_all(is_admin=True)
