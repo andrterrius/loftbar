@@ -22,9 +22,9 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
             setInputValue(String(Math.round(percentage)));
             return;
         }
-        const clamped = Math.max(1, Math.min(99, parsed));
+        const clamped = Math.max(1, Math.min(100, parsed));
         setInputValue(String(clamped));
-        onChange(clamped);
+        onChange(clamped, false); // ← ввод с клавиатуры: без авто-нормализации
     };
 
     return (
@@ -93,7 +93,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                     </div>
                 </div>
 
-                {/* Слайдер — перераспределяет сразу */}
+                {/* Слайдер — перераспределяет остальные автоматически */}
                 <input
                     type="range"
                     min="1"
@@ -102,7 +102,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setInputValue(String(val));
-                        onChange(val);
+                        onChange(val, true); // ← ползунок: авто-нормализация
                     }}
                     className="w-full h-2 rounded-lg appearance-none cursor-pointer"
                     style={{

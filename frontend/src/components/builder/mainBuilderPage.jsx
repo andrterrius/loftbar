@@ -75,12 +75,23 @@ const MainBuilderPage = () => {
             });
     }, []); 
 
-    const handlePercentageChange = (id, newPercentage) => {
+    const handlePercentageChange = (id, newPercentage, fromSlider = true) => {
         if (selectedFlavors.length <= 1) {
             // Если один вкус — просто фиксируем 100
             setSelectedFlavors(prev => prev.map(f => f.flavorId === id ? { ...f, percentage: 100 } : f));
             return;
         }
+
+        if (!fromSlider) {
+            // Ввод с клавиатуры — просто обновляем значение без перераспределения
+            const targetPct = Math.max(0, Math.min(100, newPercentage));
+            setSelectedFlavors(prev => prev.map(f =>
+                f.flavorId === id ? { ...f, percentage: targetPct } : f
+            ));
+            return;
+        }
+
+        // Ползунок — авто-нормализация как прежде
         const targetPct = Math.max(0, Math.min(100, newPercentage));
         const others = selectedFlavors.filter(f => f.flavorId !== id);
         const sumOthers = others.reduce((acc, f) => acc + f.percentage, 0);
@@ -126,13 +137,18 @@ const MainBuilderPage = () => {
     const handleOrder = async () => {
         if (selectedFlavors.length === 0) return alert('Mix is empty!');
         if (!selectedLiquid) return alert('Select base liquid!');
+        const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
+        if (total > 100.01) return alert('Сумма процентов превышает 100%. Скорректируйте микс.');
+        if (total < 99.99) return alert('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
         setIsConfirmOpen(true);
     };
 
     const handleConfirmedOrder = async () => {
         setIsSubmitting(true);
         const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param || 'unknown_table',
+            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
+                || new URLSearchParams(window.location.search).get('table_id')
+                || 'unknown_table',
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
@@ -191,10 +207,31 @@ const MainBuilderPage = () => {
                                         percentage={sf.percentage}
                                         color={flavor.hex_color}
                                         onRemove={() => removeFlavorFromMix(sf.flavorId)}
-                                        onChange={(val) => handlePercentageChange(sf.flavorId, val)}
+                                        onChange={(val, fromSlider) => handlePercentageChange(sf.flavorId, val, fromSlider)}
                                     />
                                 );
                             })}
+
+                            {(() => {
+                                const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
+                                const isOver = total > 100.01;
+                                const isUnder = selectedFlavors.length > 0 && total < 99.99;
+                                if (!isOver && !isUnder) return null;
+                                return (
+                                    <div className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium ${
+                                        isOver
+                                            ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                                            : 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400'
+                                    }`}>
+                                        <span>
+                                            {isOver ? '⚠ Сумма процентов превышает 100%' : 'ℹ Сумма процентов меньше 100%'}
+                                        </span>
+                                        <span className="font-mono font-bold">
+                                            {Math.round(total)}%
+                                        </span>
+                                    </div>
+                                );
+                            })()}
 
                             {selectedFlavors.length === 0 && (
                                 <div className="p-8 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-neutral-500 h-64">
