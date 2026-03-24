@@ -32,7 +32,7 @@ class NotificationTextService:
         if order.table:
             text += self._format_table_info(order.table)
 
-        if order.preset and order.preset.is_available:
+        if order.preset:
             text += self._format_preset_info(order.preset)
         elif order.composition_snapshot:
             text += self._format_snapshot_info(order.composition_snapshot)
