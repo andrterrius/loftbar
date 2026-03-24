@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter } from "lucide-react";
 import Nav from "../nav";
 import { getPresets, createOrder } from "@/utils/api";
+import { PRESETS } from "../moks/moks";
 
 const PresetCardSkeleton = () => (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col w-full animate-pulse">
@@ -40,14 +41,20 @@ const MainPresetsPage = () => {
 
     useEffect(() => {
         getPresets()
-            .then(setAvailablePresets)
-            .catch(console.error)
+            .then(data => {
+                if (!data || data.length === 0) throw new Error();
+                setAvailablePresets(data);
+            })
+            .catch(() => {
+                setAvailablePresets(PRESETS);
+            })
             .finally(() => setPresetsLoading(false));
     }, []);
 
     const displayedPresets = availablePresets.filter(preset =>
         preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        preset.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        preset.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (preset.flavors || []).some(flavor => flavor.flavor?.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const handleOrder = async (preset) => {
