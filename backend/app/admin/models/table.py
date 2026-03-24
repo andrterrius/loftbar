@@ -22,15 +22,22 @@ class TableAdmin(ModelView, model=DBTable):
         "description": "Описание",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
+        "table_link": "Ссылка на столик"
     }
 
     column_list = [
         DBTable.number,
         DBTable.name,
+        "table_link",
         DBTable.seats,
         DBTable.is_available,
         DBTable.location,
         DBTable.created_at,
+    ]
+
+    column_details_list = column_list + [
+        DBTable.updated_at,
+        DBTable.description,
     ]
 
     column_searchable_list = [DBTable.number, DBTable.name, DBTable.location]
@@ -92,10 +99,29 @@ class TableAdmin(ModelView, model=DBTable):
     def _available_formatter(m, a):
         return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
 
+    def _table_link_formatter(m, a):
+        if m.id:
+            # Используем JavaScript для получения текущего домена
+            # Ссылка будет создана на клиентской стороне
+            return Markup(f'''
+                <script>
+                    (function() {{
+                        var link = document.createElement('a');
+                        link.href = window.location.origin + '/?table_id={m.id}';
+                        link.textContent = window.location.origin + '/?table_id={m.id}';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.write(link.outerHTML);
+                    }})();
+                </script>
+            ''')
+        return Markup("-")
+
     column_formatters = {
         DBTable.is_available: _available_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
-        "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
+        "updated_at": lambda m, a: format_datetime_msk(m.updated_at),
+        "table_link": _table_link_formatter
     }
 
     column_formatters_detail = column_formatters
