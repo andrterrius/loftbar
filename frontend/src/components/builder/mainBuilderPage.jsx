@@ -6,6 +6,7 @@ import { X, Search, Plus, RussianRuble } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { getBowls, getFlavours, getBasePrice, getLiquids, createOrder } from "@/utils/api";
+import { FLAVORS, BOWL_OPTIONS, LIQUIDS, SETTINGS } from "../moks/moks";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -26,24 +27,52 @@ const MainBuilderPage = () => {
     const [bowlsLoading, setBowlsLoading] = useState(true);
     const [basePrice, setBasePrice] = useState(0);
     const [liquids, setLiquids] = useState([]);
+    const [strength, setStrength] = useState(5);
+    const [comment, setComment] = useState('');
 
     useEffect(() => {
         getFlavours()
-            .then(data => setFlavors(data))
+            .then(data => {
+                if (!data || data.length === 0) throw new Error();
+                setFlavors(data);
+            })
+            .catch(() => {
+                setFlavors(FLAVORS.map(f => ({ ...f, hex_color: f.color })));
+            })
             .finally(() => setFlavorsLoading(false));
+
         getBowls()
-            .then(data => { setBowlOptions(data); setSelectedBowl(data[0]?.id || null); })
-            .catch(console.error)
+            .then(data => {
+                if (!data || data.length === 0) throw new Error();
+                setBowlOptions(data);
+                setSelectedBowl(data[0]?.id || null);
+            })
+            .catch(() => {
+                const fallbackBowls = BOWL_OPTIONS.map((b, i) => ({
+                    ...b,
+                    id: b.id || `mock-b-${i}`,
+                    name: b.type,
+                    category: b.isFruit ? 'fruit' : 'classic'
+                }));
+                setBowlOptions(fallbackBowls);
+                setSelectedBowl(fallbackBowls[0]?.id);
+            })
             .finally(() => setBowlsLoading(false));
+
         getBasePrice()
-            .then(data => setBasePrice(data?.base_price ?? 0))
-            .catch(console.error);
+            .then(data => setBasePrice(data?.base_price ?? SETTINGS.basePrice))
+            .catch(() => setBasePrice(SETTINGS.basePrice));
+
         getLiquids()
             .then(data => {
+                if (!data || data.length === 0) throw new Error();
                 setLiquids(data);
                 setSelectedLiquid(data[0]?.id || null);
             })
-            .catch(console.error);
+            .catch(() => {
+                setLiquids(LIQUIDS);
+                setSelectedLiquid(LIQUIDS[0]?.id);
+            });
     }, []); 
 
     const handlePercentageChange = (id, newPercentage) => {
@@ -86,7 +115,8 @@ const MainBuilderPage = () => {
 
     const calculatePrice = () => {
         const bowl = bowlOptions.find(b => b.id === selectedBowl);
-        return basePrice + (bowl?.price ?? 0) + (liquids.find(l => l.id === selectedLiquid)?.price ?? 0);
+        const liquid = liquids.find(l => l.id === selectedLiquid);
+        return basePrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
     };
 
     const handleOrder = async () => {
@@ -102,7 +132,9 @@ const MainBuilderPage = () => {
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
-                flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage }))
+                flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
+                strength,
+                comment: comment.trim() || undefined,
             }
         };
         try {
@@ -136,8 +168,8 @@ const MainBuilderPage = () => {
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-6 text-left">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Конструктор Миксов</h1>
-                        <p className="text-neutral-400 text-sm md:text-base">Создай свою идеальную чашу</p>
+                        <h1 className="text-3xl font-bold text-white mb-2">Конструктор кальяна</h1>
+                        <p className="text-neutral-400 text-sm md:text-base">Создай свой идеальный кальян</p>
                     </div>
                 </div>
 
@@ -181,7 +213,7 @@ const MainBuilderPage = () => {
                     <div className="space-y-6">
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Вид Чаши</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Чаша</h3>
                             {bowlsLoading ? (
                                 <div className="grid grid-cols-4 gap-2">
                                     {Array.from({ length: 8 }).map((_, i) => <BowlSkeleton key={i} />)}
@@ -245,6 +277,46 @@ const MainBuilderPage = () => {
                             )}
                         </div>
 
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
+                            <h3 className="text-lg font-semibold text-white mb-4">Крепость</h3>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-neutral-400 text-sm">Лёгкий</span>
+                                    <span className="font-mono text-fuchsia-400 font-bold text-lg">{strength}</span>
+                                    <span className="text-neutral-400 text-sm">Крепкий</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="10"
+                                    value={strength}
+                                    onChange={(e) => setStrength(parseInt(e.target.value))}
+                                    className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-fuchsia-500"
+                                    style={{
+                                        background: `linear-gradient(to right, #a21caf 0%, #a21caf ${(strength - 1) / 9 * 100}%, #262626 ${(strength - 1) / 9 * 100}%, #262626 100%)`
+                                    }}
+                                />
+                                <div className="flex justify-between text-[10px] text-neutral-600">
+                                    {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                                        <span key={n}>{n}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
+                            <h3 className="text-lg font-semibold text-white mb-4">Пожелания</h3>
+                            <textarea
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                placeholder="Комментарий к заказу..."
+                                rows={3}
+                                maxLength={300}
+                                className="w-full bg-neutral-900 border border-white/10 rounded-xl p-3 text-white placeholder-neutral-600 text-sm outline-none focus:border-fuchsia-500/50 transition-colors resize-none"
+                            />
+                            <p className="text-[10px] text-neutral-600 text-right mt-1">{comment.length}/300</p>
+                        </div>
+
                         <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-6 shadow-xl">
                             <div className="flex justify-between items-center mb-4">
                                 <span className="text-neutral-400">Итоговая цена</span>
@@ -264,7 +336,6 @@ const MainBuilderPage = () => {
                     </div>
                 </div>
 
-                {/* Модалка поиска */}
                 <AnimatePresence>
                     {isSearchOpen && (
                         <div
@@ -384,17 +455,23 @@ const MainBuilderPage = () => {
                             })}
                         </div>
 
-                        <div className="flex gap-1.5 flex-wrap mb-5">
-                            {selectedBowlData && (
-                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
-                                    {selectedBowlData.icon} {selectedBowlData.name}
-                                </span>
-                            )}
-                            {selectedLiquidData && (
-                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
-                                    💧 {selectedLiquidData.name}
-                                </span>
-                            )}
+                        <div className="flex gap-4 mb-5">
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-medium">Чаша</span>
+                                {selectedBowlData && (
+                                    <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
+                                        {selectedBowlData.icon} {selectedBowlData.name}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-medium">Колба</span>
+                                {selectedLiquidData && (
+                                    <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
+                                        💧 {selectedLiquidData.name}
+                                    </span>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
@@ -422,7 +499,6 @@ const MainBuilderPage = () => {
                 </div>
             )}
 
-            {/* Модалка успешного заказа */}
             {successOrderId !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
