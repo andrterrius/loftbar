@@ -1,10 +1,33 @@
 'use client'
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
 const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
-    return ( 
+    const [inputValue, setInputValue] = useState(String(Math.round(percentage)));
+    const [isFocused, setIsFocused] = useState(false);
+
+    // Обновляем отображение только когда инпут не в фокусе
+    useEffect(() => {
+        if (!isFocused) {
+            setInputValue(String(Math.round(percentage)));
+        }
+    }, [percentage, isFocused]);
+
+    const handleCommit = () => {
+        setIsFocused(false);
+        const parsed = parseInt(inputValue, 10);
+        if (isNaN(parsed) || inputValue === '') {
+            setInputValue(String(Math.round(percentage)));
+            return;
+        }
+        const clamped = Math.max(1, Math.min(99, parsed));
+        setInputValue(String(clamped));
+        onChange(clamped);
+    };
+
+    return (
         <motion.div
             layout
             initial={{ opacity: 0, scale: 0.9 }}
@@ -14,27 +37,15 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
         >
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    {/* Аватар: картинка если есть, иначе цветной круг с буквой */}
                     <div
                         style={{
-                            width: '40px',
-                            height: '40px',
-                            minWidth: '40px',
-                            maxWidth: '40px',
-                            maxHeight: '40px',
-                            flex: 'none',
-                            borderRadius: '50%',
-                            overflow: 'hidden',
+                            width: '40px', height: '40px', minWidth: '40px',
+                            flex: 'none', borderRadius: '50%', overflow: 'hidden',
                             backgroundColor: color || '#ccc',
                             backgroundImage: item.image_url ? `url(${item.image_url})` : 'none',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            color: 'rgba(0,0,0,0.6)',
+                            backgroundSize: 'cover', backgroundPosition: 'center',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '14px', fontWeight: 'bold', color: 'rgba(0,0,0,0.6)',
                         }}
                     >
                         {!item.image_url && item.name[0]}
@@ -50,30 +61,63 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
             </div>
 
             <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm">
                     <span className="text-neutral-300">Процент</span>
-                    <span className="font-mono text-cyan-400">{Math.round(percentage)}%</span>
+
+                    {/* Редактируемый процент */}
+                    <div className="relative flex items-center">
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            value={inputValue}
+                            onFocus={(e) => {
+                                setIsFocused(true);
+                                e.target.select();
+                            }}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '');
+                                setInputValue(val);
+                            }}
+                            onBlur={handleCommit}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') e.target.blur();
+                                if (e.key === 'Escape') {
+                                    setInputValue(String(Math.round(percentage)));
+                                    setIsFocused(false);
+                                    e.target.blur();
+                                }
+                            }}
+                            className="w-14 text-center bg-neutral-800 border border-white/10 rounded-lg py-0.5 pr-4 text-sm font-mono text-cyan-400 outline-none focus:border-cyan-500/60 transition-colors"
+                        />
+                        <span className="absolute right-2 text-xs text-neutral-500 pointer-events-none">%</span>
+                    </div>
                 </div>
+
+                {/* Слайдер — перераспределяет сразу */}
                 <input
                     type="range"
-                    min="0"
-                    max="100"
-                    value={percentage}
-                    onChange={(e) => onChange(parseInt(e.target.value))}
-                    className="w-full h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400"
+                    min="1"
+                    max="99"
+                    value={isFocused ? (parseInt(inputValue) || Math.round(percentage)) : Math.round(percentage)}
+                    onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setInputValue(String(val));
+                        onChange(val);
+                    }}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
                     style={{
-                        background: `linear-gradient(to right, ${color} 0%, ${color} ${percentage}%, #262626 ${percentage}%, #262626 100%)`
+                        background: `linear-gradient(to right, ${color} 0%, ${color} ${Math.round(percentage)}%, #262626 ${Math.round(percentage)}%, #262626 100%)`
                     }}
                 />
             </div>
-        
+
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/5 to-transparent rounded-tr-xl pointer-events-none" />
-            <div 
+            <div
                 className="absolute bottom-0 left-0 w-full h-1 rounded-b-xl opacity-50"
                 style={{ backgroundColor: color }}
             />
         </motion.div>
     );
 }
- 
+
 export default FlavorCard;

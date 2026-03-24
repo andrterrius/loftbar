@@ -76,11 +76,15 @@ const MainBuilderPage = () => {
     }, []); 
 
     const handlePercentageChange = (id, newPercentage) => {
-        if (selectedFlavors.length <= 1) return;
+        if (selectedFlavors.length <= 1) {
+            // Если один вкус — просто фиксируем 100
+            setSelectedFlavors(prev => prev.map(f => f.flavorId === id ? { ...f, percentage: 100 } : f));
+            return;
+        }
         const targetPct = Math.max(0, Math.min(100, newPercentage));
-        const remainder = 100 - targetPct;
         const others = selectedFlavors.filter(f => f.flavorId !== id);
         const sumOthers = others.reduce((acc, f) => acc + f.percentage, 0);
+        const remainder = 100 - targetPct;
         const updated = selectedFlavors.map(f => {
             if (f.flavorId === id) return { ...f, percentage: targetPct };
             const newPct = sumOthers === 0
@@ -133,8 +137,8 @@ const MainBuilderPage = () => {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
                 flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
-                strength,
-                comment: comment.trim() || undefined,
+                strength: strength,
+                special_requests: comment.trim() || undefined,
             }
         };
         try {
