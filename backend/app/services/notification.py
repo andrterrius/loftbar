@@ -32,7 +32,7 @@ class NotificationTextService:
         if order.table:
             text += self._format_table_info(order.table)
 
-        if order.preset and not is_update:
+        if order.preset and order.preset.is_available:
             text += self._format_preset_info(order.preset)
         elif order.composition_snapshot:
             text += self._format_snapshot_info(order.composition_snapshot)
@@ -95,10 +95,7 @@ class NotificationTextService:
     @staticmethod
     def _format_snapshot_info(snapshot) -> str:
         """Форматирует информацию из снимка заказа"""
-        text = f"\n<b>📋 Состав заказа:</b>\n"
-
-        if snapshot.get("name"):
-            text += f"  Название: {snapshot['name']}\n"
+        text = f"\n"
 
         if snapshot.get("preset_flavors"):
             text += f"\n<b>🍓 Вкусы:</b>\n"
