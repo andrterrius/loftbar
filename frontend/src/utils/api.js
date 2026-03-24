@@ -14,7 +14,8 @@ async function login() {
 
 export async function apiRequest(endpoint, options = {}, attempt = 1) {
     const MAX_ATTEMPTS = 3;
-    let token = localStorage.getItem('jwt') || '';
+    let token = localStorage.getItem('jwt');
+    if (!token) return
 
     const config = {
         ...options,
@@ -33,7 +34,6 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
             // все попытки исчерпаны закрываем приложение
             window.Telegram?.WebApp?.close();
             localStorage.removeItem("jwt");
-            window.location.reload();
             return;
         }
 
