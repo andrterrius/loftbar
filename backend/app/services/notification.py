@@ -26,19 +26,9 @@ class NotificationTextService:
     ) -> str:
         """Генерирует текст уведомления о заказе"""
 
-        order_type = "🎨 Кастомный" if order.is_custom else "📋 Готовый"
-
         text = (
             f"🆕 <b>{'НОВЫЙ' if not is_update else 'ОБНОВЛЕННЫЙ'} ЗАКАЗ <code>{order.id}</code></b>\n\n"
-            f"📊 <b>Статус:</b> {self.get_status_emoji(order.status)}\n"
-            f"💰 <b>Сумма:</b> {order.total_price} ₽\n"
-            f"📦 <b>Тип:</b> {order_type}\n"
         )
-
-        # Добавляем информацию о пользователе
-        if order.user:
-            text += self._format_user_info(order.user)
-
         if order.table:
             text += self._format_table_info(order.table)
 
@@ -47,14 +37,15 @@ class NotificationTextService:
         elif order.composition_snapshot:
             text += self._format_snapshot_info(order.composition_snapshot)
 
-        if order.is_custom and order.custom_name:
-            text += f"\n🏷️ <b>Название:</b> {order.custom_name}\n"
+        if order.user:
+            text += self._format_user_info(order.user)
 
         if order.special_requests:
             text += f"\n📝 <b>Пожелания:</b> {order.special_requests}\n"
 
         text += f"\n⏰ <b>Создан:</b> {format_datetime_msk(order.created_at)}"
-
+        text += f"\n📊 <b>Статус:</b> {self.get_status_emoji(order.status)}\n"
+        text += f"\n\n💰 <b>Сумма:</b> {order.total_price} ₽\n"
         return text
 
     @staticmethod
@@ -71,12 +62,7 @@ class NotificationTextService:
     @staticmethod
     def _format_table_info(table) -> str:
         """Форматирует информацию о столике"""
-        text = f"\n🪑 <b>Столик:</b>\n  • Номер: {table.number}\n"
-        if table.name:
-            text += f"  • Название: {table.name}\n"
-        if table.location:
-            text += f"  • Расположение: {table.location}\n"
-        text += f"  • Мест: {table.seats}\n"
+        text = f"\n🪑 <b>Столик: {table.name}</b>"
         return text
 
     @staticmethod
@@ -85,11 +71,12 @@ class NotificationTextService:
         text = f"\n<b>📋 Пресет:</b> {preset.name}\n"
 
         if preset.liquid:
-            text += f"🧪 <b>Основа:</b> {preset.liquid.name} ({preset.liquid.price} ₽)\n"
+            text += f"🧪 <b>Колба:</b> {preset.liquid.name} ({preset.liquid.price} ₽)\n"
 
         if preset.bowl:
             icon = preset.bowl.icon or ''
             text += f"🥣 <b>Чаша:</b> {preset.bowl.name} {icon} ({preset.bowl.price} ₽)\n"
+
 
         if preset.flavors:
             text += f"\n<b>🍓 Вкусы:</b>\n"
@@ -99,6 +86,9 @@ class NotificationTextService:
                 brand = f" ({flavor.brand})" if flavor and flavor.brand else ""
                 name = flavor.name if flavor else "Неизвестный вкус"
                 text += f"  • {name}{brand} — {percent}%\n"
+
+        if preset.strength:
+            text += f"\n💨<b>Крепкость:</b> {preset.strength}\n"
 
         return text
 
