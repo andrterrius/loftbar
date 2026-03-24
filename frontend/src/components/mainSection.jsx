@@ -11,7 +11,7 @@ const MainSection = () => {
   useEffect(() => {
     const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
     if (!startParam) {
-      setShowQrModal(true);
+      setShowQrModal(false);
     }
   }, []);
 
@@ -40,25 +40,25 @@ const MainSection = () => {
         <h1 className="mt-20 text-4xl font-bold text-white leading-tight">
           <span className="block">Создай свой идеальный</span>
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400">
-            микс вкусов
+            кальян
           </span>
         </h1>
 
         <p className="mt-4 max-w-sm text-zinc-400 text-sm leading-relaxed">
-          Открой для себя тысячи комбинаций вкусов и исследуй любимые сообщества.
+          Открой для себя тысячи комбинаций вкусов
         </p>
 
         <div className="mt-10 flex flex-col gap-4 w-full max-w-[300px]">
           <Link href="/builder" className="w-full">
             <button className="flex items-center justify-center gap-2 py-4 w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform">
-              <span>Собрать Свой Микс</span>
+              <span>Собрать Свой Кальян</span>
               <Flame className="w-5 h-5 fill-white" />
             </button>
           </Link>
 
           <Link href="/presets" className="w-full">
             <button className="flex items-center justify-center gap-2 py-4 w-full bg-zinc-900/50 border border-zinc-800 text-white font-semibold rounded-2xl active:scale-95 transition-transform hover:bg-zinc-800">
-              <span>Готовые миксы</span>
+              <span>Готовые Кальяны</span>
               <ArrowRight className="w-5 h-5 text-zinc-500" />
             </button>
           </Link>
