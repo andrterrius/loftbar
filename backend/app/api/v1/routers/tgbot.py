@@ -8,7 +8,8 @@ from app.db.uow import BaseUnitOfWork
 from app.services.abc import (
     BaseUserService,
     BaseOrderService,
-    BaseNotificationService
+    BaseNotificationService,
+    BasePresetService
 )
 
 from app.schemas.tgbot import TgBotAuthInfo
@@ -40,10 +41,11 @@ async def update_order_status(
     uow: FromDishka[BaseUnitOfWork],
     tg_bot: FromDishka[Bot],
     order_notification_service: FromDishka[BaseNotificationService],
+    preset_service: FromDishka[BasePresetService],
     background_tasks: BackgroundTasks,
 ):
     """Обновить статус заказа"""
-    order_out = await order_service.update_order_status(uow, order_status.id, order_status.status)
+    order_out = await order_service.update_order_status(uow, order_status.id, order_status.status, preset_service)
 
     notify_answer = await order_notification_service.notify_order_edited(
         bot=tg_bot,

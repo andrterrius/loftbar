@@ -70,9 +70,7 @@ class OrdersRepository(SQLAlchemyRepository[DBOrder]):
             select(DBOrder)
             .where(DBOrder.id == order_id)
             .options(
-                selectinload(DBOrder.preset).selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor),
-                selectinload(DBOrder.preset).selectinload(DBPreset.liquid),
-                selectinload(DBOrder.preset).selectinload(DBPreset.bowl),
+                selectinload(DBOrder.preset),
                 selectinload(DBOrder.user),
                 selectinload(DBOrder.table)
             )

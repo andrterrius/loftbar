@@ -149,8 +149,13 @@ class OrderService(BaseOrderService):
 
             return order_out
 
-    async def update_order_status(self, uow: BaseUnitOfWork, order_id: UUID,
-                                  new_status: OrderStatus, user_id: Optional[UUID] = None) -> OrderOutAdmin:
+    async def update_order_status(
+            self,
+            uow: BaseUnitOfWork,
+            order_id: UUID,
+            new_status: OrderStatus,
+            preset_service: BasePresetService,
+            user_id: Optional[UUID] = None) -> OrderOutAdmin:
         async with uow:
             order = await uow.orders.get_by_id(order_id)
             if not order:
@@ -163,10 +168,26 @@ class OrderService(BaseOrderService):
                 order_id=order_id,
                 status=new_status
             )
+            order_out = OrderOutAdmin(
+                id=updated_order.id,
+                status=updated_order.status,
+                total_price=updated_order.total_price,
+                special_requests=updated_order.special_requests,
+                is_custom=updated_order.is_custom,
+                custom_name=updated_order.custom_name,
+                composition_snapshot=updated_order.composition_snapshot,
+                admin_notification_sent=updated_order.admin_notification_sent,
+                created_at=updated_order.created_at,
+                updated_at=updated_order.updated_at,
+                confirmed_at=updated_order.confirmed_at,
+                ready_at=updated_order.ready_at,
+                completed_at=updated_order.completed_at,
+            )
+            if updated_order.preset.id:
+                full_preset = await preset_service.get_by_id_(uow, updated_order.preset.id)
+                order_out.preset = full_preset
 
-            updated_order.preset.price = updated_order.preset.total_price
-
-            return OrderOutAdmin.model_validate(updated_order)
+            return order_out
 
     def _can_transition_status(self, current_status: OrderStatus, new_status: OrderStatus) -> bool:
         # Словарь допустимых переходов
