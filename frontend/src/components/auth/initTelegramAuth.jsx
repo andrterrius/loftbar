@@ -13,8 +13,6 @@ const InitTelegramAuth = () => {
         const initAuth = async () => {
             const tableId = window.Telegram?.WebApp?.initDataUnsafe?.start_param
                 || new URLSearchParams(window.location.search).get('table_id');
-
-            console.log(tableId);
             
             if (!tableId) {
                 setShowQrScan(true);

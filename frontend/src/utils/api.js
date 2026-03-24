@@ -32,6 +32,8 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
         if (attempt >= MAX_ATTEMPTS) {
             // все попытки исчерпаны закрываем приложение
             window.Telegram?.WebApp?.close();
+            localStorage.removeItem("jwt");
+            window.location.reload();
             return;
         }
 
