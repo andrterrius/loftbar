@@ -93,6 +93,7 @@ class OrderService(BaseOrderService):
                     name=f"Кастомный пресет",
                     category="Пользовательский",
                     is_available=False,
+                    strength=order.preset.strength,
                     liquid_id=order.preset.liquid_id,
                     bowl_id=order.preset.bowl_id,
                     flavors=order.preset.flavors

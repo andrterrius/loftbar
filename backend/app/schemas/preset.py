@@ -103,6 +103,15 @@ class PresetCreateInOrder(BaseModel):
                 raise ValueError(f'Сумма процентов вкусов может быть максимум 100%, у вас {total_percent}%')
         return v
 
+    @field_validator('strength')
+    @classmethod
+    def validate_strength_range(cls, v: int) -> int:
+        """Проверка, strength в пределах от 1 до 10"""
+        if v:
+            if not (1 <= v <= 10):
+                raise ValueError(f'Крепкость может быть только в интервале от 1 до 10 включительно')
+        return v
+
 class PresetUpdate(PresetCreate):
     """Схема для обновления пресета"""
     pass
@@ -112,6 +121,7 @@ class PresetOut(PresetBase):
     id: UUID
     price: float
     is_available: bool
+    strength: int
     bowl: BowlOut
     liquid: LiquidOut
     flavors: List[FlavorInPresetOut] = []

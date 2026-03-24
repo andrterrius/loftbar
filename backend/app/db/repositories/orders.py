@@ -70,11 +70,13 @@ class OrdersRepository(SQLAlchemyRepository[DBOrder]):
             select(DBOrder)
             .where(DBOrder.id == order_id)
             .options(
-                selectinload(DBOrder.preset).selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor),
-                selectinload(DBOrder.preset).selectinload(DBPreset.liquid),
-                selectinload(DBOrder.preset).selectinload(DBPreset.bowl),
                 selectinload(DBOrder.user),
-                selectinload(DBOrder.table)
+                selectinload(DBOrder.table),
+                selectinload(DBOrder.preset).options(
+                    selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor),
+                    selectinload(DBPreset.liquid),
+                    selectinload(DBPreset.bowl)
+                )
             )
         )
         updated_order = result.scalar_one_or_none()
