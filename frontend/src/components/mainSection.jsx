@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Flame, ArrowRight, Droplets } from "lucide-react";
 import Nav from "./nav";
+import { useSearchParams } from 'next/navigation';
+import { getUrlWithParams } from '../utils/urlParams';
 
 const MainSection = () => {
+  const searchParams = useSearchParams();
   return (
     <>
       <section className="mt-8 px-5 flex flex-col items-center text-center">
@@ -23,14 +26,14 @@ const MainSection = () => {
         </p>
 
         <div className="mt-10 flex flex-col gap-4 w-full max-w-[300px]">
-          <Link href="/builder" className="w-full">
+          <Link href={getUrlWithParams('/builder', searchParams)} className="w-full">
             <button className="flex items-center justify-center gap-2 py-4 w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-transform">
               <span>Собрать Свой Кальян</span>
               <Flame className="w-5 h-5 fill-white" />
             </button>
           </Link>
 
-          <Link href="/presets" className="w-full">
+          <Link href={getUrlWithParams('/presets', searchParams)} className="w-full">
             <button className="flex items-center justify-center gap-2 py-4 w-full bg-zinc-900/50 border border-zinc-800 text-white font-semibold rounded-2xl active:scale-95 transition-transform hover:bg-zinc-800">
               <span>Готовые Кальяны</span>
               <ArrowRight className="w-5 h-5 text-zinc-500" />

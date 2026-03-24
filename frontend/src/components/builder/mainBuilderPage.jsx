@@ -107,8 +107,8 @@ const MainBuilderPage = () => {
     };
 
     const addFlavorToMix = (flavor) => {
-        if (selectedFlavors.find(f => f.flavorId === flavor.id)) return alert('Flavor already added');
-        if (selectedFlavors.length >= 5) return alert('Max 5 flavors allowed');
+        if (selectedFlavors.find(f => f.flavorId === flavor.id)) return alert('Вкус уже добавлен');
+        if (selectedFlavors.length >= 5) return alert('Доступно максимум 5 вкусов');
         if (selectedFlavors.length === 0) {
             setSelectedFlavors([{ flavorId: flavor.id, percentage: 100 }]);
         } else {
@@ -135,8 +135,8 @@ const MainBuilderPage = () => {
     };
 
     const handleOrder = async () => {
-        if (selectedFlavors.length === 0) return alert('Mix is empty!');
-        if (!selectedLiquid) return alert('Select base liquid!');
+        if (selectedFlavors.length === 0) return alert('Выберите вкусы!');
+        if (!selectedLiquid) return alert('Выберите наполнение колбы!');
         const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
         if (total > 100.01) return alert('Сумма процентов превышает 100%. Скорректируйте микс.');
         if (total < 99.99) return alert('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
@@ -149,12 +149,12 @@ const MainBuilderPage = () => {
             table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
                 || new URLSearchParams(window.location.search).get('table_id')
                 || 'unknown_table',
+            special_requests: comment.trim() || undefined,
             preset: {
                 liquid_id: selectedLiquid,
                 bowl_id: selectedBowl,
                 flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
                 strength: strength,
-                special_requests: comment.trim() || undefined,
             }
         };
         try {
@@ -297,7 +297,7 @@ const MainBuilderPage = () => {
                             {liquids.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
                                     <span className="text-3xl">💧</span>
-                                    <p className="text-sm text-center">Жидкости не добавлены</p>
+                                    <p className="text-sm text-center">Наполнения колбы не добавлены</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 gap-2">
@@ -319,7 +319,7 @@ const MainBuilderPage = () => {
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Крепость</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Крепкость</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-neutral-400 text-sm">Лёгкий</span>
