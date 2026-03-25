@@ -151,27 +151,32 @@ const MainPresetsPage = () => {
                                                     ))
                                                 )}
                                             </div>
-
                                             <div className="flex gap-2 flex-wrap">
                                                 {preset.bowl && (
-                                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                                                        <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
+                                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
+                                                            <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
+                                                        </span>
+                                                    </div>
                                                 )}
                                                 {preset.liquid && (
-                                                    <span
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
-                                                        style={{
-                                                            backgroundColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}20`
-                                                                : 'rgba(6,182,212,0.1)',
-                                                            borderColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}50`
-                                                                : 'rgba(6,182,212,0.3)',
-                                                        }}
-                                                    >
-                                                        <span className="text-base leading-none">💧</span> {preset.liquid.name}
-                                                    </span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
+                                                        <span
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
+                                                            style={{
+                                                                backgroundColor: preset.liquid.hex_color
+                                                                    ? `${preset.liquid.hex_color}20`
+                                                                    : 'rgba(6,182,212,0.1)',
+                                                                borderColor: preset.liquid.hex_color
+                                                                    ? `${preset.liquid.hex_color}50`
+                                                                    : 'rgba(6,182,212,0.3)',
+                                                            }}
+                                                        >
+                                                            <span className="text-base leading-none">💧</span> {preset.liquid.name}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
 
