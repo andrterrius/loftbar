@@ -11,6 +11,17 @@ const InitTelegramAuth = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        const handleUnauthorized = () => {
+            setShowNameInput(true);
+        };
+
+        window.addEventListener('unauthorized', handleUnauthorized);
+
+        return () => {
+            window.removeEventListener('unauthorized', handleUnauthorized);
+        };
+    }, []);
+    useEffect(() => {
         setMounted(true);
         const initAuth = async () => {
             const tableId = window.Telegram?.WebApp?.initDataUnsafe?.start_param

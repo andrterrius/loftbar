@@ -54,6 +54,7 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
             // все попытки исчерпаны закрываем приложение
             window.Telegram?.WebApp?.close();
             localStorage.removeItem("jwt");
+            window.dispatchEvent(new Event('unauthorized'));
             return;
         }
 
