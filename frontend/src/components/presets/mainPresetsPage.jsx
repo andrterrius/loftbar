@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter } from "lucide-react";
 import Nav from "../nav";
 import { getPresets, createOrder } from "@/utils/api";
@@ -110,93 +109,85 @@ const MainPresetsPage = () => {
                     </div>
                 ) : (
                     <>
-                        <motion.div
-                            layout
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full text-left"
-                        >
-                            <AnimatePresence mode='popLayout'>
-                                {displayedPresets.map((preset) => (
-                                    <motion.div
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        key={preset.id}
-                                        style={{
-                                            borderColor: preset.hex_color
-                                                ? `${preset.hex_color}60`
-                                                : 'rgba(255,255,255,0.1)'
-                                        }}
-                                        className="group relative bg-white/5 border rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all flex flex-col w-full"
-                                    >
-                                        <div className="p-5 flex-1 flex flex-col space-y-4">
-                                            <div>
-                                                <h3 className="text-base font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors leading-snug">
-                                                    {preset.name || 'Без названия'}
-                                                </h3>
-                                                <p className="text-[11px] italic text-neutral-600 mt-1.5 line-clamp-2 min-h-[2rem] leading-relaxed">
-                                                    {preset.description || 'Описание не добавлено'}
-                                                </p>
-                                            </div>
-
-                                            <div className="space-y-1.5 flex-1 min-h-[4rem]">
-                                                {(preset.flavors || []).length === 0 ? (
-                                                    <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
-                                                ) : (
-                                                    (preset.flavors || []).map((ing, i) => (
-                                                        <div key={i} className="flex justify-between items-center">
-                                                            <span className="text-[14px] font-semibold text-white tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
-                                                            <span className="text-[12px] font-mono text-neutral-300 tabular-nums">{ing.percent}%</span>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                            <div className="flex gap-2 flex-wrap">
-                                                {preset.bowl && (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
-                                                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                                                            <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {preset.liquid && (
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
-                                                        <span
-                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
-                                                            style={{
-                                                                backgroundColor: preset.liquid.hex_color
-                                                                    ? `${preset.liquid.hex_color}20`
-                                                                    : 'rgba(6,182,212,0.1)',
-                                                                borderColor: preset.liquid.hex_color
-                                                                    ? `${preset.liquid.hex_color}50`
-                                                                    : 'rgba(6,182,212,0.3)',
-                                                            }}
-                                                        >
-                                                            <span className="text-base leading-none">💧</span> {preset.liquid.name}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="pt-3 border-t border-white/5 flex justify-between items-center mt-auto">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Цена</span>
-                                                    <span className="text-xl font-bold text-white tracking-tight leading-none">{preset.price ?? '—'}<span className="text-neutral-400 text-base font-semibold">₽</span></span>
-                                                </div>
-                                                <button
-                                                    onClick={() => setConfirmPreset(preset)}
-                                                    className="px-5 py-2.5 hover:bg-fuchsia-600 hover:text-white text-white rounded-xl text-[13px] font-semibold tracking-tight transition-all border border-white/15 hover:border-fuchsia-500 bg-white/8"
-                                                >
-                                                    Заказать
-                                                </button>
-                                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full text-left">
+                            {displayedPresets.map((preset) => (
+                                <div
+                                    key={preset.id}
+                                    style={{
+                                        borderColor: preset.hex_color
+                                            ? `${preset.hex_color}60`
+                                            : 'rgba(255,255,255,0.1)'
+                                    }}
+                                    className="group relative bg-white/5 border rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all flex flex-col w-full"
+                                >
+                                    <div className="p-5 flex-1 flex flex-col space-y-4">
+                                        <div>
+                                            <h3 className="text-base font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors leading-snug">
+                                                {preset.name || 'Без названия'}
+                                            </h3>
+                                            <p className="text-[11px] italic text-neutral-600 mt-1.5 line-clamp-2 min-h-[2rem] leading-relaxed">
+                                                {preset.description || 'Описание не добавлено'}
+                                            </p>
                                         </div>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </motion.div>
+
+                                        <div className="space-y-1.5 flex-1 min-h-[4rem]">
+                                            {(preset.flavors || []).length === 0 ? (
+                                                <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
+                                            ) : (
+                                                (preset.flavors || []).map((ing, i) => (
+                                                    <div key={i} className="flex justify-between items-center">
+                                                        <span className="text-[14px] font-semibold text-white tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
+                                                        <span className="text-[12px] font-mono text-neutral-300 tabular-nums">{ing.percent}%</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+
+                                        <div className="flex gap-2 flex-wrap">
+                                            {preset.bowl && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
+                                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
+                                                        <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {preset.liquid && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
+                                                    <span
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
+                                                        style={{
+                                                            backgroundColor: preset.liquid.hex_color
+                                                                ? `${preset.liquid.hex_color}20`
+                                                                : 'rgba(6,182,212,0.1)',
+                                                            borderColor: preset.liquid.hex_color
+                                                                ? `${preset.liquid.hex_color}50`
+                                                                : 'rgba(6,182,212,0.3)',
+                                                        }}
+                                                    >
+                                                        <span className="text-base leading-none">💧</span> {preset.liquid.name}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-3 border-t border-white/5 flex justify-between items-center mt-auto">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Цена</span>
+                                                <span className="text-xl font-bold text-white tracking-tight leading-none">{preset.price ?? '—'}<span className="text-neutral-400 text-base font-semibold">₽</span></span>
+                                            </div>
+                                            <button
+                                                onClick={() => setConfirmPreset(preset)}
+                                                className="px-5 py-2.5 hover:bg-fuchsia-600 hover:text-white text-white rounded-xl text-[13px] font-semibold tracking-tight transition-all border border-white/15 hover:border-fuchsia-500 bg-white/8"
+                                            >
+                                                Заказать
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
                         {displayedPresets.length === 0 && (
                             <div className="py-20 text-center text-neutral-500 w-full">
