@@ -16,6 +16,7 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         "name": "Название",
         "brand": "Бренд",
         "category": "Категория",
+        "description": "Описание",
         "is_available": "В наличии",
         "hex_color": "Цвет",
         "image_url": "Изображение",
@@ -29,13 +30,19 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         DBFlavor.name,
         DBFlavor.brand,
         DBFlavor.category,
+        DBFlavor.description,
         DBFlavor.is_available,
         DBFlavor.image_url,
         DBFlavor.hex_color,
         DBFlavor.created_at
     ]
 
-    column_searchable_list = [DBFlavor.name, DBFlavor.brand, DBFlavor.category]
+    column_searchable_list = [
+        DBFlavor.name,
+        DBFlavor.brand,
+        DBFlavor.category,
+        DBFlavor.description
+    ]
     column_sortable_list = [
         DBFlavor.is_available,
         DBFlavor.created_at]
@@ -63,6 +70,11 @@ class FlavorAdmin(ModelView, model=DBFlavor):
             "label": "Категория",
             "description": "Фруктовый, десертный, мятный и т.д.",
             "render_kw": {"placeholder": "фруктовый/десертный/мятный", "class": "form-control"}
+        },
+        "description": {
+            "label": "Описание",
+            "description": "Red orange и т.д.",
+            "render_kw": {"placeholder": "Red orange...", "class": "form-control"}
         },
         "is_available": {
             "label": "В наличии",

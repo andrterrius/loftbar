@@ -5,6 +5,7 @@ class FlavorBase(BaseModel):
     name: str = Field(..., max_length=64, description="Название вкуса")
     brand: str = Field(..., max_length=64, description="Бренд")
     category: str = Field(..., max_length=32, description="Категория")
+    description: str = Field(..., max_length=64, description="Описание")
     hex_color: Optional[str] = Field(None, max_length=32, description="Цвет в HEX")
     image_url: Optional[str] = Field(None, max_length=255, description="URL изображения")
 
@@ -15,6 +16,7 @@ class FlavorUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=64)
     brand: Optional[str] = Field(None, max_length=64)
     category: Optional[str] = Field(None, max_length=32)
+    description: Optional[str] = Field(None, max_length=64)
     hex_color: Optional[str] = Field(None, max_length=32)
     image_url: Optional[str] = Field(None, max_length=255)
     is_available: Optional[bool] = Field(None, description="Доступность вкуса")

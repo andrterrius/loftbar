@@ -592,7 +592,7 @@
                         <div class="custom-select-trigger">
                             <span class="flavor-selected-text">
                                 {% if pf.flavor %}
-                                    {{ pf.flavor.name }} ({{ pf.flavor.brand }})
+                                    {{ pf.flavor.name }} ({{ pf.flavor.brand }} - {{ pf.flavor.description }})
                                 {% else %}
                                     -- Выберите вкус --
                                 {% endif %}
@@ -608,7 +608,7 @@
                                 <div class="custom-select-option" data-value="{{ flavor.id }}"
                                      data-available="{{ 'true' if flavor.is_available else 'false' }}"
                                      data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
-                                    {{ flavor.name }} ({{ flavor.brand }})
+                                    {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
                                     {% if not flavor.is_available %}
                                     <span class="badge bg-danger">Недоступен</span>
                                     {% else %}
@@ -658,7 +658,7 @@
                             <div class="custom-select-option" data-value="{{ flavor.id }}"
                                  data-available="{{ 'true' if flavor.is_available else 'false' }}"
                                  data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
-                                {{ flavor.name }} ({{ flavor.brand }})
+                                {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
                                 {% if not flavor.is_available %}
                                 <span class="badge bg-danger">Недоступен</span>
                                 {% else %}
@@ -1159,7 +1159,7 @@ function createNewFlavorRow() {
                                 <div class="custom-select-option" data-value="{{ flavor.id }}"
                                      data-available="{{ 'true' if flavor.is_available else 'false' }}"
                                      data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
-                                    {{ flavor.name }} ({{ flavor.brand }})
+                                    {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
                                     {% if not flavor.is_available %}
                                     <span class="badge bg-danger">Недоступен</span>
                                     {% else %}

@@ -454,7 +454,7 @@ const MainBuilderPage = () => {
                                                         </div>
                                                         <div>
                                                             <div className="font-medium text-white group-hover:text-cyan-400 transition-colors">{flavor.name}</div>
-                                                            <div className="text-xs text-neutral-500">{flavor.brand} • {flavor.category}</div>
+                                                            <div className="text-xs text-neutral-500">{flavor.brand} • {flavor.description}</div>
                                                         </div>
                                                     </div>
                                                     <Plus size={18} className="text-neutral-500 group-hover:text-white shrink-0" />
