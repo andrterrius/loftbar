@@ -28,7 +28,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "price": "Цена",
         "is_available": "Доступен",
         "description": "Описание",
-        "strength": "Крепкость",
+        "strength": "крепость",
         "liquid": "Жидкость",
         "bowl": "Чаша",
         "settings": "Настройки",

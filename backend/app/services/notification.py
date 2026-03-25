@@ -89,7 +89,7 @@ class NotificationTextService:
                 text += f"  • {name}{description} — {percent}%\n"
 
         if preset.strength:
-            text += f"\n💨<b>Крепкость:</b> {preset.strength}\n"
+            text += f"\n💨<b>Крепость:</b> {preset.strength}\n"
 
         return text
 
