@@ -143,7 +143,7 @@ const MainPresetsPage = () => {
                                                 {(preset.flavors || []).length === 0 ? (
                                                     <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
                                                 ) : (
-                                                    (preset.flavors || []).slice(0, 3).map((ing, i) => (
+                                                    (preset.flavors || []).map((ing, i) => (
                                                         <div key={i} className="flex justify-between items-center">
                                                             <span className="text-[14px] font-semibold text-white tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
                                                             <span className="text-[12px] font-mono text-neutral-300 tabular-nums">{ing.percent}%</span>
