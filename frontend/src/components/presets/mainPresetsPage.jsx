@@ -220,6 +220,32 @@ const MainPresetsPage = () => {
                             </div>
                         )}
 
+                        <div className="flex gap-2 flex-wrap mb-4">
+                            {confirmPreset.bowl && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
+                                        <span className="text-base leading-none">{confirmPreset.bowl.icon}</span> {confirmPreset.bowl.name}
+                                    </span>
+                                </div>
+                            )}
+                            {confirmPreset.liquid && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
+                                    <span
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
+                                        style={{
+                                            backgroundColor: confirmPreset.liquid.hex_color ? `${confirmPreset.liquid.hex_color}20` : 'rgba(6,182,212,0.1)',
+                                            borderColor: confirmPreset.liquid.hex_color ? `${confirmPreset.liquid.hex_color}50` : 'rgba(6,182,212,0.3)',
+                                        }}
+                                    >
+                                        <span className="text-base leading-none">💧</span> {confirmPreset.liquid.name}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+
                         <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
                             <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
                             <span className="text-white font-bold text-2xl tracking-tight leading-none">{confirmPreset.price ?? '—'}<span className="text-neutral-400 text-lg font-semibold">₽</span></span>
@@ -244,6 +270,7 @@ const MainPresetsPage = () => {
                     </div>
                 </div>
             )}
+            
 
             {successOrderId !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
