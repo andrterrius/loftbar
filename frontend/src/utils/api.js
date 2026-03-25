@@ -12,6 +12,26 @@ async function login() {
     return data.access_token;
 }
 
+export async function simpleLogin(name) {
+    const res = await fetch(`${BASE_URL}/users/login/simple`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() }),
+    });
+    if (!res.ok) throw new Error('login failed');
+    const data = await res.json();
+    localStorage.setItem('jwt', data.access_token);
+    return data.access_token;
+}
+
+function refreshToken() {
+    let isTg = !!window.Telegram?.WebApp.initData;
+    if (isTg) {
+        return login();
+    }
+    throw new Error('no auto refresh bro');
+}
+
 export async function apiRequest(endpoint, options = {}, attempt = 1) {
     const MAX_ATTEMPTS = 3;
     let token = localStorage.getItem('jwt');
@@ -38,9 +58,9 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
         }
 
         try {
-            await login(); // обновляем токен
+            await refreshToken(); // обновляем токен
         } catch {
-            // логин не удался — следующая попытка
+            // если чел не с телеги, то просто дальше идем, а если с тг то все гут
         }
 
         // рекурсивный повтор запроса

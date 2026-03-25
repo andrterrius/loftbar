@@ -91,6 +91,7 @@ const InitTelegramAuth = () => {
     }
 
     return (
+
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
                 <h3 className="text-xl font-bold text-white mb-1">Добро пожаловать</h3>
