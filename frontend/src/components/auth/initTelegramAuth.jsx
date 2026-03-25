@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { QrCode } from "lucide-react";
 
 const InitTelegramAuth = () => {
+    const [mounted, setMounted] = useState(false);
     const [showNameInput, setShowNameInput] = useState(false);
     const [showQrScan, setShowQrScan] = useState(false);
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const initAuth = async () => {
             const tableId = window.Telegram?.WebApp?.initDataUnsafe?.start_param
                 || new URLSearchParams(window.location.search).get('table_id');
@@ -41,6 +43,8 @@ const InitTelegramAuth = () => {
         initAuth();
     }, []);
 
+    if (!mounted) return null;
+
     const handleNameSubmit = async () => {
         if (!name.trim()) return;
         setIsLoading(true);
@@ -54,6 +58,7 @@ const InitTelegramAuth = () => {
         }
     };
 
+    if (!mounted) return null;
     if (!showNameInput && !showQrScan) return null;
 
     if (showQrScan) {
