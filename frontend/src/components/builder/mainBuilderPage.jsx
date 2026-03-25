@@ -26,6 +26,7 @@ const MainBuilderPage = () => {
     const [bowlOptions, setBowlOptions] = useState([]);
     const [bowlsLoading, setBowlsLoading] = useState(true);
     const [basePrice, setBasePrice] = useState(0);
+    const [addedStrengthPrice, setAddedStrengthPrice] = useState(0);
     const [liquids, setLiquids] = useState([]);
     const [strength, setStrength] = useState(5);
     const [comment, setComment] = useState('');
@@ -60,8 +61,14 @@ const MainBuilderPage = () => {
             .finally(() => setBowlsLoading(false));
 
         getBasePrice()
-            .then(data => setBasePrice(data?.base_price ?? SETTINGS.basePrice))
-            .catch(() => setBasePrice(SETTINGS.basePrice));
+            .then(data => {
+                setBasePrice(data?.base_price ?? SETTINGS.basePrice);
+                setAddedStrengthPrice(data?.strength_added_price ?? SETTINGS.addedStrengthPrice);
+            })
+            .catch(() => {
+                setBasePrice(SETTINGS.basePrice);
+                setAddedStrengthPrice(SETTINGS.addedStrengthPrice);
+            });
 
         getLiquids()
             .then(data => {
@@ -131,7 +138,10 @@ const MainBuilderPage = () => {
     const calculatePrice = () => {
         const bowl = bowlOptions.find(b => b.id === selectedBowl);
         const liquid = liquids.find(l => l.id === selectedLiquid);
-        return basePrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
+
+        let addedPrice = strength >= 8 ? addedStrengthPrice : 0;
+
+        return basePrice + addedPrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
     };
 
     const handleOrder = async () => {

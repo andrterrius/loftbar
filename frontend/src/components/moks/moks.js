@@ -58,7 +58,8 @@ export const PRESETS = [
 ];
 
 export const SETTINGS = {
-    basePrice: 20
+    basePrice: 20,
+    addedStrengthPrice: 5
 };
 
 export const TABS = [
