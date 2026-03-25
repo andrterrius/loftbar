@@ -319,7 +319,7 @@ const MainBuilderPage = () => {
                         </div>
 
                         <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                            <h3 className="text-lg font-semibold text-white mb-4">Крепкость</h3>
+                            <h3 className="text-lg font-semibold text-white mb-4">Крепость</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-neutral-400 text-sm">Лёгкий</span>
