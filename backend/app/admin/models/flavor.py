@@ -128,5 +128,3 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         request.state.custom_css = add_css_styles()
         request.state.custom_js = add_image_preview_js()
         return await super().on_before_form(request, obj)
-
-    can_delete = False

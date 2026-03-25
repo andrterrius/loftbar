@@ -132,6 +132,10 @@ class DBPreset(TimestampMixin, Base):
         if self.bowl and self.bowl.is_available:
             total += self.bowl.price
 
+        if self.strength >= 8:
+            total += self.settings.strength_added_price
+
+
         return total
 
     def __str__(self) -> str:

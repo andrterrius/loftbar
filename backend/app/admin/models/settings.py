@@ -15,6 +15,7 @@ class SettingsAdmin(ModelView, model=DBSettings):
     column_labels = {
         "id": "ID",
         "preset_base_price": "Базовая цена пресета",
+        "strength_added_price": "Добавочная цена крепости 8+",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
     }
@@ -22,19 +23,26 @@ class SettingsAdmin(ModelView, model=DBSettings):
     column_list = [
         DBSettings.id,
         DBSettings.preset_base_price,
+        DBSettings.strength_added_price,
         DBSettings.created_at,
         DBSettings.updated_at,
     ]
 
     column_searchable_list = [DBSettings.preset_base_price]
-    column_sortable_list = [DBSettings.id, DBSettings.preset_base_price, DBSettings.created_at]
+    column_sortable_list = [
+        DBSettings.id,
+        DBSettings.preset_base_price,
+        DBSettings.created_at
+    ]
     column_default_sort = [(DBSettings.id, False)]
 
     form_create_rules = [
-        "preset_base_price"
+        "preset_base_price",
+        "strength_added_price"
     ]
     form_edit_rules = [
-        "preset_base_price"
+        "preset_base_price",
+        "strength_added_price"
     ]
 
     form_args = {
@@ -42,14 +50,23 @@ class SettingsAdmin(ModelView, model=DBSettings):
             "label": "Базовая цена пресета",
             "description": "Базовая цена для расчета стоимости пресетов",
             "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
+        },
+        "strength_added_price": {
+            "label": "Добавочная цена крепости 8+",
+            "description": "Добавляет к сумме заказа сумму за крепость 8+",
+            "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
         }
     }
 
-    def _price_formatter(m, a):
+    def _base_price_formatter(m, a):
         return f"{m.preset_base_price:.2f} ₽"
 
+    def _added_price_formatter(m, a):
+        return f"{m.strength_added_price:.2f} ₽"
+
     column_formatters = {
-        DBSettings.preset_base_price: _price_formatter,
+        DBSettings.preset_base_price: _base_price_formatter,
+        DBSettings.strength_added_price: _added_price_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }

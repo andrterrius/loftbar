@@ -108,6 +108,9 @@ class PresetService(BasePresetService):
         if preset.bowl and getattr(preset.bowl, 'is_available', True):
             total_price += preset.bowl.price
 
+        if preset.strength >= 8:
+            total_price += preset.settings.strength_added_price
+
         return total_price
 
     def _preset_to_detail_out(self, preset: DBPreset) -> PresetOut:

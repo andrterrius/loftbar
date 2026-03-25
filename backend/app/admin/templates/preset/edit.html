@@ -714,7 +714,6 @@
         </div>
     </div>
 </div>
-
 <script>
 // Глобальные переменные
 let isInitializing = false;
@@ -745,6 +744,10 @@ function initCustomSelect(wrapper) {
 
     // Устанавливаем флаг инициализации
     wrapper.setAttribute('data-initialized', 'true');
+    
+    // Устанавливаем высокий z-index для wrapper
+    wrapper.style.position = 'relative';
+    wrapper.style.zIndex = '1000';
 
     // Функция обновления отображаемого текста
     function updateSelectedText(value, text) {
@@ -774,13 +777,24 @@ function initCustomSelect(wrapper) {
     trigger.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-
+        
         // Закрываем все другие дропдауны
         document.querySelectorAll('.custom-select-dropdown.show').forEach(d => {
             if (d !== dropdown) d.classList.remove('show');
         });
-
+        
+        // Устанавливаем высокий z-index при открытии
+        dropdown.style.zIndex = '9999';
         dropdown.classList.toggle('show');
+        
+        // Позиционируем дропдаун относительно триггера
+        const triggerRect = trigger.getBoundingClientRect();
+        dropdown.style.position = 'fixed';
+        dropdown.style.top = `${triggerRect.bottom}px`;
+        dropdown.style.left = `${triggerRect.left}px`;
+        dropdown.style.width = `${triggerRect.width}px`;
+        dropdown.style.maxHeight = '300px';
+        dropdown.style.overflow = 'auto';
     });
 
     // Обработка выбора опции
@@ -807,9 +821,9 @@ function initCustomSelect(wrapper) {
             dropdown.classList.remove('show');
 
             // Обновляем класс selected для опций
-            options.forEach(opt => {
-                const newOpt = opt.parentNode ? opt : null;
-                if (newOpt) newOpt.classList.remove('selected');
+            const allOptions = wrapper.querySelectorAll('.custom-select-option');
+            allOptions.forEach(opt => {
+                opt.classList.remove('selected');
             });
             this.classList.add('selected');
         });
@@ -863,13 +877,61 @@ function initCustomSelect(wrapper) {
             selectedOption.classList.add('selected');
         }
     }
+}
 
-    // Закрываем дропдаун при клике вне
-    document.addEventListener('click', function(e) {
-        if (!wrapper.contains(e.target)) {
-            dropdown.classList.remove('show');
-        }
+// ПРОСТАЯ И НАДЕЖНАЯ ФУНКЦИЯ ДЛЯ СЛАЙДЕРА
+function initStrengthControls() {
+    console.log("Инициализация слайдера крепости...");
+    
+    const strengthSlider = document.getElementById('strength_slider');
+    const strengthSelect = document.getElementById('strength');
+    
+    if (!strengthSlider) {
+        console.error("Слайдер не найден!");
+        return;
+    }
+    
+    if (!strengthSelect) {
+        console.error("Селект крепости не найден!");
+        return;
+    }
+    
+    console.log("Слайдер найден:", strengthSlider);
+    console.log("Селект найден:", strengthSelect);
+    console.log("Текущее значение селекта:", strengthSelect.value);
+    
+    // Устанавливаем начальное значение слайдера из селекта
+    strengthSlider.value = strengthSelect.value;
+    
+    // Удаляем все существующие обработчики
+    const newSlider = strengthSlider.cloneNode(true);
+    const newSelect = strengthSelect.cloneNode(true);
+    
+    // Заменяем элементы
+    strengthSlider.parentNode.replaceChild(newSlider, strengthSlider);
+    strengthSelect.parentNode.replaceChild(newSelect, strengthSelect);
+    
+    // Получаем новые ссылки
+    const finalSlider = document.getElementById('strength_slider');
+    const finalSelect = document.getElementById('strength');
+    
+    // Добавляем обработчик на слайдер
+    finalSlider.addEventListener('input', function(e) {
+        const value = this.value;
+        console.log("Слайдер изменен:", value);
+        finalSelect.value = value;
+        // Принудительно вызываем событие change на селекте
+        finalSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
+    
+    // Добавляем обработчик на селект
+    finalSelect.addEventListener('change', function(e) {
+        const value = this.value;
+        console.log("Селект изменен:", value);
+        finalSlider.value = value;
+    });
+    
+    console.log("Слайдер инициализирован успешно!");
 }
 
 // Функция обновления статуса вкуса
@@ -911,13 +973,6 @@ function initAllCustomSelects() {
 
     isInitializing = false;
 }
-
-// Закрытие дропдаунов при клике вне (глобальный обработчик)
-document.addEventListener('click', function() {
-    document.querySelectorAll('.custom-select-dropdown.show').forEach(dropdown => {
-        dropdown.classList.remove('show');
-    });
-});
 
 // Функция для сбора данных о вкусах
 function collectFlavorsData() {
@@ -1219,37 +1274,11 @@ function updateHexFromPicker() {
     }
 }
 
-// Функция синхронизации слайдера и селекта крепкости
-function initStrengthControls() {
-    const strengthSlider = document.getElementById('strength_slider');
-    const strengthSelect = document.getElementById('strength');
-
-    if (strengthSlider && strengthSelect) {
-        // Удаляем старые обработчики
-        const newSlider = strengthSlider.cloneNode(true);
-        const newSelect = strengthSelect.cloneNode(true);
-        strengthSlider.parentNode.replaceChild(newSlider, strengthSlider);
-        strengthSelect.parentNode.replaceChild(newSelect, strengthSelect);
-
-        newSlider.addEventListener('input', function() {
-            newSelect.value = this.value;
-        });
-
-        newSelect.addEventListener('change', function() {
-            newSlider.value = this.value;
-        });
-    }
-}
-
 // Функция отправки формы
 function setupFormSubmit(form) {
     if (!form) return;
 
-    // Удаляем старый обработчик
-    const newForm = form.cloneNode(true);
-    form.parentNode.replaceChild(newForm, form);
-
-    newForm.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         console.log("=== ОТПРАВКА ФОРМЫ ===");
@@ -1309,10 +1338,15 @@ function setupFormSubmit(form) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Страница загружена, начало инициализации...");
 
+    // Инициализация слайдера крепости (самое важное)
+    setTimeout(function() {
+        initStrengthControls();
+    }, 100);
+    
     // Инициализация всех кастомных селектов
     setTimeout(() => {
         initAllCustomSelects();
-    }, 100);
+    }, 200);
 
     // Применяем обработчики ко всем существующим строкам вкусов
     setTimeout(() => {
@@ -1322,16 +1356,13 @@ document.addEventListener('DOMContentLoaded', function() {
         flavorRows.forEach((row, index) => {
             attachRowHandlers(row);
         });
-    }, 150);
+    }, 250);
 
     // Обработчик для кнопки добавления вкуса
     setTimeout(() => {
         const addButton = document.getElementById('add-flavor');
         if (addButton) {
-            const newAddButton = addButton.cloneNode(true);
-            addButton.parentNode.replaceChild(newAddButton, addButton);
-
-            newAddButton.addEventListener('click', function() {
+            addButton.addEventListener('click', function() {
                 const container = document.getElementById('flavors-container');
                 if (container) {
                     const newRow = createNewFlavorRow();
@@ -1340,25 +1371,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-    }, 200);
-
-    // Инициализация контроля крепкости
-    initStrengthControls();
+    }, 300);
 
     // Обработчики для HEX цвета
     const hexInput = document.getElementById('hex_color');
     const colorPicker = document.getElementById('hex_color_picker');
 
     if (hexInput) {
-        const newHexInput = hexInput.cloneNode(true);
-        hexInput.parentNode.replaceChild(newHexInput, hexInput);
-        newHexInput.addEventListener('input', updateColorPreview);
+        hexInput.addEventListener('input', updateColorPreview);
     }
 
     if (colorPicker) {
-        const newColorPicker = colorPicker.cloneNode(true);
-        colorPicker.parentNode.replaceChild(newColorPicker, colorPicker);
-        newColorPicker.addEventListener('input', updateHexFromPicker);
+        colorPicker.addEventListener('input', updateHexFromPicker);
     }
 
     updateColorPreview();
@@ -1368,10 +1392,10 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFormSubmit(form);
 
     // Первоначальная валидация
-    setTimeout(validatePercentages, 500);
+    setTimeout(validatePercentages, 350);
 });
 
-// Переинициализация после динамических изменений (для MutationObserver)
+// Переинициализация после динамических изменений
 function reinitializeCustomSelects() {
     const uninitializedWrappers = document.querySelectorAll('.custom-select-wrapper:not([data-initialized])');
     if (uninitializedWrappers.length > 0) {

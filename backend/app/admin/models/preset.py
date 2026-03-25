@@ -28,7 +28,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "price": "Цена",
         "is_available": "Доступен",
         "description": "Описание",
-        "strength": "крепость",
+        "strength": "Крепость",
         "liquid": "Жидкость",
         "bowl": "Чаша",
         "settings": "Настройки",
@@ -92,6 +92,9 @@ class PresetAdmin(ModelView, model=DBPreset):
         if m.bowl:
             total_price += m.bowl.price
 
+        if m.strength >= 8:
+            total_price += m.settings.strength_added_price
+
         return f"{total_price}₽"
 
     @staticmethod
@@ -102,6 +105,16 @@ class PresetAdmin(ModelView, model=DBPreset):
             total_price += m.liquid.price
         if m.bowl:
             total_price += m.bowl.price
+
+        if m.strength >= 8:
+            total_price += m.settings.strength_added_price
+
+            return Markup(f"{m.settings.preset_base_price}₽ (базовая цена)"
+                          f"<br>{m.settings.strength_added_price}₽ (добавочная цена)"
+                          f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
+                          f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
+                          f"<br> = {total_price}₽")
+
         return Markup(f"{m.settings.preset_base_price}₽ (базовая цена)"
                 f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
                 f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"

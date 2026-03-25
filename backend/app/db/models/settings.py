@@ -10,3 +10,4 @@ class DBSettings(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     preset_base_price: Mapped[float] = mapped_column(Float, default=0, nullable=False)
+    strength_added_price: Mapped[float] = mapped_column(Float, default=0, nullable=False)
