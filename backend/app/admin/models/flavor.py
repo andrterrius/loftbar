@@ -49,10 +49,10 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     column_default_sort = [(DBFlavor.is_available, True), (DBFlavor.updated_at, True)]
 
     form_create_rules = [
-        "name", "brand", "category", "is_available", "hex_color", "image_url"
+        "name", "brand", "category", "description", "is_available", "hex_color", "image_url"
     ]
     form_edit_rules = [
-        "name", "brand", "category", "is_available", "hex_color", "image_url"
+        "name", "brand", "category", "description", "is_available", "hex_color", "image_url"
     ]
 
     form_args = {
