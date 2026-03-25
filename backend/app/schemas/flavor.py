@@ -5,7 +5,7 @@ class FlavorBase(BaseModel):
     name: str = Field(..., max_length=64, description="Название вкуса")
     brand: str = Field(..., max_length=64, description="Бренд")
     category: str = Field(..., max_length=32, description="Категория")
-    description: str = Field(None, max_length=64, description="Описание")
+    description: Optional[str] = Field(None, max_length=64, description="Описание")
     hex_color: Optional[str] = Field(None, max_length=32, description="Цвет в HEX")
     image_url: Optional[str] = Field(None, max_length=255, description="URL изображения")
 
