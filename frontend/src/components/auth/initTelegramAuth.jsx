@@ -1,5 +1,5 @@
 'use client'
-import { apiRequest } from "@/utils/api";
+import { apiRequest, simpleLogin } from "@/utils/api";
 import { useEffect, useState } from "react";
 import { QrCode } from "lucide-react";
 
@@ -45,25 +45,10 @@ const InitTelegramAuth = () => {
         if (!name.trim()) return;
         setIsLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login/simple`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: name.trim() })
-            });
-
-            if (!res.ok) {
-                const err = await res.json();
-                console.log("Ошибка сервера:", err);
-                alert('Не удалось войти. Попробуйте другое имя.');
-                return;
-            }
-
-            const data = await res.json();
-            localStorage.setItem('jwt', data.access_token);
+            await simpleLogin(name);
             setShowNameInput(false);
         } catch (err) {
-            console.log("Ошибка регистрации", err);
-            alert('Не удалось подключиться к серверу.');
+            console.log("Ошибка при логине:", err);
         } finally {
             setIsLoading(false);
         }
