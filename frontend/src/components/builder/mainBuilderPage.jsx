@@ -184,7 +184,7 @@ const MainBuilderPage = () => {
 
     const filteredFlavors = flavors.filter(f =>
         f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.brand.toLowerCase().includes(searchQuery.toLowerCase())
+        f.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
