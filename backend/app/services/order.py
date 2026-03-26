@@ -1,6 +1,8 @@
+from datetime import date
 from uuid import UUID
 from typing import Optional
 
+from app.core.common import get_current_order_date
 from app.db.uow import BaseUnitOfWork
 from app.schemas.order import OrderCreate, OrderStatus, OrderOutAdmin
 from app.schemas.preset import PresetCreate, PresetOut, FlavorInPreset
@@ -110,7 +112,11 @@ class OrderService(BaseOrderService):
                 }
                 total_price = preset.price
 
+            order_date = get_current_order_date()
+            daily_number = await uow.orders_counter.get_next_number(order_date)
+
             order = DBOrder(
+                daily_number=daily_number,
                 user_id=user_id,
                 table_id=order.table_id,
                 preset_id=preset.id if preset else None,
@@ -127,6 +133,7 @@ class OrderService(BaseOrderService):
 
             order_out = OrderOutAdmin(
                 id=created_order.id,
+                daily_number=created_order.daily_number,
                 status=created_order.status,
                 total_price=created_order.total_price,
                 special_requests=created_order.special_requests,
@@ -170,6 +177,7 @@ class OrderService(BaseOrderService):
             )
             order_out = OrderOutAdmin(
                 id=updated_order.id,
+                daily_number=updated_order.daily_number,
                 status=updated_order.status,
                 total_price=updated_order.total_price,
                 special_requests=updated_order.special_requests,

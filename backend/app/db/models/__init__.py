@@ -8,6 +8,7 @@ from .preset_flavor import DBPresetFlavor
 from .settings import DBSettings
 from .table import DBTable
 from .order import DBOrder
+from .order_counter import DBOrderDailyCounter
 
 __all__ = [
     "Base",
@@ -19,5 +20,6 @@ __all__ = [
     "DBPresetFlavor",
     "DBSettings",
     "DBTable",
-    "DBOrder"
+    "DBOrder",
+    "DBOrderDailyCounter"
 ]

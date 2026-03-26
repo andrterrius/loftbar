@@ -42,6 +42,7 @@ class OrderStatusUpdateTelegram(OrderStatusUpdate):
 class OrderUpdate(BaseModel):
     """Обновление данных заказа (для администратора)"""
     id: UUID
+    daily_number: Optional[int] = None
     table_id: Optional[UUID] = None
     special_requests: Optional[str] = Field(None, max_length=500)
     status: Optional[OrderStatus] = None
@@ -53,6 +54,7 @@ class OrderUpdate(BaseModel):
 class OrderOutAdmin(BaseModel):
     """Полная информация о заказе для ответа администратору"""
     id: UUID
+    daily_number: Optional[int] = None
     preset: Optional[PresetOut] = Field(None, description="Информация о пресете")
     user: Optional[UserBase] = Field(None, description="Информация о пользователе")
     table: Optional[TableBase] = Field(None, description="Информация о столике")
@@ -76,6 +78,7 @@ class OrderOutAdmin(BaseModel):
 
 class OrderOut(BaseModel):
     id: UUID
+    daily_number: Optional[int] = None
 
 class OrderListItem(BaseModel):
     """Краткая информация о заказе для списков"""
@@ -83,6 +86,7 @@ class OrderListItem(BaseModel):
     status: OrderStatus
     total_price: float
     is_custom: bool
+    daily_number: Optional[int] = None
     custom_name: Optional[str] = None
     created_at: datetime
     table_id: Optional[UUID] = None

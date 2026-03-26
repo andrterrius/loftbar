@@ -17,6 +17,7 @@ class OrderAdmin(ModelView, model=DBOrder):
 
     column_labels = {
         "id": "ID заказа",
+        "daily_number": "Номер заказа",
         "user": "Пользователь",
         "table": "Столик",
         "preset": "Пресет",
@@ -35,6 +36,7 @@ class OrderAdmin(ModelView, model=DBOrder):
     }
 
     column_list = [
+        DBOrder.daily_number,
         DBOrder.user,
         DBOrder.total_price,
         DBOrder.status,
@@ -47,6 +49,7 @@ class OrderAdmin(ModelView, model=DBOrder):
 
     column_searchable_list = [
         DBOrder.id,
+        DBOrder.daily_number,
         DBOrder.custom_name,
         DBOrder.special_requests,
     ]

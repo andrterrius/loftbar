@@ -11,6 +11,7 @@ from app.db.repositories import (
     LiquidsRepository,
     TablesRepository,
     OrdersRepository,
+    OrderCounterRepository,
     SettingsRepository
 )
 
@@ -32,6 +33,7 @@ class UnitOfWork(BaseUnitOfWork):
         self.liquids = LiquidsRepository(self.session)
         self.tables = TablesRepository(self.session)
         self.orders = OrdersRepository(self.session)
+        self.orders_counter = OrderCounterRepository(self.session)
         self.settings = SettingsRepository(self.session)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

@@ -47,4 +47,7 @@ async def make_order(
         order=order_out,
     )
 
-    return OrderOut(id=order_out.id)
+    return OrderOut(
+        id=order_out.id,
+        daily_number=order_out.daily_number
+    )

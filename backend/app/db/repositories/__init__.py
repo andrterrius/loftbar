@@ -5,4 +5,5 @@ from .bowls import BowlsRepository
 from .liquids import LiquidsRepository
 from .tables import TablesRepository
 from .orders import OrdersRepository
+from .order_counter import OrderCounterRepository
 from .settings import SettingsRepository

@@ -6,7 +6,7 @@ import uuid as uuid_pkg
 from typing import Optional
 
 from sqlalchemy import text
-from sqlalchemy import String, ForeignKey, Boolean, Enum, Float, DateTime
+from sqlalchemy import Integer, String, ForeignKey, Boolean, Enum, Float, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.dialects.postgresql import JSONB
@@ -22,6 +22,7 @@ class OrderStatus(str, PyEnum):
     COMPLETED = "completed"     # Завершен (оплачен/получен)
     CANCELLED = "cancelled"     # Отменен
 
+
 class DBOrder(TimestampMixin, Base):
     __tablename__ = "orders"
 
@@ -30,6 +31,11 @@ class DBOrder(TimestampMixin, Base):
         primary_key=True,
         default=uuid_pkg.uuid4,
         server_default=text("gen_random_uuid()")
+    )
+
+    daily_number: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        nullable=True
     )
 
     user_id: Mapped[Optional[uuid_pkg.UUID]] = mapped_column(
