@@ -172,7 +172,7 @@ const MainBuilderPage = () => {
             setSelectedFlavors([]);
             setSelectedLiquid(null);
             setIsConfirmOpen(false);
-            setSuccessOrderId(result.id || '');
+            setSuccessOrderId(result.daily_number || '');
             setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
         } catch (error) {
             console.error("Order error:", error);
