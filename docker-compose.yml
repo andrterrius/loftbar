@@ -63,9 +63,10 @@ services:
   certbot-init:
     image: certbot/certbot
     entrypoint: /bin/sh
-    command: -c 'test -d /etc/letsencrypt/live/${APP_DOMAIN} || certbot certonly -v --standalone -v -d $APP_DOMAIN -m $LETSENCRYPT_EMAIL --force-renewal --agree-tos || true'
+    command: -c 'test -d /etc/letsencrypt/live/${APP_DOMAIN} || certbot certonly --standalone -d $APP_DOMAIN -m $LETSENCRYPT_EMAIL --force-renewal --agree-tos --non-interactive'
     volumes:
       - cert_volume:/etc/letsencrypt
+    network_mode: host
 
   nginx:
     build:
