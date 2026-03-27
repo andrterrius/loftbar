@@ -83,10 +83,8 @@ class NotificationTextService:
             for flavor_item in preset.flavors:
                 flavor = flavor_item.flavor
                 percent = flavor_item.percent
-                brand = f"{flavor.brand}" if flavor and flavor.brand else ""
-                description = f" ({brand} - {flavor.description})" if flavor.description else f" ({brand})"
                 name = flavor.name if flavor else "Неизвестный вкус"
-                text += f"  • {name}{description} — {percent}%\n"
+                text += f"  • {name} — {percent}%\n"
 
         if preset.strength:
             text += f"\n💨<b>Крепость:</b> {preset.strength}\n"
@@ -104,11 +102,7 @@ class NotificationTextService:
                 flavor = flavor_item.get("flavor", {})
                 percent = flavor_item.get("percent", 0)
                 flavor_name = flavor.get("name", "Неизвестный вкус")
-                brand = flavor.get("brand", "")
-                brand_text = f"{brand}" if brand else ""
-                description = flavor.get("description", "")
-                description_text = f" ({brand_text} - {description})" if description else f" ({brand_text})"
 
-                text += f"  • {flavor_name}{description_text} — {percent}%\n"
+                text += f"  • {flavor_name} — {percent}%\n"
 
         return text
