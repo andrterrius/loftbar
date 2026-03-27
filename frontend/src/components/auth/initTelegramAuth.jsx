@@ -47,6 +47,7 @@ const InitTelegramAuth = () => {
                     headers: { "X-Init-Data": tgDataInit }
                 });
                 localStorage.setItem('jwt', data.access_token);
+                window.dispatchEvent(new Event('auth-ready'));
             } catch (err) {
                 console.log("Ошибка", err);
             }
@@ -61,6 +62,7 @@ const InitTelegramAuth = () => {
         setIsLoading(true);
         try {
             await simpleLogin(name);
+            window.dispatchEvent(new Event('auth-ready')); // ← этого нет
             setShowNameInput(false);
         } catch (err) {
             console.log("Ошибка при логине:", err);
