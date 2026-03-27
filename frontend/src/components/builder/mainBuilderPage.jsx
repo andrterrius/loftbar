@@ -235,7 +235,7 @@ const MainBuilderPage = () => {
                                     key={sf.flavorId}
                                     item={flavor}
                                     percentage={sf.percentage}
-                                    color={flavor.color}
+                                    color={flavor.color || flavor.hex_color || '#a21caf'}
                                     onRemove={() => removeFlavorFromMix(sf.flavorId)}
                                     onChange={(val, fromSlider) => handlePercentageChange(sf.flavorId, val, fromSlider)}
                                 />

@@ -27,6 +27,10 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
         onChange(clamped, false); // ← ввод с клавиатуры: без авто-нормализации
     };
 
+    // Страховка цвета: берем из пропса, затем из hex_color, затем дефолтный
+    const safeColor = color || item?.hex_color || item?.color || '#a21caf';
+    const displayPercent = Math.round(percentage) || 0;
+
     return (
         <motion.div
             layout
@@ -41,18 +45,18 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                         style={{
                             width: '40px', height: '40px', minWidth: '40px',
                             flex: 'none', borderRadius: '50%', overflow: 'hidden',
-                            backgroundColor: color || '#ccc',
-                            backgroundImage: item.image_url ? `url(${item.image_url})` : 'none',
+                            backgroundColor: safeColor,
+                            backgroundImage: item?.image_url ? `url(${item.image_url})` : 'none',
                             backgroundSize: 'cover', backgroundPosition: 'center',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '14px', fontWeight: 'bold', color: 'rgba(0,0,0,0.6)',
                         }}
                     >
-                        {!item.image_url && item.name[0]}
+                        {!item?.image_url && item?.name?.[0]}
                     </div>
                     <div>
-                        <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
-                        <p className="text-xs text-neutral-400">{item.brand}</p>
+                        <h3 className="font-bold text-white text-lg leading-tight">{item?.name}</h3>
+                        <p className="text-xs text-neutral-400">{item?.brand}</p>
                     </div>
                 </div>
                 <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors ml-2 mt-1">
@@ -98,15 +102,16 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                     type="range"
                     min="1"
                     max="99"
-                    value={isFocused ? (parseInt(inputValue) || Math.round(percentage)) : Math.round(percentage)}
+                    value={isFocused ? (parseInt(inputValue) || displayPercent) : displayPercent}
                     onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setInputValue(String(val));
                         onChange(val, true); // ← ползунок: авто-нормализация
                     }}
-                    className="w-full h-2 rounded-lg cursor-pointer"
+                    className="w-full custom-slider"
                     style={{
-                        background: `linear-gradient(to right, ${color} 0%, ${color} ${Math.round(percentage)}%, #262626 ${Math.round(percentage)}%, #262626 100%)`
+                        '--slider-color': safeColor,
+                        '--slider-percent': `${displayPercent}%`
                     }}
                 />
             </div>
@@ -114,7 +119,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/5 to-transparent rounded-tr-xl pointer-events-none" />
             <div
                 className="absolute bottom-0 left-0 w-full h-1 rounded-b-xl opacity-50"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: safeColor }}
             />
         </motion.div>
     );
