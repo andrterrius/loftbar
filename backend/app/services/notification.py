@@ -27,8 +27,7 @@ class NotificationTextService:
         """Генерирует текст уведомления о заказе"""
 
         text = (
-            f"🆕 <b>{'НОВЫЙ' if not is_update else 'ОБНОВЛЕННЫЙ'} ЗАКАЗ <code>{order.daily_number}</code>"
-            f"\n<spoiler>{order.id}</spoiler></b>\n\n"
+            f"🆕 <b>{'НОВЫЙ' if not is_update else 'ОБНОВЛЕННЫЙ'} ЗАКАЗ <code>{order.daily_number}</code> <tg-spoiler>({order.id})</tg-spoiler></b>\n\n"
         )
         if order.table:
             text += self._format_table_info(order.table)
