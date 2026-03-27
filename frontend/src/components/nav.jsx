@@ -25,7 +25,7 @@ const NavContent = () => {
                 <div className="text-lg font-bold text-white tracking-tight">
                     <Link href={getUrlWithParams('/', searchParams)}>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500">
-                            Loft bar
+                            {process.env.NEXT_PUBLIC_NAME}
                         </span>
                     </Link>
                 </div>
