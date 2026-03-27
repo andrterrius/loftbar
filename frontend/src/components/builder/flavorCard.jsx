@@ -104,7 +104,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                         setInputValue(String(val));
                         onChange(val, true); // ← ползунок: авто-нормализация
                     }}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 rounded-lg cursor-pointer"
                     style={{
                         background: `linear-gradient(to right, ${color} 0%, ${color} ${Math.round(percentage)}%, #262626 ${Math.round(percentage)}%, #262626 100%)`
                     }}
