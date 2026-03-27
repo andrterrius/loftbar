@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://${APP_DOMAIN}/api/v1
+        - NEXT_PUBLIC_NAME=${APP_NAME}
     restart: unless-stopped
     env_file: .env
     depends_on:
