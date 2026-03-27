@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 
 
 export default function RootLayout({ children }) {
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -24,7 +25,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <InitTelegramAuth/>
-        {children}
+        <AuthGate>{children}</AuthGate>
       </body>
     </html>
   );
