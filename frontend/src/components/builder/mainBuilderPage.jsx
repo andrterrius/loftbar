@@ -130,7 +130,7 @@ const MainBuilderPage = () => {
         const bowl = bowlOptions.find(b => b.id === selectedBowl);
         const liquid = liquids.find(l => l.id === selectedLiquid);
 
-        let addedPrice = strength >= 8 ? addedStrengthPrice : 0;
+        let addedPrice = strength >= 9 ? addedStrengthPrice : 0;
 
         return basePrice + addedPrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
     };
