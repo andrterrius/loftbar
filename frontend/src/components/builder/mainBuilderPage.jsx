@@ -80,37 +80,28 @@ const MainBuilderPage = () => {
                 setLiquids(LIQUIDS);
                 setSelectedLiquid(LIQUIDS[0]?.id);
             });
-    }, []); 
+    }, []);
 
     const handlePercentageChange = (id, newPercentage, fromSlider = true) => {
         if (selectedFlavors.length <= 1) {
-            // Если один вкус — просто фиксируем 100
-            setSelectedFlavors(prev => prev.map(f => f.flavorId === id ? { ...f, percentage: 100 } : f));
-            return;
-        }
-
-        if (!fromSlider) {
-            // Ввод с клавиатуры — просто обновляем значение без перераспределения
-            const targetPct = Math.max(0, Math.min(100, newPercentage));
             setSelectedFlavors(prev => prev.map(f =>
-                f.flavorId === id ? { ...f, percentage: targetPct } : f
+                f.flavorId === id ? { ...f, percentage: 100 } : f
             ));
             return;
         }
 
-        // Ползунок — авто-нормализация как прежде
         const targetPct = Math.max(0, Math.min(100, newPercentage));
-        const others = selectedFlavors.filter(f => f.flavorId !== id);
-        const sumOthers = others.reduce((acc, f) => acc + f.percentage, 0);
-        const remainder = 100 - targetPct;
-        const updated = selectedFlavors.map(f => {
-            if (f.flavorId === id) return { ...f, percentage: targetPct };
-            const newPct = sumOthers === 0
-                ? remainder / others.length
-                : (f.percentage / sumOthers) * remainder;
-            return { ...f, percentage: newPct };
-        });
-        setSelectedFlavors(updated);
+
+        const newFlavors = selectedFlavors.map(f =>
+            f.flavorId === id ? { ...f, percentage: targetPct } : f
+        );
+
+        const total = newFlavors.reduce((sum, f) => sum + f.percentage, 0);
+        if (total > 100) {
+            console.warn('Сумма процентов превышает 100');
+        }
+
+        setSelectedFlavors(newFlavors);
     };
 
     const addFlavorToMix = (flavor) => {
@@ -235,7 +226,7 @@ const MainBuilderPage = () => {
                                     key={sf.flavorId}
                                     item={flavor}
                                     percentage={sf.percentage}
-                                    color={flavor.color}
+                                    color={flavor.color || flavor.hex_color || '#a21caf'}
                                     onRemove={() => removeFlavorFromMix(sf.flavorId)}
                                     onChange={(val, fromSlider) => handlePercentageChange(sf.flavorId, val, fromSlider)}
                                 />
@@ -435,36 +426,35 @@ const MainBuilderPage = () => {
 
                             {/* Category Selection - automatically generated from flavors */}
                             <div className="p-4 border-b border-white/10">
-                                <div className="flex gap-2 flex-wrap pb-2 scrollbar-thin scrollbar-thumb-white/10">
-                                    <button
-                                        onClick={() => setSelectedCategory(null)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                                            selectedCategory === null
-                                                ? 'bg-fuchsia-600 text-white shadow-[0_0_10px_rgba(192,38,211,0.3)]'
-                                                : 'bg-white/10 text-neutral-400 hover:bg-white/20'
-                                        }`}
-                                    >
-                                        Все вкусы
-                                    </button>
+                            <div className="relative group">
+                                <select
+                                    value={selectedCategory === null ? "all" : selectedCategory}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setSelectedCategory(value === "all" ? null : value);
+                                    }}
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 text-white border border-fuchsia-500/30 focus:outline-none focus:border-fuchsia-500 cursor-pointer appearance-none transition-all duration-300 group-hover:border-fuchsia-500/60 group-hover:shadow-[0_0_15px_rgba(192,38,211,0.3)]"
+                                >
+                                    <option value="all" className="bg-gray-900">Все вкусы</option>
                                     {categories.map((category) => (
-                                        <button
-                                            key={category}
-                                            onClick={() => setSelectedCategory(category)}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                                                selectedCategory === category
-                                                    ? 'bg-fuchsia-600 text-white shadow-[0_0_10px_rgba(192,38,211,0.3)]'
-                                                    : 'bg-white/10 text-neutral-400 hover:bg-white/20'
-                                            }`}
-                                        >
+                                        <option key={category} value={category} className="bg-gray-900">
                                             {category}
-                                        </button>
+                                        </option>
                                     ))}
+                                </select>
+
+                                {/* Анимированная стрелка */}
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform group-hover:translate-y-[-50%] group-hover:scale-110">
+                                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
                             </div>
+                        </div>
 
                             <div className="flex-1 overflow-y-auto p-4">
                                 {flavorsLoading ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
                                         {Array.from({ length: 6 }).map((_, i) => (
                                             <div key={i} className="animate-pulse">
                                                 <div className="aspect-square bg-white/10 rounded-xl mb-2" />
@@ -477,7 +467,7 @@ const MainBuilderPage = () => {
                                         {searchQuery ? 'Вкусы не найдены' : 'В этой категории пока нет вкусов'}
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
                                         {filteredFlavors.map(flavor => (
                                             <button
                                                 key={flavor.id}

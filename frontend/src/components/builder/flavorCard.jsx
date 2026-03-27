@@ -52,7 +52,6 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                     </div>
                     <div>
                         <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
-                        <p className="text-xs text-neutral-400">{item.brand}</p>
                     </div>
                 </div>
                 <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors ml-2 mt-1">
