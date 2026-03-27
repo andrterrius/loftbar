@@ -92,7 +92,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         if m.bowl:
             total_price += m.bowl.price
 
-        if m.strength >= 8:
+        if m.strength >= 9:
             total_price += m.settings.strength_added_price
 
         return f"{total_price}₽"
@@ -106,7 +106,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         if m.bowl:
             total_price += m.bowl.price
 
-        if m.strength >= 8:
+        if m.strength >= 9:
             total_price += m.settings.strength_added_price
 
             return Markup(f"{m.settings.preset_base_price}₽ (базовая цена)"

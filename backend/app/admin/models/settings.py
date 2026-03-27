@@ -15,7 +15,7 @@ class SettingsAdmin(ModelView, model=DBSettings):
     column_labels = {
         "id": "ID",
         "preset_base_price": "Базовая цена пресета",
-        "strength_added_price": "Добавочная цена крепости 8+",
+        "strength_added_price": "Добавочная цена крепости 9+",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
     }
@@ -53,7 +53,7 @@ class SettingsAdmin(ModelView, model=DBSettings):
         },
         "strength_added_price": {
             "label": "Добавочная цена крепости 8+",
-            "description": "Добавляет к сумме заказа сумму за крепость 8+",
+            "description": "Добавляет к сумме заказа сумму за крепость 9+",
             "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
         }
     }
