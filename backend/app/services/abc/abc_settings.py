@@ -1,0 +1,12 @@
+from typing import Protocol, List, Optional
+
+from app.db.uow import BaseUnitOfWork
+from app.schemas.preset import PresetBasePrice
+
+
+class BaseSettingsService(Protocol):
+    """Протокол сервиса для работы с заказами"""
+
+    async def get_preset_base_price(self, uow: BaseUnitOfWork) -> PresetBasePrice:
+        """Получить базовую цену пресета"""
+        ...

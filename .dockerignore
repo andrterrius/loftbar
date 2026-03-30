@@ -1,0 +1,31 @@
+# .dockerignore
+.git
+.gitignore
+.dockerignore
+README.md
+LICENSE
+
+# Не копируем зависимости (они установятся внутри контейнера)
+**/node_modules
+**/vendor
+**/venv
+**/__pycache__
+**/*.pyc
+
+# Не копируем .env файлы в образ
+.env
+.env.*
+!.env.example
+
+# Не копируем логи и кеш
+logs/
+*.log
+.cache/
+.temp/
+
+# Не копируем тесты и документацию (не нужны в проде)
+tests/
+test/
+docs/
+*.md
+*.txt

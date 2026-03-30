@@ -1,0 +1,1374 @@
+{% extends "sqladmin/layout.html" %}
+
+{% block content %}
+<style>
+/* Стили для улучшенных выпадающих списков */
+.select-with-search {
+    position: relative;
+}
+
+.select-with-search .search-input {
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 8px;
+    border-bottom: 1px solid #dee2e6;
+    z-index: 1;
+}
+
+.select-with-search select {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.select-with-search select[size] {
+    height: auto;
+}
+
+/* Стили для кастомного селекта с поиском */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    z-index: 1;
+}
+
+.custom-select-trigger {
+    padding: 0.375rem 2rem 0.375rem 0.75rem;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    position: relative;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.custom-select-trigger::after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-top: 4px;
+    z-index: 9999 !important; /* Увеличенный z-index */
+    display: none;
+    max-height: 300px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.custom-select-dropdown.show {
+    display: block;
+}
+
+/* Дополнительный z-index для вложенных дропдаунов */
+.flavor-row .custom-select-dropdown {
+    z-index: 9999 !important;
+}
+
+/* Для жидкостей и чаш */
+.form-group .custom-select-dropdown {
+    z-index: 9999 !important;
+}
+
+.custom-select-search {
+    padding: 8px;
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+}
+
+.custom-select-search input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.custom-select-search input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.custom-select-options {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.custom-select-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.custom-select-option:hover {
+    background-color: #e9ecef;
+}
+
+.custom-select-option.selected {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.custom-select-option.selected .badge {
+    background-color: rgba(255,255,255,0.2) !important;
+    color: white;
+}
+
+.custom-select-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-select-option .badge {
+    margin-left: 8px;
+}
+
+/* Анимация для строк вкусов */
+.flavor-row {
+    animation: fadeIn 0.3s ease-in;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+}
+
+.flavor-row:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+/* Увеличиваем z-index для активной строки с открытым дропдауном */
+.flavor-row:has(.custom-select-dropdown.show) {
+    z-index: 9998;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для статуса вкуса */
+.flavor-status {
+    font-size: 12px;
+    padding: 6px 12px;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+}
+
+/* Стили для кнопок */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Улучшенные карточки */
+.card {
+    border: none;
+    box-shadow: 0 0 20px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 1;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Стили для полей ввода */
+.form-control:focus, .custom-select-trigger:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+/* Стили для слайдера */
+.form-range {
+    width: 100%;
+    height: 6px;
+    padding: 0;
+    background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+    border-radius: 3px;
+}
+
+.form-range:focus {
+    outline: none;
+}
+
+.form-range::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    background: #667eea;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Обеспечиваем правильное позиционирование для всех контейнеров */
+.container-fluid, .row, .col-12, .col-md-5, .col-md-6 {
+    position: relative;
+}
+
+/* Для модальных окон и оверлеев */
+.modal-backdrop {
+    z-index: 1040;
+}
+
+.modal {
+    z-index: 1050;
+}
+
+/* Убеждаемся, что дропдауны поверх всего */
+.custom-select-dropdown {
+    z-index: 9999 !important;
+}
+
+/* Для дропдаунов внутри flavor-row, чтобы они были поверх соседних строк */
+.flavor-row .custom-select-dropdown {
+    z-index: 9999 !important;
+    position: absolute;
+}
+
+/* Для контейнера вкусов, чтобы не обрезать дропдауны */
+#flavors-container {
+    position: relative;
+    overflow: visible;
+}
+
+/* Убираем overflow hidden который может обрезать дропдауны */
+.card-body {
+    overflow: visible;
+}
+
+.card {
+    overflow: visible;
+}
+
+.row {
+    overflow: visible;
+}
+
+.col-md-5, .col-md-3, .col-md-2 {
+    overflow: visible;
+}
+
+/* Анимация появления дропдауна */
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-select-dropdown.show {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+/* Стили для скроллбара в дропдауне */
+.custom-select-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Стили для выбранного элемента */
+.custom-select-option.selected {
+    background-color: #0d6efd;
+    color: white;
+    position: relative;
+}
+
+.custom-select-option.selected::before {
+    content: "✓";
+    position: absolute;
+    right: 12px;
+    font-weight: bold;
+}
+
+/* Подсветка при поиске */
+.custom-select-option.highlight {
+    background-color: #fff3cd;
+    border-left: 3px solid #ffc107;
+}
+
+/* Стили для disabled опций */
+.custom-select-option[data-available="false"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+
+.custom-select-option[data-available="false"]:hover {
+    background-color: #e9ecef;
+}
+
+/* Стили для триггера с выбранным значением */
+.custom-select-trigger.has-value {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
+
+/* Стили для поиска при фокусе */
+.custom-select-search input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+    .custom-select-dropdown {
+        max-height: 250px;
+    }
+
+    .custom-select-option {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    .flavor-row {
+        padding: 10px;
+    }
+}
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {% if obj %}
+                            <i class="fa fa-pencil"></i> Редактирование пресета: {{ obj.name }}
+                        {% else %}
+                            <i class="fa fa-plus"></i> Создание нового пресета
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+
+                    <form method="POST" id="presetForm">
+                        {% if obj and obj.id %}
+                        <input type="hidden" name="preset_id" id="preset_id" value="{{ obj.id }}">
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4><i class="fa fa-info-circle"></i> Основная информация</h4>
+                                <hr>
+
+                                <div class="form-group mb-3">
+                                    <label for="name">Название *</label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           value="{{ obj.name if obj and obj.name else '' }}"
+                                           placeholder="Введите название пресета">
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="is_available">Доступен</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="is_available" name="is_available"
+                                               {% if obj and obj.is_available %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_available">
+                                            Пресет доступен для заказа
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="category">Категория</label>
+                                    <input type="text" class="form-control" id="category" name="category"
+                                           value="{{ obj.category if obj and obj.category else 'Стандартный' }}"
+                                           placeholder="Например: Фруктовый, Мятный, Табачный">
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="strength">крепость пресета (1-10)</label>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <input type="range" class="form-range" id="strength_slider"
+                                                   min="1" max="10" step="1"
+                                                   value="{{ obj.strength if obj and obj.strength else 5 }}">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <select class="form-control" id="strength" name="strength">
+                                                {% for i in range(1, 11) %}
+                                                <option value="{{ i }}"
+                                                        {% if obj and obj.strength == i %}selected{% endif %}>
+                                                    {{ i }} -
+                                                    {% if i <= 2 %}Очень слабая
+                                                    {% elif i <= 4 %}Слабая
+                                                    {% elif i <= 6 %}Средняя
+                                                    {% elif i <= 8 %}Крепкая
+                                                    {% else %}Очень крепкая
+                                                    {% endif %}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        <i class="fa fa-tachometer"></i> Выберите крепость от 1 (очень слабая) до 10 (очень крепкая)
+                                    </small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="description">Описание</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3"
+                                              placeholder="Опишите вкусовые характеристики пресета...">{{ obj.description if obj and obj.description else '' }}</textarea>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="hex_color">Цвет пресета (HEX)</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color"
+                                               id="hex_color_picker"
+                                               value="{{ obj.hex_color if obj and obj.hex_color else '#667eea' }}"
+                                               title="Выберите цвет"
+                                               style="max-width: 60px; height: 38px; padding: 2px;">
+                                        <input type="text" class="form-control" id="hex_color" name="hex_color"
+                                               value="{{ obj.hex_color if obj and obj.hex_color else '#667eea' }}"
+                                               placeholder="#RRGGBB"
+                                               pattern="^#[0-9A-Fa-f]{6}$"
+                                               title="HEX код цвета в формате #RRGGBB">
+                                        <span class="input-group-text" id="color-preview" style="width: 50px; background-color: {{ obj.hex_color if obj and obj.hex_color else '#667eea' }}; border-left: 1px solid #ced4da;"></span>
+                                    </div>
+                                    <small class="form-text text-muted">Выберите цвет для визуального отображения пресета</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h4><i class="fa fa-cube"></i> Компоненты</h4>
+                                <hr>
+
+                                <!-- Жидкость с поиском -->
+                                <div class="form-group mb-3">
+                                    <label for="liquid_id">Жидкость</label>
+                                    <div class="custom-select-wrapper" data-select="liquid">
+                                        <div class="custom-select-trigger" id="liquid-trigger">
+                                            <span id="liquid-selected-text">
+                                                {% if obj and obj.liquid %}
+                                                    {{ obj.liquid.name }} {{ obj.liquid.category }}
+                                                {% else %}
+                                                    -- Выберите жидкость --
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="custom-select-dropdown" id="liquid-dropdown">
+                                            <div class="custom-select-search">
+                                                <input type="text" placeholder="🔍 Поиск жидкости..." id="liquid-search-input">
+                                            </div>
+                                            <div class="custom-select-options" id="liquid-options">
+                                                <div class="custom-select-option" data-value="">-- Выберите жидкость --</div>
+                                                {% for liquid in liquids %}
+                                                <div class="custom-select-option" data-value="{{ liquid.id }}"
+                                                     data-available="{{ liquid.is_available }}"
+                                                     data-name="{{ liquid.name|lower }} {{ liquid.category|lower }}">
+                                                    {{ liquid.name }} {{ liquid.category }}
+                                                    <span class="badge {% if liquid.is_available %}bg-success{% else %}bg-secondary{% endif %}">
+                                                        {{ liquid.price }}₽
+                                                    </span>
+                                                    {% if not liquid.is_available %}
+                                                    <span class="badge bg-danger">Недоступна</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="liquid_id" name="liquid_id"
+                                           value="{{ obj.liquid.id if obj and obj.liquid else '' }}">
+                                </div>
+
+                                <!-- Чаша с поиском -->
+                                <div class="form-group mb-3">
+                                    <label for="bowl_id">Чаша</label>
+                                    <div class="custom-select-wrapper" data-select="bowl">
+                                        <div class="custom-select-trigger" id="bowl-trigger">
+                                            <span id="bowl-selected-text">
+                                                {% if obj and obj.bowl %}
+                                                    {{ obj.bowl.name }} {{ obj.bowl.category }}
+                                                {% else %}
+                                                    -- Выберите чашу --
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="custom-select-dropdown" id="bowl-dropdown">
+                                            <div class="custom-select-search">
+                                                <input type="text" placeholder="🔍 Поиск чаши..." id="bowl-search-input">
+                                            </div>
+                                            <div class="custom-select-options" id="bowl-options">
+                                                <div class="custom-select-option" data-value="">-- Выберите чашу --</div>
+                                                {% for bowl in bowls %}
+                                                <div class="custom-select-option" data-value="{{ bowl.id }}"
+                                                     data-available="{{ bowl.is_available }}"
+                                                     data-name="{{ bowl.name|lower }} {{ bowl.category|lower }}">
+                                                    {{ bowl.name }} {{ bowl.category }}
+                                                    <span class="badge {% if bowl.is_available %}bg-success{% else %}bg-secondary{% endif %}">
+                                                        {{ bowl.price }}₽
+                                                    </span>
+                                                    {% if not bowl.is_available %}
+                                                    <span class="badge bg-danger">Недоступна</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="bowl_id" name="bowl_id"
+                                           value="{{ obj.bowl.id if obj and obj.bowl else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция с вкусами -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4><i class="fa fa-tint"></i> Состав вкусов <span class="text-muted">(сумма процентов должна быть 100%)</span></h4>
+                                <hr>
+                                <div id="flavors-container">
+    {% if obj and obj.flavors and obj.flavors|length > 0 %}
+        {% for pf in obj.flavors %}
+        <div class="flavor-row" data-flavor-record-id="{{ pf.flavor_id if pf.flavor_id else '' }}">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="custom-select-wrapper" data-select="flavor_{{ loop.index }}">
+                        <div class="custom-select-trigger">
+                            <span class="flavor-selected-text">
+                                {% if pf.flavor %}
+                                    {{ pf.flavor.name }} ({{ pf.flavor.brand }} - {{ pf.flavor.description }})
+                                {% else %}
+                                    -- Выберите вкус --
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="custom-select-dropdown">
+                            <div class="custom-select-search">
+                                <input type="text" placeholder="🔍 Поиск вкуса..." class="flavor-search-input">
+                            </div>
+                            <div class="custom-select-options">
+                                <div class="custom-select-option" data-value="">-- Выберите вкус --</div>
+                                {% for flavor in flavors %}
+                                <div class="custom-select-option" data-value="{{ flavor.id }}"
+                                     data-available="{{ 'true' if flavor.is_available else 'false' }}"
+                                     data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
+                                    {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
+                                    {% if not flavor.is_available %}
+                                    <span class="badge bg-danger">Недоступен</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Доступен</span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" class="flavor-id" name="flavor_id" value="{{ pf.flavor.id if pf.flavor else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" step="0.01" min="0" max="100"
+                           class="form-control flavor-percent"
+                           value="{{ pf.percent }}"
+                           placeholder="%" required>
+                </div>
+                <div class="col-md-2">
+                    <span class="badge {% if pf.is_available %}bg-success{% else %}bg-danger{% endif %} flavor-status">
+                        {{ "Активен" if pf.is_available else "Неактивен" }}
+                    </span>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-flavor">
+                        <i class="fa fa-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="flavor-row">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="custom-select-wrapper" data-select="flavor_0">
+                    <div class="custom-select-trigger">
+                        <span class="flavor-selected-text">-- Выберите вкус --</span>
+                    </div>
+                    <div class="custom-select-dropdown">
+                        <div class="custom-select-search">
+                            <input type="text" placeholder="🔍 Поиск вкуса..." class="flavor-search-input">
+                        </div>
+                        <div class="custom-select-options">
+                            <div class="custom-select-option" data-value="">-- Выберите вкус --</div>
+                            {% for flavor in flavors %}
+                            <div class="custom-select-option" data-value="{{ flavor.id }}"
+                                 data-available="{{ 'true' if flavor.is_available else 'false' }}"
+                                 data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
+                                {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
+                                {% if not flavor.is_available %}
+                                <span class="badge bg-danger">Недоступен</span>
+                                {% else %}
+                                <span class="badge bg-success">Доступен</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" class="flavor-id" name="flavor_id" value="">
+            </div>
+            <div class="col-md-3">
+                <input type="number" step="0.01" min="0" max="100"
+                       class="form-control flavor-percent"
+                       placeholder="%" required>
+            </div>
+            <div class="col-md-2">
+                <span class="badge bg-success flavor-status">Активен</span>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-danger btn-sm remove-flavor">
+                    <i class="fa fa-trash"></i> Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+                                <button type="button" class="btn btn-success mt-2" id="add-flavor">
+                                    <i class="fa fa-plus"></i> Добавить вкус
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки действий -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <i class="fa fa-save"></i> Сохранить
+                                </button>
+                                <a href="/admin/db-preset/list" class="btn btn-secondary">
+                                    <i class="fa fa-times"></i> Отмена
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="validation-warnings" class="mt-3"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Глобальные переменные
+let isInitializing = false;
+
+// Функция инициализации кастомного селекта
+function initCustomSelect(wrapper) {
+    if (!wrapper || wrapper.hasAttribute('data-initialized')) {
+        return;
+    }
+
+    const trigger = wrapper.querySelector('.custom-select-trigger');
+    const dropdown = wrapper.querySelector('.custom-select-dropdown');
+    const options = wrapper.querySelectorAll('.custom-select-option');
+    const searchInput = wrapper.querySelector('.custom-select-search input');
+
+    // Находим скрытое поле ввода
+    let hiddenInput = null;
+    if (wrapper.closest('.form-group')) {
+        hiddenInput = wrapper.closest('.form-group').querySelector('input[type="hidden"]');
+    } else if (wrapper.closest('.flavor-row')) {
+        hiddenInput = wrapper.closest('.flavor-row').querySelector('.flavor-id');
+    }
+
+    if (!trigger || !dropdown) {
+        console.warn('Missing trigger or dropdown for custom select');
+        return;
+    }
+
+    // Устанавливаем флаг инициализации
+    wrapper.setAttribute('data-initialized', 'true');
+
+    // Функция обновления отображаемого текста
+    function updateSelectedText(value, text) {
+        const selectedTextSpan = trigger.querySelector('span');
+        if (selectedTextSpan) {
+            selectedTextSpan.textContent = text || '-- Выберите --';
+        }
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            // Создаем и диспатчим событие change
+            const changeEvent = new Event('change', { bubbles: true });
+            hiddenInput.dispatchEvent(changeEvent);
+        }
+
+        // Обновляем статус доступности для вкусов
+        if (wrapper.closest('.flavor-row')) {
+            updateFlavorStatusFromSelect(wrapper.closest('.flavor-row'), value);
+        }
+
+        // Триггерим валидацию процентов
+        if (wrapper.closest('.flavor-row')) {
+            setTimeout(validatePercentages, 50);
+        }
+    }
+
+    // Обработчик клика по триггеру
+    trigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Закрываем все другие дропдауны
+        document.querySelectorAll('.custom-select-dropdown.show').forEach(d => {
+            if (d !== dropdown) d.classList.remove('show');
+        });
+
+        dropdown.classList.toggle('show');
+    });
+
+    // Обработка выбора опции
+    options.forEach(option => {
+        // Удаляем старые обработчики, если есть
+        const newOption = option.cloneNode(true);
+        option.parentNode.replaceChild(newOption, option);
+
+        newOption.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const value = this.getAttribute('data-value');
+            // Получаем текст без бейджей и лишних пробелов
+            let text = '';
+            for (let node of this.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    text += node.textContent;
+                }
+            }
+            text = text.trim();
+
+            updateSelectedText(value, text);
+            dropdown.classList.remove('show');
+
+            // Обновляем класс selected для опций
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+        });
+    });
+
+    // Поиск в опциях
+    if (searchInput) {
+        // Удаляем старый обработчик
+        const newSearchInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newSearchInput, searchInput);
+
+        newSearchInput.addEventListener('input', function(e) {
+            e.stopPropagation();
+            const searchTerm = this.value.toLowerCase().trim();
+            const optionsList = wrapper.querySelectorAll('.custom-select-option');
+
+            optionsList.forEach(option => {
+                const value = option.getAttribute('data-value');
+                if (value === '') {
+                    option.style.display = '';
+                    return;
+                }
+                const name = option.getAttribute('data-name') || option.textContent.toLowerCase();
+                if (searchTerm === '' || name.includes(searchTerm)) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+
+        newSearchInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    // Устанавливаем начальное значение, если есть
+    if (hiddenInput && hiddenInput.value) {
+        const selectedOption = Array.from(wrapper.querySelectorAll('.custom-select-option')).find(
+            opt => opt.getAttribute('data-value') === hiddenInput.value
+        );
+        if (selectedOption) {
+            let text = '';
+            for (let node of selectedOption.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    text += node.textContent;
+                }
+            }
+            text = text.trim();
+            updateSelectedText(hiddenInput.value, text);
+            selectedOption.classList.add('selected');
+        }
+    }
+
+    // Закрываем дропдаун при клике вне
+    document.addEventListener('click', function(e) {
+        if (!wrapper.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+}
+
+function initStrengthControls() {
+    const strengthSlider = document.getElementById('strength_slider');
+    const strengthSelect = document.getElementById('strength');
+
+    if (strengthSlider && strengthSelect) {
+        // Устанавливаем начальное значение
+        strengthSlider.value = strengthSelect.value;
+        
+        // Добавляем обработчик на слайдер
+        strengthSlider.oninput = function() {
+            strengthSelect.value = this.value;
+        };
+        
+        // Добавляем обработчик на селект
+        strengthSelect.onchange = function() {
+            strengthSlider.value = this.value;
+        };
+        
+        console.log("Слайдер крепости инициализирован");
+    }
+}
+
+// Функция обновления статуса вкуса
+function updateFlavorStatusFromSelect(row, flavorId) {
+    if (!row) return;
+
+    const statusSpan = row.querySelector('.flavor-status');
+    if (!statusSpan) return;
+
+    const wrapper = row.querySelector('.custom-select-wrapper');
+    if (!wrapper) return;
+
+    const options = wrapper.querySelectorAll('.custom-select-option');
+    const selectedOption = Array.from(options).find(opt => opt.getAttribute('data-value') === flavorId);
+
+    if (selectedOption && selectedOption.getAttribute('data-available') === 'false') {
+        statusSpan.textContent = 'Неактивен';
+        statusSpan.className = 'badge bg-danger flavor-status';
+    } else {
+        statusSpan.textContent = 'Активен';
+        statusSpan.className = 'badge bg-success flavor-status';
+    }
+}
+
+// Инициализация всех кастомных селектов
+function initAllCustomSelects() {
+    if (isInitializing) return;
+    isInitializing = true;
+
+    const wrappers = document.querySelectorAll('.custom-select-wrapper');
+    console.log(`Найдено кастомных селектов для инициализации: ${wrappers.length}`);
+
+    wrappers.forEach((wrapper, index) => {
+        if (!wrapper.hasAttribute('data-initialized')) {
+            console.log(`Инициализация селекта ${index}`);
+            initCustomSelect(wrapper);
+        }
+    });
+
+    isInitializing = false;
+}
+
+// Функция для сбора данных о вкусах
+function collectFlavorsData() {
+    const flavorRows = document.querySelectorAll('.flavor-row');
+    const flavors = [];
+
+    flavorRows.forEach(row => {
+        const hiddenInput = row.querySelector('.flavor-id');
+        const percentInput = row.querySelector('.flavor-percent');
+
+        if (hiddenInput && hiddenInput.value && percentInput && percentInput.value) {
+            const flavorData = {
+                flavor_id: hiddenInput.value,
+                percent: parseFloat(percentInput.value)
+            };
+
+            const recordId = row.getAttribute('data-flavor-record-id');
+            if (recordId && recordId !== 'None') {
+                flavorData.id = recordId;
+            }
+
+            flavors.push(flavorData);
+        }
+    });
+
+    return flavors;
+}
+
+// Функция сбора всех данных формы
+function collectFormData() {
+    const formData = {};
+
+    const name = document.getElementById('name');
+    if (name && name.value) formData.name = name.value;
+
+    const isAvailable = document.getElementById('is_available');
+    formData.is_available = isAvailable.checked;
+
+    const category = document.getElementById('category');
+    if (category && category.value) formData.category = category.value;
+
+    const strength = document.getElementById('strength');
+    if (strength && strength.value) formData.strength = parseInt(strength.value);
+
+    const description = document.getElementById('description');
+    if (description && description.value) formData.description = description.value;
+
+    const hexColor = document.getElementById('hex_color');
+    if (hexColor && hexColor.value) {
+        const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+        if (hexRegex.test(hexColor.value)) {
+            formData.hex_color = hexColor.value;
+        } else {
+            document.getElementById('validation-warnings').innerHTML = '<div class="alert alert-warning">Неверный формат HEX цвета. Используйте формат #RRGGBB</div>';
+            return null;
+        }
+    }
+
+    const liquidId = document.getElementById('liquid_id');
+    if (liquidId && liquidId.value) formData.liquid_id = liquidId.value;
+
+    const bowlId = document.getElementById('bowl_id');
+    if (bowlId && bowlId.value) formData.bowl_id = bowlId.value;
+
+    const flavors = collectFlavorsData();
+    if (flavors.length > 0) {
+        formData.flavors = flavors;
+    }
+
+    return formData;
+}
+
+// Функция определения URL и метода для отправки
+function getRequestConfig() {
+    const presetId = document.getElementById('preset_id');
+
+    if (presetId && presetId.value) {
+        return {
+            url: `/admin/db-preset/save/${presetId.value}`,
+            method: 'PUT'
+        };
+    } else {
+        return {
+            url: '/admin/db-preset/save',
+            method: 'POST'
+        };
+    }
+}
+
+// Функция валидации процентов
+function validatePercentages() {
+    const flavorRows = document.querySelectorAll('.flavor-row');
+    const warningDiv = document.getElementById('validation-warnings');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (flavorRows.length === 0) {
+        if (warningDiv) warningDiv.innerHTML = '<div class="alert alert-warning">Добавьте хотя бы один вкус</div>';
+        if (submitBtn) submitBtn.disabled = true;
+        return false;
+    }
+
+    let total = 0;
+    let allFilled = true;
+    let allSelected = true;
+
+    flavorRows.forEach(row => {
+        const hiddenInput = row.querySelector('.flavor-id');
+        const percent = row.querySelector('.flavor-percent');
+
+        if (!hiddenInput || !hiddenInput.value) {
+            allSelected = false;
+        }
+
+        if (percent && percent.value && percent.value.trim() !== '') {
+            total += parseFloat(percent.value) || 0;
+        } else {
+            allFilled = false;
+        }
+    });
+
+    if (!allSelected) {
+        if (warningDiv) warningDiv.innerHTML = '<div class="alert alert-warning">Выберите вкус для всех строк</div>';
+        if (submitBtn) submitBtn.disabled = true;
+        return false;
+    }
+
+    if (!allFilled) {
+        if (warningDiv) warningDiv.innerHTML = '<div class="alert alert-warning">Заполните проценты для всех вкусов</div>';
+        if (submitBtn) submitBtn.disabled = true;
+        return false;
+    }
+
+    if (Math.abs(total - 100) > 0.01) {
+        if (warningDiv) warningDiv.innerHTML = `<div class="alert alert-danger">Сумма процентов должна быть 100%. Текущая сумма: ${total.toFixed(2)}%</div>`;
+        if (submitBtn) submitBtn.disabled = true;
+        return false;
+    }
+
+    if (warningDiv) warningDiv.innerHTML = '';
+    if (submitBtn) submitBtn.disabled = false;
+    return true;
+}
+
+// Функция добавления обработчиков к строке вкуса
+function attachRowHandlers(row) {
+    if (!row) return;
+
+    const percent = row.querySelector('.flavor-percent');
+    const removeBtn = row.querySelector('.remove-flavor');
+
+    // Инициализируем кастомный селект внутри строки
+    const wrapper = row.querySelector('.custom-select-wrapper');
+    if (wrapper && !wrapper.hasAttribute('data-initialized')) {
+        initCustomSelect(wrapper);
+    }
+
+    if (percent) {
+        percent.addEventListener('input', function() {
+            validatePercentages();
+        });
+    }
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const rows = document.querySelectorAll('.flavor-row');
+            if (rows.length > 1) {
+                row.remove();
+                validatePercentages();
+            } else {
+                alert('Должен быть хотя бы один вкус');
+            }
+        });
+    }
+}
+
+// Функция создания новой строки вкуса
+function createNewFlavorRow() {
+    const index = Date.now();
+    const newRow = document.createElement('div');
+    newRow.className = 'flavor-row';
+
+    // Получаем HTML из первой строки для шаблона
+    const firstRow = document.querySelector('.flavor-row');
+    if (firstRow) {
+        const rowHtml = firstRow.cloneNode(true);
+        // Очищаем значения
+        const hiddenInput = rowHtml.querySelector('.flavor-id');
+        if (hiddenInput) hiddenInput.value = '';
+
+        const percentInput = rowHtml.querySelector('.flavor-percent');
+        if (percentInput) percentInput.value = '';
+
+        const statusSpan = rowHtml.querySelector('.flavor-status');
+        if (statusSpan) {
+            statusSpan.textContent = 'Активен';
+            statusSpan.className = 'badge bg-success flavor-status';
+        }
+
+        const selectedTextSpan = rowHtml.querySelector('.flavor-selected-text');
+        if (selectedTextSpan) selectedTextSpan.textContent = '-- Выберите вкус --';
+
+        // Удаляем атрибут data-initialized у нового wrapper
+        const wrapper = rowHtml.querySelector('.custom-select-wrapper');
+        if (wrapper) {
+            wrapper.removeAttribute('data-initialized');
+            // Обновляем data-select атрибут
+            wrapper.setAttribute('data-select', `flavor_${index}`);
+        }
+
+        // Удаляем data-flavor-record-id
+        rowHtml.removeAttribute('data-flavor-record-id');
+
+        newRow.innerHTML = rowHtml.innerHTML;
+    } else {
+        // Если нет строк для клонирования, создаем вручную
+        newRow.innerHTML = `
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="custom-select-wrapper" data-select="flavor_${index}">
+                        <div class="custom-select-trigger">
+                            <span class="flavor-selected-text">-- Выберите вкус --</span>
+                        </div>
+                        <div class="custom-select-dropdown">
+                            <div class="custom-select-search">
+                                <input type="text" placeholder="🔍 Поиск вкуса..." class="flavor-search-input">
+                            </div>
+                            <div class="custom-select-options">
+                                <div class="custom-select-option" data-value="">-- Выберите вкус --</div>
+                                {% for flavor in flavors %}
+                                <div class="custom-select-option" data-value="{{ flavor.id }}"
+                                     data-available="{{ 'true' if flavor.is_available else 'false' }}"
+                                     data-name="{{ flavor.name|lower }} {{ flavor.brand|lower }}">
+                                    {{ flavor.name }} ({{ flavor.brand }} - {{ flavor.description }})
+                                    {% if not flavor.is_available %}
+                                    <span class="badge bg-danger">Недоступен</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Доступен</span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" class="flavor-id" name="flavor_id" value="">
+                </div>
+                <div class="col-md-3">
+                    <input type="number" step="0.01" min="0" max="100"
+                           class="form-control flavor-percent"
+                           placeholder="%" required>
+                </div>
+                <div class="col-md-2">
+                    <span class="badge bg-success flavor-status">Активен</span>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-flavor">
+                        <i class="fa fa-trash"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    attachRowHandlers(newRow);
+    return newRow;
+}
+
+// Функции для работы с HEX цветом
+function updateColorPreview() {
+    const hexInput = document.getElementById('hex_color');
+    const colorPicker = document.getElementById('hex_color_picker');
+    const colorPreview = document.getElementById('color-preview');
+
+    if (hexInput && hexInput.value) {
+        const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+        if (hexRegex.test(hexInput.value)) {
+            if (colorPicker) colorPicker.value = hexInput.value;
+            if (colorPreview) colorPreview.style.backgroundColor = hexInput.value;
+        }
+    }
+}
+
+function updateHexFromPicker() {
+    const colorPicker = document.getElementById('hex_color_picker');
+    const hexInput = document.getElementById('hex_color');
+    const colorPreview = document.getElementById('color-preview');
+
+    if (colorPicker && hexInput) {
+        hexInput.value = colorPicker.value;
+        if (colorPreview) colorPreview.style.backgroundColor = colorPicker.value;
+    }
+}
+
+// Функция отправки формы
+function setupFormSubmit(form) {
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        console.log("=== ОТПРАВКА ФОРМЫ ===");
+
+        if (!validatePercentages()) {
+            return false;
+        }
+
+        const jsonData = collectFormData();
+
+        if (!jsonData) {
+            return false;
+        }
+
+        const config = getRequestConfig();
+
+        console.log("Режим:", config.method === 'PUT' ? 'Обновление' : 'Создание');
+        console.log("URL:", config.url);
+        console.log("Метод:", config.method);
+        console.log("Данные для отправки:", jsonData);
+
+        fetch(config.url, {
+            method: config.method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(async response => {
+            console.log("Статус ответа:", response.status);
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.href = '/admin/db-preset/list';
+            } else {
+                const errorData = await response.json().catch(() => ({ detail: "Unknown error" }));
+                console.error("Ошибка:", errorData);
+
+                const warningDiv = document.getElementById('validation-warnings');
+                if (warningDiv) {
+                    warningDiv.innerHTML = `<div class="alert alert-danger">Ошибка при сохранении: ${JSON.stringify(errorData.detail || errorData)}</div>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка отправки:", error);
+            const warningDiv = document.getElementById('validation-warnings');
+            if (warningDiv) {
+                warningDiv.innerHTML = `<div class="alert alert-danger">Ошибка при отправке данных: ${error.message}</div>`;
+            }
+        });
+    });
+}
+
+// Основная инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Страница загружена, начало инициализации...");
+
+    // Инициализация слайдера крепости
+    initStrengthControls();
+
+    // Инициализация всех кастомных селектов
+    setTimeout(() => {
+        initAllCustomSelects();
+    }, 100);
+
+    // Применяем обработчики ко всем существующим строкам вкусов
+    setTimeout(() => {
+        const flavorRows = document.querySelectorAll('.flavor-row');
+        console.log(`Найдено строк с вкусами: ${flavorRows.length}`);
+
+        flavorRows.forEach((row, index) => {
+            attachRowHandlers(row);
+        });
+    }, 150);
+
+    // Обработчик для кнопки добавления вкуса
+    const addButton = document.getElementById('add-flavor');
+    if (addButton) {
+        addButton.addEventListener('click', function() {
+            const container = document.getElementById('flavors-container');
+            if (container) {
+                const newRow = createNewFlavorRow();
+                container.appendChild(newRow);
+                validatePercentages();
+            }
+        });
+    }
+
+    // Обработчики для HEX цвета
+    const hexInput = document.getElementById('hex_color');
+    const colorPicker = document.getElementById('hex_color_picker');
+
+    if (hexInput) {
+        hexInput.addEventListener('input', updateColorPreview);
+    }
+
+    if (colorPicker) {
+        colorPicker.addEventListener('input', updateHexFromPicker);
+    }
+
+    updateColorPreview();
+
+    // Настройка отправки формы
+    const form = document.getElementById('presetForm');
+    setupFormSubmit(form);
+
+    // Первоначальная валидация
+    setTimeout(validatePercentages, 500);
+});
+
+// Переинициализация после динамических изменений (для MutationObserver)
+function reinitializeCustomSelects() {
+    const uninitializedWrappers = document.querySelectorAll('.custom-select-wrapper:not([data-initialized])');
+    if (uninitializedWrappers.length > 0) {
+        console.log(`Найдено неинициализированных селектов: ${uninitializedWrappers.length}`);
+        uninitializedWrappers.forEach(wrapper => {
+            initCustomSelect(wrapper);
+        });
+    }
+}
+
+// Наблюдатель за изменениями в DOM для автоматической инициализации новых селектов
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.addedNodes.length) {
+            setTimeout(reinitializeCustomSelects, 50);
+        }
+    });
+});
+
+// Запускаем наблюдатель после загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+});
+</script>
+
+{% endblock %}

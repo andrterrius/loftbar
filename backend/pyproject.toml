@@ -1,0 +1,21 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiogram>=3.26.0",
+    "alembic>=1.18.4",
+    "asyncpg>=0.31.0",
+    "dishka>=1.8.0",
+    "fastapi>=0.129.0",
+    "markupsafe>=3.0.3",
+    "pydantic-settings>=2.13.0",
+    "pyjwt>=2.11.0",
+    "pytz>=2026.1.post1",
+    "sqladmin[full]==0.23.0",
+    "telegram-init-data>=1.0.2",
+    "uuid>=1.30",
+    "uvicorn[standard,standart]>=0.41.0",
+]
