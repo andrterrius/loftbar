@@ -255,9 +255,22 @@ const MainBuilderPage = () => {
                         })()}
 
                         {selectedFlavors.length === 0 && (
-                            <div className="p-8 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-neutral-500 h-64">
-                                <Plus size={48} className="mb-4 opacity-50" />
-                                <p>Выберите вкус</p>
+                            <div
+                              onClick={() => setIsSearchOpen(true)}
+                              className="
+                                p-8 border-2 border-dashed border-white/10 rounded-xl
+                                flex flex-col items-center justify-center
+                                text-neutral-500 h-64
+                                cursor-pointer
+                                transition-all duration-300
+                                hover:border-white/40
+                                hover:bg-white/5
+                                hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]
+                                active:scale-95
+                              "
+                            >
+                              <Plus size={48} className="mb-4 opacity-50 transition-opacity duration-300 group-hover:opacity-100" />
+                              <p>Выберите вкус</p>
                             </div>
                         )}
 
@@ -292,7 +305,7 @@ const MainBuilderPage = () => {
                                         <button
                                             key={bowl.id}
                                             onClick={() => setSelectedBowl(bowl.id)}
-                                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all aspect-square ${
+                                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all min-w-0 ${
                                                 selectedBowl === bowl.id
                                                     ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]'
                                                     : 'bg-white/5 border-transparent hover:bg-white/10 text-neutral-400'
@@ -300,7 +313,9 @@ const MainBuilderPage = () => {
                                             title={bowl.name}
                                         >
                                             <span className="text-2xl mb-1">{bowl.icon}</span>
-                                            <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.name}</span>
+                                            <span className="text-[10px] text-center leading-tight w-full break-words whitespace-normal px-1">
+                                                {bowl.name}
+                                            </span>
                                         </button>
                                     ))}
                                 </div>
@@ -414,7 +429,6 @@ const MainBuilderPage = () => {
                                 <input
                                     type="text"
                                     placeholder="Поиск вкуса..."
-                                    autoFocus
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="flex-1 bg-transparent border-none outline-none text-white placeholder-neutral-500"
@@ -454,7 +468,7 @@ const MainBuilderPage = () => {
 
                             <div className="flex-1 overflow-y-auto p-4">
                                 {flavorsLoading ? (
-                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
                                         {Array.from({ length: 6 }).map((_, i) => (
                                             <div key={i} className="animate-pulse">
                                                 <div className="aspect-square bg-white/10 rounded-xl mb-2" />
@@ -467,7 +481,7 @@ const MainBuilderPage = () => {
                                         {searchQuery ? 'Вкусы не найдены' : 'В этой категории пока нет вкусов'}
                                     </div>
                                 ) : (
-                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
                                         {filteredFlavors.map(flavor => (
                                             <button
                                                 key={flavor.id}
