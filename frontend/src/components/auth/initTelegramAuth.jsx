@@ -1,5 +1,5 @@
 'use client'
-import { apiRequest, simpleLogin } from "@/utils/api";
+import { login, apiRequest, simpleLogin } from "@/utils/api";
 import { useEffect, useState } from "react";
 import { QrCode } from "lucide-react";
 
@@ -42,11 +42,8 @@ const InitTelegramAuth = () => {
             }
 
             try {
-                const data = await apiRequest('/users/login', {
-                    method: "POST",
-                    headers: { "X-Init-Data": tgDataInit }
-                });
-                localStorage.setItem('jwt', data.access_token);
+                const access_token = login();
+                localStorage.setItem('jwt', access_token);
                 window.dispatchEvent(new Event('auth-ready'));
             } catch (err) {
                 console.log("Ошибка", err);

@@ -1,6 +1,6 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function login() {
+export async function login() {
     const tgData = window.Telegram?.WebApp?.initData || '';
     const res = await fetch(`${BASE_URL}/users/login`, {
         method: 'POST',
