@@ -51,6 +51,21 @@ const MainPresetsPage = () => {
             .finally(() => setPresetsLoading(false));
     }, []);
 
+    useEffect(() => {
+    if (expandedPresetId) {
+        setTimeout(() => {
+            const expandedElement = document.getElementById(`preset-${expandedPresetId}`);
+            if (expandedElement) {
+                expandedElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        }, 100);
+    }
+    }, [expandedPresetId]);
+
     const displayedPresets = availablePresets.filter(preset =>
         preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         preset.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,6 +135,7 @@ const MainPresetsPage = () => {
 
                                 return (
                                     <div
+    id={`preset-${preset.id}`}
     key={preset.id}
     className="relative bg-white/5 border rounded-2xl hover:bg-white/8 flex flex-col h-full"
     style={{

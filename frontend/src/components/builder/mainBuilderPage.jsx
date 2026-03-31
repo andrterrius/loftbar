@@ -290,7 +290,7 @@ const MainBuilderPage = () => {
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
                         <h3 className="text-lg font-semibold text-white mb-4">Чаша</h3>
                         {bowlsLoading ? (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                                 {Array.from({ length: 8 }).map((_, i) => <BowlSkeleton key={i} />)}
                             </div>
                         ) : bowlOptions.length === 0 ? (
@@ -300,7 +300,7 @@ const MainBuilderPage = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-4 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                     {bowlOptions.map((bowl) => (
                                         <button
                                             key={bowl.id}
