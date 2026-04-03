@@ -5,8 +5,8 @@ import { AnimatePresence } from "framer-motion";
 import { X, Search, Plus, RussianRuble } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
-import { getBowls, getFlavours, getBasePrice, getLiquids, createOrder } from "@/utils/api";
-import { FLAVORS, BOWL_OPTIONS, LIQUIDS, SETTINGS } from "../moks/moks";
+import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder } from "@/utils/api";
+import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS } from "../moks/moks";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -31,6 +31,11 @@ const MainBuilderPage = () => {
     const [strength, setStrength] = useState(5);
     const [comment, setComment] = useState('');
 
+    // Категории с бекенда
+    const [categories, setCategories] = useState([]);
+    const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // Массив ID выбранных категорий
+
+
     useEffect(() => {
         getFlavours()
             .then(data => {
@@ -41,6 +46,26 @@ const MainBuilderPage = () => {
                 setFlavors(FLAVORS.map(f => ({ ...f, hex_color: f.color })));
             })
             .finally(() => setFlavorsLoading(false));
+
+        getFlavoursCategories()
+            .then(data => {
+                if (data && data.length > 0) {
+                    setCategories(data);
+                } else {
+                const fallbackCategories = FLAVORS_CATEGORIES.map((category, idx) => ({
+                    id: category.id,
+                    name: category.name
+                }));
+                setCategories(fallbackCategories);
+            }
+            })
+            .catch(() => {
+                const fallbackCategories = FLAVORS_CATEGORIES.map((category, idx) => ({
+                    id: category.id,
+                    name: category.name
+                }));
+                setCategories(fallbackCategories);
+            });
 
         getBowls()
             .then(data => {
@@ -176,30 +201,41 @@ const MainBuilderPage = () => {
     const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
     const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
 
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [categories, setCategories] = useState([]);
-
-    // Auto-generate categories from flavors
-    useEffect(() => {
-        if (flavors && flavors.length > 0) {
-            // Get unique categories from flavors
-            const uniqueCategories = [...new Set(flavors.map(flavor => flavor.category))];
-            // Sort categories alphabetically
-            const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
-            setCategories(sortedCategories);
-        }
-    }, [flavors]);
-
-    // Filtered flavors based on category and search
+    // Фильтрация вкусов по выбранным категориям (поддержка множественных категорий)
     const filteredFlavors = flavors.filter(flavor => {
+        // Поиск
         const matchesSearch = searchQuery === '' ||
             flavor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            flavor.description.toLowerCase().includes(searchQuery.toLowerCase());
+            (flavor.description && flavor.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        const matchesCategory = selectedCategory === null || flavor.category === selectedCategory;
+        // Категории
+        const matchesCategory = selectedCategoryIds.length === 0 ||
+            selectedCategoryIds.some(catId => {
+                const hasCategory = flavor.categories?.some(cat => cat.id == catId);
+                console.log(`Category ${catId}:`, hasCategory, flavor.categories);
+                return hasCategory;
+            }
+        );
 
         return matchesSearch && matchesCategory;
     });
+
+    // Обработчик выбора категории (поддержка нескольких категорий)
+    const toggleCategory = (categoryId) => {
+        console.log(categoryId);
+        setSelectedCategoryIds(prev => {
+            if (prev.includes(categoryId)) {
+                return prev.filter(id => id !== categoryId);
+            } else {
+                return [...prev, categoryId];
+            }
+        });
+    };
+
+    // Очистка всех выбранных категорий
+    const clearCategories = () => {
+        setSelectedCategoryIds([]);
+    };
 
     return (
     <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
@@ -438,33 +474,37 @@ const MainBuilderPage = () => {
                                 </button>
                             </div>
 
-                            {/* Category Selection - automatically generated from flavors */}
+                            {/* Category Selection - теперь с бекенда, поддержка множественного выбора */}
                             <div className="p-4 border-b border-white/10">
-                            <div className="relative group">
-                                <select
-                                    value={selectedCategory === null ? "all" : selectedCategory}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setSelectedCategory(value === "all" ? null : value);
-                                    }}
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 text-white border border-fuchsia-500/30 focus:outline-none focus:border-fuchsia-500 cursor-pointer appearance-none transition-all duration-300 group-hover:border-fuchsia-500/60 group-hover:shadow-[0_0_15px_rgba(192,38,211,0.3)]"
-                                >
-                                    <option value="all" className="bg-gray-900">Все вкусы</option>
+                                <div className="flex flex-wrap gap-2">
                                     {categories.map((category) => (
-                                        <option key={category} value={category} className="bg-gray-900">
-                                            {category}
-                                        </option>
+                                        <button
+                                            key={category.id}
+                                            onClick={() => toggleCategory(category.id)}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                                selectedCategoryIds.includes(category.id)
+                                                    ? 'bg-fuchsia-600 text-white shadow-[0_0_10px_rgba(192,38,211,0.5)]'
+                                                    : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                        >
+                                            {category.name}
+                                        </button>
                                     ))}
-                                </select>
-
-                                {/* Анимированная стрелка */}
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform group-hover:translate-y-[-50%] group-hover:scale-110">
-                                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
+                                    {selectedCategoryIds.length > 0 && (
+                                        <button
+                                            onClick={clearCategories}
+                                            className="px-4 py-2 rounded-full text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all duration-200"
+                                        >
+                                            Очистить ✕
+                                        </button>
+                                    )}
                                 </div>
+                                {selectedCategoryIds.length > 0 && (
+                                    <div className="mt-2 text-xs text-neutral-500">
+                                        Выбрано категорий: {selectedCategoryIds.length}
+                                    </div>
+                                )}
                             </div>
-                        </div>
 
                             <div className="flex-1 overflow-y-auto p-4">
                                 {flavorsLoading ? (
@@ -478,7 +518,7 @@ const MainBuilderPage = () => {
                                     </div>
                                 ) : filteredFlavors.length === 0 ? (
                                     <div className="p-8 text-center text-neutral-500">
-                                        {searchQuery ? 'Вкусы не найдены' : 'В этой категории пока нет вкусов'}
+                                        {searchQuery ? 'Вкусы не найдены' : 'В выбранных категориях пока нет вкусов'}
                                     </div>
                                 ) : (
                                     <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
@@ -499,7 +539,7 @@ const MainBuilderPage = () => {
                                                     ) : (
                                                         <div
                                                             className="w-full h-full flex items-center justify-center text-4xl font-bold"
-                                                            style={{ backgroundColor: flavor.color || '#333' }}
+                                                            style={{ backgroundColor: flavor.hex_color || flavor.color || '#333' }}
                                                         >
                                                             <span className="text-white/80">{flavor.name[0]}</span>
                                                         </div>
@@ -536,7 +576,7 @@ const MainBuilderPage = () => {
                                     <span className="flex items-center gap-2 text-[14px] font-semibold text-white">
                                         <span
                                             className="w-2 h-2 rounded-full inline-block shrink-0"
-                                            style={{ backgroundColor: flavor?.color || '#ccc' }}
+                                            style={{ backgroundColor: flavor?.hex_color || flavor?.color || '#ccc' }}
                                         />
                                         {flavor?.name || 'Неизвестный вкус'}
                                     </span>

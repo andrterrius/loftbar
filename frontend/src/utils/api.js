@@ -83,6 +83,7 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
 
 
 export const getFlavours = () => apiRequest('/flavors', { method: 'GET' });
+export const getFlavoursCategories = () => apiRequest('/flavors/categories', { method: 'GET' });
 export const getAvailablePresets = () => apiRequest('/presets/available', { method: 'GET' });
 export const getLiquids = () => apiRequest('/liquids', { method: 'GET' });
 export const getPresets = () => apiRequest('/presets', { method: 'GET' });
