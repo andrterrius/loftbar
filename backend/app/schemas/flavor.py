@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, UUID4
 from typing import Optional, List
+from datetime import datetime
 
 class FlavorCategoryOut(BaseModel):
     id: UUID4
@@ -19,6 +20,7 @@ class FlavorBase(BaseModel):
 
 class FlavorCreate(FlavorBase):
     categories: Optional[List[UUID4]] = Field(None, description="ID категорий")
+    priority: Optional[bool] = Field(None, description="Приоритет вкуса")
 
 class FlavorUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=64)
@@ -28,9 +30,11 @@ class FlavorUpdate(BaseModel):
     hex_color: Optional[str] = Field(None, max_length=32)
     image_url: Optional[str] = Field(None, max_length=255)
     is_available: Optional[bool] = Field(None, description="Доступность вкуса")
+    priority: Optional[bool] = Field(None, description="Приоритет вкуса")
 
 class FlavorOut(FlavorBase):
     id: UUID4
     is_available: bool
+    priority_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)

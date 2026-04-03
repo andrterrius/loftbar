@@ -238,6 +238,16 @@
 
                         <div class="form-group">
                             <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="priority" name="priority"
+                                       {% if obj and obj.priority_at %}checked{% endif %}>
+                                <label class="form-check-label" for="priority">
+                                    Имеет приоритет
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="is_available" name="is_available"
                                        {% if obj and obj.is_available %}checked{% endif %}>
                                 <label class="form-check-label" for="is_available">
@@ -449,7 +459,8 @@
             categories: getSelectedCategories(),
             hex_color: getElement('hex_color')?.value || null,
             image_url: getElement('image_url')?.value || null,
-            is_available: getElement('is_available')?.checked || false
+            is_available: getElement('is_available')?.checked || false,
+            priority: getElement('priority')?.checked || false
         };
 
         // Убираем null значения (опционально)

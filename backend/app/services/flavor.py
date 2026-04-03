@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from typing import Optional, Sequence
 from app.db.uow import BaseUnitOfWork
 from app.schemas.flavor import FlavorCreate, FlavorUpdate, FlavorOut, FlavorCategoryOut
@@ -10,7 +11,7 @@ from app.services.abc import BaseFlavorService
 class FlavorService(BaseFlavorService):
     async def create_flavor(self, uow: BaseUnitOfWork, data: FlavorCreate) -> FlavorOut:
         async with uow:
-            flavor_data = data.model_dump(exclude_unset=True, exclude={'categories'})
+            flavor_data = data.model_dump(exclude_unset=True, exclude={'categories', 'priority'})
 
             new_flavor = DBFlavor(**flavor_data)
             created = await uow.flavors.create(new_flavor)
@@ -23,6 +24,10 @@ class FlavorService(BaseFlavorService):
                         categories.append(category)
 
                 created.categories = categories
+
+            if data.priority:
+                created.priority_at = datetime.now()
+
             return FlavorOut.model_validate(created)
 
     async def get_all(self, uow: BaseUnitOfWork) -> Sequence[FlavorOut]:
@@ -49,7 +54,7 @@ class FlavorService(BaseFlavorService):
                 return None
 
             # Разделяем обновление полей и категорий
-            update_data = data.model_dump(exclude_unset=True, exclude={'categories'})
+            update_data = data.model_dump(exclude_unset=True, exclude={'categories', 'priority'})
 
             # Обновляем обычные поля
             for field, value in update_data.items():
@@ -61,6 +66,11 @@ class FlavorService(BaseFlavorService):
                     if category:
                         categories.append(category)
                 flavor.categories = categories
+
+            if data.priority:
+                flavor.priority_at = datetime.now()
+            else:
+                flavor.priority_at = None
 
             updated = await uow.flavors.update(flavor)
             return FlavorOut.model_validate(updated)

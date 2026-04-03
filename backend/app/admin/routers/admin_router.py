@@ -188,28 +188,22 @@ def create_admin_flavor_router(admin: Admin):
 
     @router.post("/save", response_class=HTMLResponse)
     async def insert_flavor(
-            request: Request,
+            data: FlavorCreate,
             flavor_service: FromDishka[BaseFlavorService],
             uow: FromDishka[BaseUnitOfWork],
     ):
         """Сохранение вкуса"""
-        body = await request.json()
-
-        data = FlavorCreate(**body)
         result = await flavor_service.create_flavor(uow, data)
         return RedirectResponse(url="/admin/db-flavor/list", status_code=302)
 
     @router.put("/save/{flavor_id}", response_class=HTMLResponse)
     async def update_flavor(
-            request: Request,
             flavor_id: UUID,
+            data: FlavorUpdate,
             flavor_service: FromDishka[BaseFlavorService],
             uow: FromDishka[BaseUnitOfWork],
     ):
         """Обновление вкуса"""
-        # Получаем JSON данные из тела запроса
-        body = await request.json()
-        data = FlavorUpdate(**body)
 
         result = await flavor_service.update_flavor(uow, flavor_id, data)
         if not result:

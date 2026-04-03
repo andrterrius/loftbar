@@ -24,6 +24,7 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         "hex_color": "Цвет",
         "image_url": "Изображение",
         "categories": "Категории",
+        "priority_at": "Дата установки приоритета",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления"
     }
@@ -121,6 +122,7 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     column_formatters = {
         DBFlavor.is_available: _available_formatter,
         DBFlavor.hex_color: _color_formatter,
+        "priority_at": lambda m, a: format_datetime_msk(m.priority_at),
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }

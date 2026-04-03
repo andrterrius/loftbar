@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import List, Protocol, Optional, Sequence, Any
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, desc, asc, nulls_last
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import SQLAlchemyRepository
@@ -97,7 +97,17 @@ class FlavorsRepository(SQLAlchemyRepository[DBFlavor], IFlavorsRepository):
         return await self.get_all(**filters)
 
     async def get_available(self) -> Sequence[DBFlavor]:
-        return await self.get_all(is_available=True)
+        query = (
+            select(self.model)
+            .where(self.model.is_available == True)
+            .order_by(
+                nulls_last(desc(self.model.priority_at)),
+                asc(self.model.name)
+            )
+        )
+
+        result = await self._session.execute(query)
+        return result.scalars().all()
 
     async def get_flavors_by_filters(
             self,
