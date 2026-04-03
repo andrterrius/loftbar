@@ -39,6 +39,7 @@ export const PRESETS = [
         description: 'A refreshing blend of sweet double apple and icy mint.',
         imageUrl: null,
         price: 150,
+        strength: 8,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[0], percent: 70 },
@@ -53,6 +54,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 4,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -67,6 +69,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 3,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -81,6 +84,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 1,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -95,6 +99,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 2,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -109,6 +114,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 10,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -123,6 +129,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 5,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -137,6 +144,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 5,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
@@ -151,6 +159,7 @@ export const PRESETS = [
         description: 'Summer vibes with a sweet mango base.',
         imageUrl: null,
         price: 180,
+        strength: 2,
         liquid: { id: 'water', name: 'Water', hex_color: '#06b6d4' },
         flavors: [
             { flavor: FLAVORS[2], percent: 80 },
