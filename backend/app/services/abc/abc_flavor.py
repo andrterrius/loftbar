@@ -2,7 +2,7 @@ from typing import Protocol, Optional, Sequence
 from uuid import UUID
 
 from app.db.uow import BaseUnitOfWork
-from app.schemas.flavor import FlavorCreate, FlavorUpdate, FlavorOut
+from app.schemas.flavor import FlavorCreate, FlavorUpdate, FlavorOut, FlavorCategoryOut
 
 
 class BaseFlavorService(Protocol):
@@ -22,4 +22,7 @@ class BaseFlavorService(Protocol):
         ...
 
     async def delete_flavor(self, uow: BaseUnitOfWork, flavor_id: UUID) -> bool:
+        ...
+
+    async def get_all_categories(self, uow: BaseUnitOfWork) -> Sequence[FlavorCategoryOut]:
         ...

@@ -4,6 +4,7 @@ from app.db.repositories import (
     UsersRepository,
     PresetsRepository,
     FlavorsRepository,
+    FlavorCategoriesRepository,
     BowlsRepository,
     LiquidsRepository,
     TablesRepository,
@@ -17,12 +18,12 @@ class BaseUnitOfWork(Protocol):
     users: UsersRepository
     presets: PresetsRepository
     flavors: FlavorsRepository
+    flavor_categories: FlavorCategoriesRepository
     bowls: BowlsRepository
     liquids: LiquidsRepository
     tables: TablesRepository
     orders: OrdersRepository
     orders_counter: OrderCounterRepository
-    settings: SettingsRepository
     settings: SettingsRepository
 
     async def __aenter__(self):
