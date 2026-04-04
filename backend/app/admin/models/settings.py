@@ -16,6 +16,8 @@ class SettingsAdmin(ModelView, model=DBSettings):
         "id": "ID",
         "preset_base_price": "Базовая цена пресета",
         "strength_added_price": "Добавочная цена крепости 9+",
+        "liquids_image_url": "URL изображения жидкостей",
+        "bowls_image_url": "URL изображения чаш",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
     }
@@ -24,6 +26,8 @@ class SettingsAdmin(ModelView, model=DBSettings):
         DBSettings.id,
         DBSettings.preset_base_price,
         DBSettings.strength_added_price,
+        DBSettings.liquids_image_url,
+        DBSettings.bowls_image_url,
         DBSettings.created_at,
         DBSettings.updated_at,
     ]
@@ -38,11 +42,15 @@ class SettingsAdmin(ModelView, model=DBSettings):
 
     form_create_rules = [
         "preset_base_price",
-        "strength_added_price"
+        "strength_added_price",
+        "liquids_image_url",
+        "bowls_image_url"
     ]
     form_edit_rules = [
         "preset_base_price",
-        "strength_added_price"
+        "strength_added_price",
+        "liquids_image_url",
+        "bowls_image_url"
     ]
 
     form_args = {
@@ -55,6 +63,16 @@ class SettingsAdmin(ModelView, model=DBSettings):
             "label": "Добавочная цена крепости 8+",
             "description": "Добавляет к сумме заказа сумму за крепость 9+",
             "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
+        },
+        "liquids_image_url": {
+            "label": "URL изображения жидкостей",
+            "description": "Ссылка на изображение для раздела жидкостей",
+            "render_kw": {"class": "form-control", "placeholder": "https://example.com/image.jpg"}
+        },
+        "bowls_image_url": {
+            "label": "URL изображения чаш",
+            "description": "Ссылка на изображение для раздела чаш",
+            "render_kw": {"class": "form-control", "placeholder": "https://example.com/image.jpg"}
         }
     }
 
@@ -64,9 +82,21 @@ class SettingsAdmin(ModelView, model=DBSettings):
     def _added_price_formatter(m, a):
         return f"{m.strength_added_price:.2f} ₽"
 
+    def _liquids_image_formatter(m, a):
+        if m.liquids_image_url:
+            return Markup(f'<a href="{m.liquids_image_url}" target="_blank">Просмотр</a>')
+        return "-"
+
+    def _bowls_image_formatter(m, a):
+        if m.bowls_image_url:
+            return Markup(f'<a href="{m.bowls_image_url}" target="_blank">Просмотр</a>')
+        return "-"
+
     column_formatters = {
         DBSettings.preset_base_price: _base_price_formatter,
         DBSettings.strength_added_price: _added_price_formatter,
+        DBSettings.liquids_image_url: _liquids_image_formatter,
+        DBSettings.bowls_image_url: _bowls_image_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }
