@@ -40,6 +40,16 @@ const MainBuilderPage = () => {
     const [categories, setCategories] = useState([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // Массив ID выбранных категорий
 
+    const preloadImage = (url) => {
+        if (!url) return null;
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = url;
+        });
+    };
+
     useEffect(() => {
         getFlavours()
             .then(data => {
@@ -112,19 +122,23 @@ const MainBuilderPage = () => {
 
         // Загрузка изображений настроек
         getSettingsImages()
-            .then(data => {
+            .then(async  (data) => {
                 if (data) {
                     setSettingsImages({
                         liquids_image_url: data.liquids_image_url || null,
                         bowls_image_url: data.bowls_image_url || null
                     });
+                    await preloadImage(data.liquids_image_url);
+                    await preloadImage(data.bowls_image_url);
                 }
             })
-            .catch(() => {
+            .catch(async () => {
                 setSettingsImages({
                     liquids_image_url: SETTINGS_IMAGES?.liquids_image_url || null,
                     bowls_image_url: SETTINGS_IMAGES?.bowls_image_url || null
                 });
+                await preloadImage(SETTINGS_IMAGES?.liquids_image_url);
+                await preloadImage(SETTINGS_IMAGES?.bowls_image_url);
             });
     }, []);
 
