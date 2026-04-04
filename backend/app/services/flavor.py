@@ -11,7 +11,7 @@ from app.services.abc import BaseFlavorService
 class FlavorService(BaseFlavorService):
     async def create_flavor(self, uow: BaseUnitOfWork, data: FlavorCreate) -> FlavorOut:
         async with uow:
-            flavor_data = data.model_dump(exclude_unset=True, exclude={'categories', 'priority'})
+            flavor_data = data.model_dump(exclude_unset=True, exclude={'categories'})
 
             new_flavor = DBFlavor(**flavor_data)
             created = await uow.flavors.create(new_flavor)
@@ -24,9 +24,6 @@ class FlavorService(BaseFlavorService):
                         categories.append(category)
 
                 created.categories = categories
-
-            if data.priority:
-                created.priority_at = datetime.now()
 
             return FlavorOut.model_validate(created)
 
@@ -54,7 +51,7 @@ class FlavorService(BaseFlavorService):
                 return None
 
             # Разделяем обновление полей и категорий
-            update_data = data.model_dump(exclude_unset=True, exclude={'categories', 'priority'})
+            update_data = data.model_dump(exclude_unset=True, exclude={'categories'})
 
             # Обновляем обычные поля
             for field, value in update_data.items():
@@ -66,11 +63,6 @@ class FlavorService(BaseFlavorService):
                     if category:
                         categories.append(category)
                 flavor.categories = categories
-
-            if data.priority:
-                flavor.priority_at = datetime.now()
-            else:
-                flavor.priority_at = None
 
             updated = await uow.flavors.update(flavor)
             return FlavorOut.model_validate(updated)

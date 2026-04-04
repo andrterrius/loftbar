@@ -101,7 +101,7 @@ class FlavorsRepository(SQLAlchemyRepository[DBFlavor], IFlavorsRepository):
             select(self.model)
             .where(self.model.is_available == True)
             .order_by(
-                nulls_last(desc(self.model.priority_at)),
+                nulls_last(asc(self.model.priority)),
                 asc(self.model.name)
             )
         )

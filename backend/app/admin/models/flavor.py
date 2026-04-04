@@ -25,7 +25,6 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         "image_url": "Изображение",
         "categories": "Категории",
         "priority": "Приоритет",
-        "priority_at": "Дата установки приоритета",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления"
     }
@@ -45,12 +44,12 @@ class FlavorAdmin(ModelView, model=DBFlavor):
         DBFlavor.name,
         DBFlavor.brand,
         DBFlavor.is_available,
-        "priority",
+        DBFlavor.priority,
         DBFlavor.created_at,
         DBFlavor.updated_at
     ]
 
-    column_default_sort = [(DBFlavor.priority_at, False), (DBFlavor.is_available, True), (DBFlavor.name, True)]
+    column_default_sort = [(DBFlavor.priority, False), (DBFlavor.is_available, True), (DBFlavor.name, True)]
 
     # Переопределяем поле categories для использования QuerySelectMultipleField
     form_overrides = {
@@ -114,9 +113,6 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     def _available_formatter(m, a):
         return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
 
-    def _priority_formatter(m, a):
-        return Markup("✅ Да") if m.priority_at else Markup("❌ Нет")
-
     def _color_formatter(m, a):
         if m.hex_color:
             return Markup(
@@ -128,8 +124,6 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     column_formatters = {
         DBFlavor.is_available: _available_formatter,
         DBFlavor.hex_color: _color_formatter,
-        "priority": _priority_formatter,
-        "priority_at": lambda m, a: format_datetime_msk(m.priority_at),
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }

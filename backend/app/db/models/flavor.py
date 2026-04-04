@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 from sqlalchemy import text
-from sqlalchemy import DateTime, String, BigInteger, Boolean
+from sqlalchemy import Integer, String, BigInteger, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -27,12 +27,7 @@ class DBFlavor(TimestampMixin, Base):
     description: Mapped[str] = mapped_column(String(64), nullable=True)
     hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
-
-    priority_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-        default=None
-    )
+    priority: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="flavor",
