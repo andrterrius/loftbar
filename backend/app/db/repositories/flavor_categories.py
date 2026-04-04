@@ -29,6 +29,9 @@ class IFlavorCategoriesRepository(Protocol):
     async def delete(self, _id: UUID) -> None:
         ...
 
+    async def get_all_sorted(self) -> List[DBFlavorCategory]:
+        ...
+
     async def get_by_ids(self, ids: List[UUID]) -> List[DBFlavorCategory]:
         ...
 
@@ -39,6 +42,13 @@ class IFlavorCategoriesRepository(Protocol):
 class FlavorCategoriesRepository(SQLAlchemyRepository[DBFlavorCategory], IFlavorCategoriesRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session, DBFlavorCategory)
+
+    async def get_all_sorted(self) -> List[DBFlavorCategory]:
+        query = select(self.model).order_by(
+            self.model.order.asc().nulls_last()
+        )
+        result = await self._session.execute(query)
+        return list(result.scalars().all())
 
     async def get_by_ids(self, ids: List[UUID]) -> List[DBFlavorCategory]:
         query = select(self.model).where(self.model.id.in_(ids))

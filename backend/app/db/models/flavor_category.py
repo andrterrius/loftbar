@@ -2,7 +2,7 @@ import uuid as uuid_pkg
 from typing import List
 
 from sqlalchemy import text, ForeignKey, UniqueConstraint
-from sqlalchemy import String, BigInteger, Boolean
+from sqlalchemy import String, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -37,6 +37,7 @@ class DBFlavorCategory(TimestampMixin, Base):
         server_default=text("gen_random_uuid()")
     )
     name: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    order: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
 
     flavors: Mapped[List["DBFlavor"]] = relationship(
         secondary="flavor_categories_association",

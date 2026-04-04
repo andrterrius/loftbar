@@ -29,6 +29,7 @@ async def get_categories(
 async def get_available(
     service: FromDishka[BaseFlavorService],
     uow: FromDishka[BaseUnitOfWork],
+    current_user: FromDishka[CurrentUser]
 ):
     """Получить список всех доступных вкусов"""
     result = await service.get_available(uow)

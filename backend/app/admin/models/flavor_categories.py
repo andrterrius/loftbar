@@ -1,6 +1,7 @@
 from fastapi.requests import Request
 from sqladmin import ModelView
 from markupsafe import Markup
+from sqlalchemy import Integer
 
 from app.db.models import DBFlavorCategory
 from app.core.common import format_datetime_msk
@@ -16,6 +17,7 @@ class FlavorCategoryAdmin(ModelView, model=DBFlavorCategory):
         "id": "ID",
         "name": "Название категории",
         "flavors": "Вкусы в категории",
+        "order": "Порядок",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления"
     }
@@ -23,6 +25,7 @@ class FlavorCategoryAdmin(ModelView, model=DBFlavorCategory):
     # Список отображаемых колонок в таблице
     column_list = [
         DBFlavorCategory.name,
+        DBFlavorCategory.order,
         DBFlavorCategory.flavors,
         DBFlavorCategory.created_at,
         DBFlavorCategory.updated_at
@@ -34,16 +37,17 @@ class FlavorCategoryAdmin(ModelView, model=DBFlavorCategory):
     # Сортировка
     column_sortable_list = [
         DBFlavorCategory.name,
+        DBFlavorCategory.order,
         DBFlavorCategory.created_at,
         DBFlavorCategory.updated_at
     ]
 
-    # Сортировка по умолчанию (по имени)
-    column_default_sort = [(DBFlavorCategory.name, True)]
+    # Сортировка по умолчанию (по полю order)
+    column_default_sort = [(DBFlavorCategory.order, False)]
 
     # Поля для создания и редактирования
-    form_create_rules = ["name"]
-    form_edit_rules = ["name"]
+    form_create_rules = ["name", "order"]
+    form_edit_rules = ["name", "order"]
 
     # Настройка формы
     form_args = {
@@ -53,6 +57,15 @@ class FlavorCategoryAdmin(ModelView, model=DBFlavorCategory):
             "render_kw": {
                 "placeholder": "Введите название категории вкуса",
                 "class": "form-control"
+            }
+        },
+        "order": {
+            "label": "Порядковый номер",
+            "description": "Чем меньше число, тем выше позиция в списке",
+            "render_kw": {
+                "placeholder": "Например: 1, 2, 3...",
+                "class": "form-control",
+                "type": "number"
             }
         }
     }

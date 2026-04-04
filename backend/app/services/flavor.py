@@ -84,9 +84,12 @@ class FlavorService(BaseFlavorService):
             await uow.commit()
             return True
 
-    async def get_all_categories(self, uow: BaseUnitOfWork) -> Sequence[FlavorCategoryOut]:
+    async def get_all_categories(self, uow: BaseUnitOfWork, sorted_categories=True) -> Sequence[FlavorCategoryOut]:
         async with uow:
-            categories = await uow.flavor_categories.get_all()
+            if sorted_categories:
+                categories = await uow.flavor_categories.get_all_sorted()
+            else:
+                categories = await uow.flavor_categories.get_all()
             return [FlavorCategoryOut.model_validate(c) for c in categories]
 
     async def get_categories_by_flavor(self, uow: BaseUnitOfWork, flavor_id: UUID) -> Sequence[FlavorCategoryOut]:

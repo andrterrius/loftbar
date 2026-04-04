@@ -24,5 +24,5 @@ class BaseFlavorService(Protocol):
     async def delete_flavor(self, uow: BaseUnitOfWork, flavor_id: UUID) -> bool:
         ...
 
-    async def get_all_categories(self, uow: BaseUnitOfWork) -> Sequence[FlavorCategoryOut]:
+    async def get_all_categories(self, uow: BaseUnitOfWork, sorted_categories=True) -> Sequence[FlavorCategoryOut]:
         ...
