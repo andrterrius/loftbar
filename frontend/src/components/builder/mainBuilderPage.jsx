@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { X, Search, Plus, RussianRuble } from "lucide-react";
+import { X, Search, Plus, RussianRuble, Info } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
-import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder } from "@/utils/api";
-import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS } from "../moks/moks";
+import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder, getSettingsImages } from "@/utils/api";
+import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS, SETTINGS_IMAGES } from "../moks/moks";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -31,10 +31,14 @@ const MainBuilderPage = () => {
     const [strength, setStrength] = useState(5);
     const [comment, setComment] = useState('');
 
+    // Изображения настроек
+    const [settingsImages, setSettingsImages] = useState({ liquids_image_url: null, bowls_image_url: null });
+    const [modalImageUrl, setModalImageUrl] = useState(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
     // Категории с бекенда
     const [categories, setCategories] = useState([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // Массив ID выбранных категорий
-
 
     useEffect(() => {
         getFlavours()
@@ -104,6 +108,23 @@ const MainBuilderPage = () => {
             .catch(() => {
                 setLiquids(LIQUIDS);
                 setSelectedLiquid(LIQUIDS[0]?.id);
+            });
+
+        // Загрузка изображений настроек
+        getSettingsImages()
+            .then(data => {
+                if (data) {
+                    setSettingsImages({
+                        liquids_image_url: data.liquids_image_url || null,
+                        bowls_image_url: data.bowls_image_url || null
+                    });
+                }
+            })
+            .catch(() => {
+                setSettingsImages({
+                    liquids_image_url: SETTINGS_IMAGES?.liquids_image_url || null,
+                    bowls_image_url: SETTINGS_IMAGES?.bowls_image_url || null
+                });
             });
     }, []);
 
@@ -237,6 +258,16 @@ const MainBuilderPage = () => {
         setSelectedCategoryIds([]);
     };
 
+    // Открытие модального окна с изображением
+    const openImageModal = (imageUrl, title) => {
+        if (imageUrl) {
+            setModalImageUrl({ url: imageUrl, title });
+            setIsImageModalOpen(true);
+        } else {
+            alert('Изображение не добавлено');
+        }
+    };
+
     return (
     <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
         <Nav/>
@@ -324,7 +355,18 @@ const MainBuilderPage = () => {
                 <div className="space-y-6">
 
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                        <h3 className="text-lg font-semibold text-white mb-4">Чаша</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-white">Чаша</h3>
+                            {settingsImages.bowls_image_url && (
+                                <button
+                                    onClick={() => openImageModal(settingsImages.bowls_image_url, 'Изображение чаш')}
+                                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-neutral-400 hover:text-white"
+                                    title="Посмотреть изображение"
+                                >
+                                    <Info size={16} />
+                                </button>
+                            )}
+                        </div>
                         {bowlsLoading ? (
                             <div className="grid grid-cols-3 gap-2">
                                 {Array.from({ length: 8 }).map((_, i) => <BowlSkeleton key={i} />)}
@@ -365,7 +407,18 @@ const MainBuilderPage = () => {
                     </div>
 
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                        <h3 className="text-lg font-semibold text-white mb-4">Наполнение колбы</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-white">Наполнение колбы</h3>
+                            {settingsImages.liquids_image_url && (
+                                <button
+                                    onClick={() => openImageModal(settingsImages.liquids_image_url, 'Изображение наполнений колб')}
+                                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-neutral-400 hover:text-white"
+                                    title="Посмотреть изображение"
+                                >
+                                    <Info size={16} />
+                                </button>
+                            )}
+                        </div>
                         {liquids.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
                                 <span className="text-3xl">💧</span>
@@ -652,8 +705,41 @@ const MainBuilderPage = () => {
                 </div>
             </div>
         )}
+
+        {/* Модальное окно для изображений */}
+        {isImageModalOpen && modalImageUrl && (
+            <div
+                className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+                onClick={() => setIsImageModalOpen(false)}
+            >
+                <div
+                    className="relative max-w-3xl max-h-[90vh] w-full bg-neutral-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="flex justify-between items-center p-4 border-b border-white/10">
+                        <h3 className="text-lg font-semibold text-white">{modalImageUrl.title}</h3>
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
+                            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-neutral-400 hover:text-white"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <div className="p-4 flex justify-center items-center bg-neutral-950/50">
+                        <img
+                            src={modalImageUrl.url}
+                            alt={modalImageUrl.title}
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                            onError={(e) => {
+                                e.target.src = 'https://placehold.co/600x400?text=Image+not+found';
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
     </section>
-);
+    );
 };
 
 export default MainBuilderPage;

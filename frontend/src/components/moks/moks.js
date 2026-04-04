@@ -174,6 +174,11 @@ export const SETTINGS = {
     addedStrengthPrice: 5
 };
 
+export const SETTINGS_IMAGES = {
+    liquids_image_url: 'https://ir.ozone.ru/s3/multimedia-p/6046837033.jpg',
+    bowls_image_url: 'https://ir.ozone.ru/s3/multimedia-p/6046837033.jpg'
+};
+
 export const TABS = [
     { id: 'flavors', label: 'Вкусы' },
     { id: 'liquids', label: 'Жидкости' },

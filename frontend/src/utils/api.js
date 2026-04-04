@@ -90,3 +90,4 @@ export const getPresets = () => apiRequest('/presets', { method: 'GET' });
 export const getBowls = () => apiRequest('/bowls', { method: 'GET' });
 export const createOrder = (data) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(data) });
 export const getBasePrice = () => apiRequest('/presets/price', { method: 'GET' });
+export const getSettingsImages = () => apiRequest('/settings/images', { method: 'GET' });
