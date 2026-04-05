@@ -1,5 +1,6 @@
 from .bowl import BowlAdmin
 from .flavor import FlavorAdmin
+from .flavor_categories import FlavorCategoryAdmin
 from .user import UserAdmin
 from .liquid import LiquidAdmin
 from .preset import PresetAdmin
@@ -15,6 +16,7 @@ __all__ = [
     "LiquidAdmin",
     "PresetAdmin",
     "PresetFlavorAdmin",
+    "FlavorCategoryAdmin",
     "TableAdmin",
     "OrderAdmin",
     "SettingsAdmin",

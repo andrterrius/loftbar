@@ -14,6 +14,7 @@ from app.core.config import AdminConfig
 from .models import (
     BowlAdmin,
     FlavorAdmin,
+    FlavorCategoryAdmin,
     LiquidAdmin,
     PresetAdmin,
     UserAdmin,
@@ -27,6 +28,7 @@ _views = [
     PresetAdmin,
     FlavorAdmin,
     PresetFlavorAdmin,
+    FlavorCategoryAdmin,
     BowlAdmin,
     LiquidAdmin,
     TableAdmin,

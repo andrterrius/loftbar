@@ -9,6 +9,7 @@ from .routers.presets import presets_router
 from .routers.liquids import liquids_router
 from .routers.bowls import bowls_router
 from .routers.order import orders_router
+from .routers.settings import settings_router
 
 _routers = [
     users_router,
@@ -17,6 +18,7 @@ _routers = [
     liquids_router,
     bowls_router,
     orders_router,
+    settings_router,
     tgbot_router
 ]
 

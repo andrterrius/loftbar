@@ -1,11 +1,14 @@
 from fastapi.requests import Request
-
 from sqladmin import ModelView
+from sqladmin.fields import QuerySelectMultipleField
 from markupsafe import Markup
+from wtforms import SelectMultipleField, widgets
+from sqlalchemy import nulls_last, desc
 
-from app.db.models import DBFlavor
+from app.db.models import DBFlavor, DBFlavorCategory
 from app.core.common import format_datetime_msk
 from app.admin.utils import add_css_styles, add_image_preview_js
+
 
 class FlavorAdmin(ModelView, model=DBFlavor):
     name = "Вкус"
@@ -13,115 +16,118 @@ class FlavorAdmin(ModelView, model=DBFlavor):
     icon = "fa-solid fa-ice-cream"
 
     column_labels = {
-        "name": "Название",
+        "id": "ID",
+        "name": "Название вкуса",
         "brand": "Бренд",
-        "category": "Категория",
-        "description": "Описание",
         "is_available": "В наличии",
+        "description": "Описание",
         "hex_color": "Цвет",
         "image_url": "Изображение",
+        "categories": "Категории",
+        "priority": "Приоритет",
         "created_at": "Дата создания",
-        "updated_at": "Дата обновления",
-        "presets": "Пресеты",
-        "preset_flavors": "Проценты вкусов"
+        "updated_at": "Дата обновления"
     }
 
     column_list = [
         DBFlavor.name,
         DBFlavor.brand,
-        DBFlavor.category,
-        DBFlavor.description,
+        DBFlavor.categories,
         DBFlavor.is_available,
-        DBFlavor.image_url,
-        DBFlavor.hex_color,
+        "priority",
         DBFlavor.created_at
     ]
 
-    column_searchable_list = [
+    column_searchable_list = [DBFlavor.name, DBFlavor.brand]
+
+    column_sortable_list = [
         DBFlavor.name,
         DBFlavor.brand,
-        DBFlavor.category,
-        DBFlavor.description
-    ]
-    column_sortable_list = [
         DBFlavor.is_available,
-        DBFlavor.created_at]
-    column_default_sort = [(DBFlavor.is_available, True), (DBFlavor.updated_at, True)]
+        DBFlavor.priority,
+        DBFlavor.created_at,
+        DBFlavor.updated_at
+    ]
+
+    column_default_sort = [(DBFlavor.priority, False), (DBFlavor.is_available, True), (DBFlavor.name, True)]
+
+    # Переопределяем поле categories для использования QuerySelectMultipleField
+    form_overrides = {
+        "categories": QuerySelectMultipleField
+    }
 
     form_create_rules = [
-        "name", "brand", "category", "description", "is_available", "hex_color", "image_url"
+        "name", "brand", "categories", "is_available",
+        "description", "hex_color", "image_url"
     ]
+
     form_edit_rules = [
-        "name", "brand", "category", "description", "is_available", "hex_color", "image_url"
+        "name", "brand", "categories", "is_available",
+        "description", "hex_color", "image_url"
     ]
 
     form_args = {
         "name": {
-            "label": "Название",
-            "description": "Название вкуса",
+            "label": "Название вкуса",
             "render_kw": {"placeholder": "Например: Клубника", "class": "form-control"}
         },
         "brand": {
             "label": "Бренд",
-            "description": "Производитель",
-            "render_kw": {"placeholder": "Например: Dinner Lady", "class": "form-control"}
+            "render_kw": {"placeholder": "Например: TPA", "class": "form-control"}
         },
-        "category": {
-            "label": "Категория",
-            "description": "Фруктовый, десертный, мятный и т.д.",
-            "render_kw": {"placeholder": "фруктовый/десертный/мятный", "class": "form-control"}
-        },
-        "description": {
-            "label": "Описание",
-            "description": "Red orange и т.д.",
-            "render_kw": {"placeholder": "Red orange...", "class": "form-control"}
+        "categories": {
+            "label": "Категории",
+            "description": "Выберите одну или несколько категорий для этого вкуса",
+            "render_kw": {
+                "class": "form-control category-select",
+                "multiple": "multiple",
+                "data-live-search": "true",
+                "data-actions-box": "true",
+                "size": "10"
+            }
         },
         "is_available": {
             "label": "В наличии",
-            "description": "Доступен ли для заказа",
             "render_kw": {"class": "form-check-input"}
+        },
+        "description": {
+            "label": "Описание",
+            "render_kw": {"rows": 3, "class": "form-control"}
         },
         "hex_color": {
             "label": "Цвет",
             "description": "Выберите цвет для вкуса",
-            "render_kw": {"type": "color", "class": "form-control form-control-color",
-                          "style": "width: 60px; height: 40px; padding: 0;"}
+            "render_kw": {
+                "type": "color",
+                "class": "form-control form-control-color",
+                "style": "width: 60px; height: 40px; padding: 0;"
+            }
         },
         "image_url": {
             "label": "URL изображения",
-            "description": "Ссылка на картинку",
-            "render_kw": {"type": "url", "class": "form-control", "placeholder": "https://example.com/image.jpg"}
+            "description": "Ссылка на изображение вкуса",
+            "render_kw": {"placeholder": "https://...", "class": "form-control"}
         }
     }
-
-    form_widget_args = {
-        "is_available": {"class": "form-check-input"}
-    }
-
-    def _color_formatter(m, a):
-        if m.hex_color:
-            return Markup(
-                f'<div style="background-color: {m.hex_color}; width: 30px; height: 20px; border-radius: 4px; border: 1px solid #ddd;"></div>'
-            )
-        return Markup('<span style="color: #999;">—</span>')
-
-    def _image_formatter(m, a):
-        if m.image_url:
-            return Markup(
-                f'<img src="{m.image_url}" style="max-width: 50px; max-height: 50px; border-radius: 4px; object-fit: cover;" onerror="this.style.display=\'none\'">'
-            )
-        return Markup('<span style="color: #999;">—</span>')
 
     def _available_formatter(m, a):
         return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
 
+    def _color_formatter(m, a):
+        if m.hex_color:
+            return Markup(
+                f'<div style="background-color: {m.hex_color}; width: 30px; height: 20px; '
+                f'border-radius: 4px; border: 1px solid #ddd;"></div>'
+            )
+        return Markup('<span style="color: #999;">—</span>')
+
     column_formatters = {
-        DBFlavor.hex_color: _color_formatter,
         DBFlavor.is_available: _available_formatter,
-        DBFlavor.image_url: _image_formatter,
+        DBFlavor.hex_color: _color_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
     }
+
     column_formatters_detail = column_formatters
 
     async def on_before_form(self, request: Request, obj=None):

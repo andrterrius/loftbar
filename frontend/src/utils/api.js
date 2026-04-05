@@ -1,6 +1,6 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function login() {
+export async function login() {
     const tgData = window.Telegram?.WebApp?.initData || '';
     const res = await fetch(`${BASE_URL}/users/login`, {
         method: 'POST',
@@ -83,9 +83,11 @@ export async function apiRequest(endpoint, options = {}, attempt = 1) {
 
 
 export const getFlavours = () => apiRequest('/flavors', { method: 'GET' });
+export const getFlavoursCategories = () => apiRequest('/flavors/categories', { method: 'GET' });
 export const getAvailablePresets = () => apiRequest('/presets/available', { method: 'GET' });
 export const getLiquids = () => apiRequest('/liquids', { method: 'GET' });
 export const getPresets = () => apiRequest('/presets', { method: 'GET' });
 export const getBowls = () => apiRequest('/bowls', { method: 'GET' });
 export const createOrder = (data) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(data) });
 export const getBasePrice = () => apiRequest('/presets/price', { method: 'GET' });
+export const getSettingsImages = () => apiRequest('/settings/images', { method: 'GET' });

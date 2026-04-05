@@ -15,6 +15,8 @@ from app.db.uow import BaseUnitOfWork
 from app.services.abc import BasePresetService, BaseFlavorService, BaseBowlService, BaseLiquidService
 
 from app.schemas.preset import PresetUpdate, PresetCreate
+from app.schemas.flavor import FlavorUpdate, FlavorCreate
+
 
 def create_admin_middleware_dependency(admin: Admin):
     """Создает зависимость для применения middleware к роутеру"""
@@ -28,7 +30,7 @@ def create_admin_middleware_dependency(admin: Admin):
 
     return admin_middleware_dependency
 
-def create_admin_router(admin: Admin):
+def create_admin_preset_router(admin: Admin):
     admin_middleware = create_admin_middleware_dependency(admin)
     templates = Jinja2Templates(directory="app/admin/templates")
 
@@ -110,7 +112,6 @@ def create_admin_router(admin: Admin):
         admin: Admin = request.state.admin
         result = await preset_service.create(uow, data)
 
-        print(data)
         return RedirectResponse(url="/admin/db-preset/list", status_code=302)
 
     @router.put("/save/{preset_id}")
@@ -125,8 +126,89 @@ def create_admin_router(admin: Admin):
 
         admin: Admin = request.state.admin
         result = await preset_service.update(uow, preset_id, data)
-        print("result", result)
         if not result:
             raise HTTPException(status_code=404, detail="Preset not found")
+
+    return router
+
+
+def create_admin_flavor_router(admin: Admin):
+    admin_middleware = create_admin_middleware_dependency(admin)
+    templates = Jinja2Templates(directory="app/admin/templates")
+
+    router = APIRouter(
+        prefix="/admin/db-flavor",
+        include_in_schema=False,
+        dependencies=[Depends(admin_middleware)],
+        route_class=DishkaRoute
+    )
+
+    @router.get("/create", response_class=HTMLResponse)
+    async def create_flavor(
+            request: Request,
+            flavor_service: FromDishka[BaseFlavorService],
+            uow: FromDishka[BaseUnitOfWork],
+    ):
+        """Создание нового вкуса"""
+        admin: Admin = request.state.admin
+
+        categories = await flavor_service.get_all_categories(uow)
+
+        return templates.TemplateResponse(
+            "flavor/edit.html",
+            {
+                "admin": admin,
+                "request": request,
+                "obj": None,
+                "categories": categories
+            }
+        )
+
+    @router.get("/edit/{flavor_id}", response_class=HTMLResponse)
+    async def edit_flavor(
+            request: Request,
+            flavor_id: UUID,
+            flavor_service: FromDishka[BaseFlavorService],
+            uow: FromDishka[BaseUnitOfWork],
+    ):
+        """Редактирование существующего вкуса"""
+        admin: Admin = request.state.admin
+
+        obj = await flavor_service.get_flavor_by_id(uow, flavor_id)
+        categories = await flavor_service.get_all_categories(uow)
+        return templates.TemplateResponse(
+            "flavor/edit.html",
+            {
+                "admin": admin,
+                "request": request,
+                "obj": obj,
+                "categories": categories
+            }
+        )
+
+    @router.post("/save", response_class=HTMLResponse)
+    async def insert_flavor(
+            data: FlavorCreate,
+            flavor_service: FromDishka[BaseFlavorService],
+            uow: FromDishka[BaseUnitOfWork],
+    ):
+        """Сохранение вкуса"""
+        result = await flavor_service.create_flavor(uow, data)
+        return RedirectResponse(url="/admin/db-flavor/list", status_code=302)
+
+    @router.put("/save/{flavor_id}", response_class=HTMLResponse)
+    async def update_flavor(
+            flavor_id: UUID,
+            data: FlavorUpdate,
+            flavor_service: FromDishka[BaseFlavorService],
+            uow: FromDishka[BaseUnitOfWork],
+    ):
+        """Обновление вкуса"""
+
+        result = await flavor_service.update_flavor(uow, flavor_id, data)
+        if not result:
+            raise HTTPException(status_code=404, detail="Flavor not found")
+
+        return RedirectResponse(url="/admin/db-flavor/list", status_code=302)
 
     return router

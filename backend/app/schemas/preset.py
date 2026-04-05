@@ -141,3 +141,5 @@ class PresetEditData(BaseModel):
 class PresetBasePrice(BaseModel):
     base_price: float
     strength_added_price: float
+
+    model_config = ConfigDict(from_attributes=True)

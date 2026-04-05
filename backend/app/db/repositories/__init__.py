@@ -1,5 +1,6 @@
 from .users import UsersRepository
 from .flavors import FlavorsRepository
+from .flavor_categories import FlavorCategoriesRepository
 from .presets import PresetsRepository
 from .bowls import BowlsRepository
 from .liquids import LiquidsRepository

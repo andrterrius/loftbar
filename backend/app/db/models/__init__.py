@@ -4,6 +4,7 @@ from .preset import DBPreset
 from .liquid import DBLiquid
 from .flavor import DBFlavor
 from .bowl import DBBowl
+from .flavor_category import DBFlavorCategory, DBFlavorCategoryAssociation
 from .preset_flavor import DBPresetFlavor
 from .settings import DBSettings
 from .table import DBTable
@@ -18,6 +19,8 @@ __all__ = [
     "DBFlavor",
     "DBBowl",
     "DBPresetFlavor",
+    "DBFlavorCategory",
+    "DBFlavorCategoryAssociation",
     "DBSettings",
     "DBTable",
     "DBOrder",
