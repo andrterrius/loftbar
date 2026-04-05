@@ -7,6 +7,7 @@ from app.db.repositories import (
     UsersRepository,
     PresetsRepository,
     FlavorsRepository,
+    FlavorCategoriesRepository,
     BowlsRepository,
     LiquidsRepository,
     TablesRepository,
@@ -28,6 +29,7 @@ class UnitOfWork(BaseUnitOfWork):
         self.session = self.session_maker()
         self.users = UsersRepository(self.session)
         self.flavors = FlavorsRepository(self.session)
+        self.flavor_categories = FlavorCategoriesRepository(self.session)
         self.presets = PresetsRepository(self.session)
         self.bowls = BowlsRepository(self.session)
         self.liquids = LiquidsRepository(self.session)

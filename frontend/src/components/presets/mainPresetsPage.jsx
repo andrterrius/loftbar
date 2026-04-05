@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ChevronDown } from "lucide-react";
 import Nav from "../nav";
 import { getPresets, createOrder } from "@/utils/api";
 import { PRESETS } from "../moks/moks";
@@ -37,6 +37,7 @@ const MainPresetsPage = () => {
     const [confirmPreset, setConfirmPreset] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successOrderId, setSuccessOrderId] = useState(null);
+    const [expandedPresetId, setExpandedPresetId] = useState(null);
 
     useEffect(() => {
         getPresets()
@@ -49,6 +50,21 @@ const MainPresetsPage = () => {
             })
             .finally(() => setPresetsLoading(false));
     }, []);
+
+    useEffect(() => {
+    if (expandedPresetId) {
+        setTimeout(() => {
+            const expandedElement = document.getElementById(`preset-${expandedPresetId}`);
+            if (expandedElement) {
+                expandedElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                    inline: 'nearest'
+                });
+            }
+        }, 100);
+    }
+    }, [expandedPresetId]);
 
     const displayedPresets = availablePresets.filter(preset =>
         preset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -75,6 +91,14 @@ const MainPresetsPage = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const togglePreset = (presetId) => {
+        setExpandedPresetId(expandedPresetId === presetId ? null : presetId);
+    };
+
+    const getStrengthLabel = (strength) => {
+        return { label: strength, color: 'text-neutral-400', bg: 'bg-neutral-500/10', border: 'border-neutral-500/30' };
     };
 
     return (
@@ -109,84 +133,137 @@ const MainPresetsPage = () => {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full text-left">
-                            {displayedPresets.map((preset) => (
-                                <div
-                                    key={preset.id}
-                                    style={{
-                                        borderColor: preset.hex_color
-                                            ? `${preset.hex_color}60`
-                                            : 'rgba(255,255,255,0.1)'
-                                    }}
-                                    className="group relative bg-white/5 border rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all flex flex-col w-full"
-                                >
-                                    <div className="p-5 flex-1 flex flex-col space-y-4">
-                                        <div>
-                                            <h3 className="text-base font-bold tracking-tight text-white group-hover:text-cyan-400 transition-colors leading-snug">
-                                                {preset.name || 'Без названия'}
-                                            </h3>
-                                            <p className="text-[11px] italic text-neutral-600 mt-1.5 line-clamp-2 min-h-[2rem] leading-relaxed">
-                                                {preset.description || 'Описание не добавлено'}
-                                            </p>
-                                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+                            {displayedPresets.map((preset) => {
+                                const isOpen = expandedPresetId === preset.id;
+                                const strengthInfo = getStrengthLabel(preset.strength);
 
-                                        <div className="space-y-1.5 flex-1 min-h-[4rem]">
-                                            {(preset.flavors || []).length === 0 ? (
-                                                <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
-                                            ) : (
-                                                (preset.flavors || []).map((ing, i) => (
-                                                    <div key={i} className="flex justify-between items-center">
-                                                        <span className="text-[14px] font-semibold text-white tracking-tight">{ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}</span>
-                                                        <span className="text-[12px] font-mono text-neutral-300 tabular-nums">{ing.percent}%</span>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-
-                                        <div className="flex gap-2 flex-wrap">
-                                            {preset.bowl && (
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
-                                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                                                        <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {preset.liquid && (
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
-                                                    <span
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
-                                                        style={{
-                                                            backgroundColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}20`
-                                                                : 'rgba(6,182,212,0.1)',
-                                                            borderColor: preset.liquid.hex_color
-                                                                ? `${preset.liquid.hex_color}50`
-                                                                : 'rgba(6,182,212,0.3)',
-                                                        }}
-                                                    >
-                                                        <span className="text-base leading-none">💧</span> {preset.liquid.name}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="pt-3 border-t border-white/5 flex justify-between items-center mt-auto">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Цена</span>
-                                                <span className="text-xl font-bold text-white tracking-tight leading-none">{preset.price ?? '—'}<span className="text-neutral-400 text-base font-semibold">₽</span></span>
+                                return (
+                                    <div
+                                        id={`preset-${preset.id}`}
+                                        key={preset.id}
+                                        className="relative bg-white/5 border rounded-2xl hover:bg-white/8 flex flex-col h-full"
+                                        style={{
+                                            borderColor: preset.hex_color
+                                                ? `${preset.hex_color}60`
+                                                : 'rgba(255,255,255,0.1)'
+                                        }}
+                                    >
+                                        {/* Card Header - Always visible */}
+                                        <button
+                                            onClick={() => togglePreset(preset.id)}
+                                            className="w-full p-5 flex justify-between items-center gap-3 hover:bg-white/5 transition-colors group text-left"
+                                        >
+                                            <div className="flex-1">
+                                                <h3 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors leading-snug">
+                                                    {preset.name || 'Без названия'}
+                                                </h3>
                                             </div>
-                                            <button
-                                                onClick={() => setConfirmPreset(preset)}
-                                                className="px-5 py-2.5 hover:bg-fuchsia-600 hover:text-white text-white rounded-xl text-[13px] font-semibold tracking-tight transition-all border border-white/15 hover:border-fuchsia-500 bg-white/8"
-                                            >
-                                                Заказать
-                                            </button>
-                                        </div>
+                                            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xl font-bold text-white tracking-tight leading-none">
+                                                        {preset.price ?? '—'}<span className="text-neutral-400 text-base font-semibold">₽</span>
+                                                    </span>
+                                                    <ChevronDown
+                                                        className={`w-5 h-5 text-neutral-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </button>
+
+                                        {/* Expanded Content - Absolute positioning */}
+                                        {isOpen && (
+                                            <div className="absolute left-0 right-0 top-full mt-2 z-20 bg-neutral-900 border border-white/10 rounded-xl p-5 shadow-2xl animate-fadeIn">
+                                                <div className="space-y-4">
+                                                    {/* Full Description */}
+                                                    {preset.description && (
+                                                        <div>
+                                                            <p className="text-sm text-neutral-400 leading-relaxed">
+                                                                {preset.description}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Flavors */}
+                                                    <div>
+                                                        <h4 className="text-xs uppercase tracking-wider text-neutral-500 font-semibold mb-3">
+                                                            Состав микса
+                                                        </h4>
+                                                        <div className="space-y-2">
+                                                            {(preset.flavors || []).length === 0 ? (
+                                                                <p className="text-xs text-neutral-600 italic">Вкусы не указаны</p>
+                                                            ) : (
+                                                                (preset.flavors || []).map((ing, i) => (
+                                                                    <div key={i} className="flex justify-between items-center py-1 border-b border-white/5">
+                                                                        <span className="text-sm font-medium text-white">
+                                                                            {ing.flavor?.name || <span className="text-neutral-600 italic">Неизвестный вкус</span>}
+                                                                        </span>
+                                                                        <span className="text-sm font-mono text-cyan-400 tabular-nums font-semibold">
+                                                                            {ing.percent}%
+                                                                        </span>
+                                                                    </div>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h4 className="text-xs uppercase tracking-wider text-neutral-500 font-semibold mb-2">
+                                                            Крепость
+                                                        </h4>
+                                                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${strengthInfo.bg} ${strengthInfo.border} border`}>
+                                                            <span className={`text-base ${strengthInfo.color}`}>⚡</span>
+                                                            <span className={strengthInfo.color}>{strengthInfo.label}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Bowl and Liquid */}
+                                                    <div className="flex flex-wrap gap-2 pt-2">
+                                                        {preset.bowl && (
+                                                            <div className="flex flex-col gap-1 flex-1 min-w-[100px]">
+                                                                <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
+                                                                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
+                                                                    <span className="text-base">{preset.bowl.icon}</span>
+                                                                    <span className="truncate">{preset.bowl.name}</span>
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {preset.liquid && (
+                                                            <div className="flex flex-col gap-1 flex-1 min-w-[100px]">
+                                                                <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
+                                                                <span
+                                                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border text-cyan-300"
+                                                                    style={{
+                                                                        backgroundColor: preset.liquid.hex_color
+                                                                            ? `${preset.liquid.hex_color}20`
+                                                                            : 'rgba(6,182,212,0.1)',
+                                                                        borderColor: preset.liquid.hex_color
+                                                                            ? `${preset.liquid.hex_color}50`
+                                                                            : 'rgba(6,182,212,0.3)',
+                                                                    }}
+                                                                >
+                                                                    <span className="text-base">💧</span>
+                                                                    <span className="truncate">{preset.liquid.name}</span>
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Order Button */}
+                                                    <div className="pt-2">
+                                                        <button
+                                                            onClick={() => setConfirmPreset(preset)}
+                                                            className="w-full px-4 py-2.5 bg-gradient-to-r from-fuchsia-600 to-cyan-600 hover:from-fuchsia-700 hover:to-cyan-700 text-white rounded-lg text-sm font-semibold tracking-tight transition-all shadow-lg"
+                                                        >
+                                                            Заказать микс
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {displayedPresets.length === 0 && (
@@ -199,6 +276,7 @@ const MainPresetsPage = () => {
                 )}
             </div>
 
+            {/* Modal windows remain unchanged */}
             {confirmPreset && (
                 <div
                     className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -243,8 +321,16 @@ const MainPresetsPage = () => {
                                     </span>
                                 </div>
                             )}
+                            {confirmPreset.strength && (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Крепость</span>
+                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border ${getStrengthLabel(confirmPreset.strength).bg} ${getStrengthLabel(confirmPreset.strength).border}`}>
+                                        <span className={`text-base leading-none ${getStrengthLabel(confirmPreset.strength).color}`}>⚡</span>
+                                        <span className={getStrengthLabel(confirmPreset.strength).color}>{getStrengthLabel(confirmPreset.strength).label}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-
 
                         <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
                             <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
@@ -270,7 +356,6 @@ const MainPresetsPage = () => {
                     </div>
                 </div>
             )}
-            
 
             {successOrderId !== null && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">

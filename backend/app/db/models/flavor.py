@@ -1,9 +1,10 @@
 import uuid as uuid_pkg
 
 from typing import List
+from datetime import datetime
 
 from sqlalchemy import text
-from sqlalchemy import String, BigInteger, Boolean
+from sqlalchemy import Integer, String, BigInteger, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -23,14 +24,20 @@ class DBFlavor(TimestampMixin, Base):
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     brand: Mapped[str] = mapped_column(String(64), nullable=False)
-    category: Mapped[str] = mapped_column(String(32), nullable=False)
     description: Mapped[str] = mapped_column(String(64), nullable=True)
     hex_color: Mapped[str] = mapped_column(String(9), nullable=True)
     image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    priority: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
         back_populates="flavor",
         cascade="all, delete-orphan"
+    )
+
+    categories: Mapped[List["DBFlavorCategory"]] = relationship(
+        secondary="flavor_categories_association",
+        back_populates="flavors",
+        lazy="selectin"
     )
 
     def __str__(self) -> str:

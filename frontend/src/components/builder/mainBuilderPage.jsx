@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { X, Search, Plus, RussianRuble } from "lucide-react";
+import { X, Search, Plus, RussianRuble, Info } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
-import { getBowls, getFlavours, getBasePrice, getLiquids, createOrder } from "@/utils/api";
-import { FLAVORS, BOWL_OPTIONS, LIQUIDS, SETTINGS } from "../moks/moks";
+import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder, getSettingsImages } from "@/utils/api";
+import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS, SETTINGS_IMAGES } from "../moks/moks";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -31,6 +31,25 @@ const MainBuilderPage = () => {
     const [strength, setStrength] = useState(5);
     const [comment, setComment] = useState('');
 
+    // Изображения настроек
+    const [settingsImages, setSettingsImages] = useState({ liquids_image_url: null, bowls_image_url: null });
+    const [modalImageUrl, setModalImageUrl] = useState(null);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+    // Категории с бекенда
+    const [categories, setCategories] = useState([]);
+    const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // Массив ID выбранных категорий
+
+    const preloadImage = (url) => {
+        if (!url) return null;
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = url;
+        });
+    };
+
     useEffect(() => {
         getFlavours()
             .then(data => {
@@ -41,6 +60,26 @@ const MainBuilderPage = () => {
                 setFlavors(FLAVORS.map(f => ({ ...f, hex_color: f.color })));
             })
             .finally(() => setFlavorsLoading(false));
+
+        getFlavoursCategories()
+            .then(data => {
+                if (data && data.length > 0) {
+                    setCategories(data);
+                } else {
+                const fallbackCategories = FLAVORS_CATEGORIES.map((category, idx) => ({
+                    id: category.id,
+                    name: category.name
+                }));
+                setCategories(fallbackCategories);
+            }
+            })
+            .catch(() => {
+                const fallbackCategories = FLAVORS_CATEGORIES.map((category, idx) => ({
+                    id: category.id,
+                    name: category.name
+                }));
+                setCategories(fallbackCategories);
+            });
 
         getBowls()
             .then(data => {
@@ -79,6 +118,27 @@ const MainBuilderPage = () => {
             .catch(() => {
                 setLiquids(LIQUIDS);
                 setSelectedLiquid(LIQUIDS[0]?.id);
+            });
+
+        // Загрузка изображений настроек
+        getSettingsImages()
+            .then(async  (data) => {
+                if (data) {
+                    setSettingsImages({
+                        liquids_image_url: data.liquids_image_url || null,
+                        bowls_image_url: data.bowls_image_url || null
+                    });
+                    await preloadImage(data.liquids_image_url);
+                    await preloadImage(data.bowls_image_url);
+                }
+            })
+            .catch(async () => {
+                setSettingsImages({
+                    liquids_image_url: SETTINGS_IMAGES?.liquids_image_url || null,
+                    bowls_image_url: SETTINGS_IMAGES?.bowls_image_url || null
+                });
+                await preloadImage(SETTINGS_IMAGES?.liquids_image_url);
+                await preloadImage(SETTINGS_IMAGES?.bowls_image_url);
             });
     }, []);
 
@@ -176,30 +236,51 @@ const MainBuilderPage = () => {
     const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
     const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
 
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [categories, setCategories] = useState([]);
-
-    // Auto-generate categories from flavors
-    useEffect(() => {
-        if (flavors && flavors.length > 0) {
-            // Get unique categories from flavors
-            const uniqueCategories = [...new Set(flavors.map(flavor => flavor.category))];
-            // Sort categories alphabetically
-            const sortedCategories = uniqueCategories.sort((a, b) => a.localeCompare(b));
-            setCategories(sortedCategories);
-        }
-    }, [flavors]);
-
-    // Filtered flavors based on category and search
+    // Фильтрация вкусов по выбранным категориям (поддержка множественных категорий)
     const filteredFlavors = flavors.filter(flavor => {
+        // Поиск
         const matchesSearch = searchQuery === '' ||
             flavor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            flavor.description.toLowerCase().includes(searchQuery.toLowerCase());
+            (flavor.description && flavor.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        const matchesCategory = selectedCategory === null || flavor.category === selectedCategory;
+        // Категории
+        const matchesCategory = selectedCategoryIds.length === 0 ||
+            selectedCategoryIds.some(catId => {
+                const hasCategory = flavor.categories?.some(cat => cat.id == catId);
+                console.log(`Category ${catId}:`, hasCategory, flavor.categories);
+                return hasCategory;
+            }
+        );
 
         return matchesSearch && matchesCategory;
     });
+
+    // Обработчик выбора категории (поддержка нескольких категорий)
+    const toggleCategory = (categoryId) => {
+        console.log(categoryId);
+        setSelectedCategoryIds(prev => {
+            if (prev.includes(categoryId)) {
+                return prev.filter(id => id !== categoryId);
+            } else {
+                return [...prev, categoryId];
+            }
+        });
+    };
+
+    // Очистка всех выбранных категорий
+    const clearCategories = () => {
+        setSelectedCategoryIds([]);
+    };
+
+    // Открытие модального окна с изображением
+    const openImageModal = (imageUrl, title) => {
+        if (imageUrl) {
+            setModalImageUrl({ url: imageUrl, title });
+            setIsImageModalOpen(true);
+        } else {
+            alert('Изображение не добавлено');
+        }
+    };
 
     return (
     <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
@@ -255,9 +336,22 @@ const MainBuilderPage = () => {
                         })()}
 
                         {selectedFlavors.length === 0 && (
-                            <div className="p-8 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-neutral-500 h-64">
-                                <Plus size={48} className="mb-4 opacity-50" />
-                                <p>Выберите вкус</p>
+                            <div
+                              onClick={() => setIsSearchOpen(true)}
+                              className="
+                                p-8 border-2 border-dashed border-white/10 rounded-xl
+                                flex flex-col items-center justify-center
+                                text-neutral-500 h-64
+                                cursor-pointer
+                                transition-all duration-300
+                                hover:border-white/40
+                                hover:bg-white/5
+                                hover:shadow-[0_0_15px_rgba(255,255,255,0.5)]
+                                active:scale-95
+                              "
+                            >
+                              <Plus size={48} className="mb-4 opacity-50 transition-opacity duration-300 group-hover:opacity-100" />
+                              <p>Выберите вкус</p>
                             </div>
                         )}
 
@@ -275,9 +369,20 @@ const MainBuilderPage = () => {
                 <div className="space-y-6">
 
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                        <h3 className="text-lg font-semibold text-white mb-4">Чаша</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-white">Чаша</h3>
+                            {settingsImages.bowls_image_url && (
+                                <button
+                                    onClick={() => openImageModal(settingsImages.bowls_image_url, 'Изображение чаш')}
+                                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-neutral-400 hover:text-white"
+                                    title="Посмотреть изображение"
+                                >
+                                    <Info size={16} />
+                                </button>
+                            )}
+                        </div>
                         {bowlsLoading ? (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                                 {Array.from({ length: 8 }).map((_, i) => <BowlSkeleton key={i} />)}
                             </div>
                         ) : bowlOptions.length === 0 ? (
@@ -287,12 +392,12 @@ const MainBuilderPage = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-4 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                     {bowlOptions.map((bowl) => (
                                         <button
                                             key={bowl.id}
                                             onClick={() => setSelectedBowl(bowl.id)}
-                                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all aspect-square ${
+                                            className={`flex flex-col items-center justify-center p-2 rounded-lg border transition-all min-w-0 ${
                                                 selectedBowl === bowl.id
                                                     ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(192,38,211,0.5)]'
                                                     : 'bg-white/5 border-transparent hover:bg-white/10 text-neutral-400'
@@ -300,7 +405,9 @@ const MainBuilderPage = () => {
                                             title={bowl.name}
                                         >
                                             <span className="text-2xl mb-1">{bowl.icon}</span>
-                                            <span className="text-[10px] text-center leading-tight truncate w-full">{bowl.name}</span>
+                                            <span className="text-[10px] text-center leading-tight w-full break-words whitespace-normal px-1">
+                                                {bowl.name}
+                                            </span>
                                         </button>
                                     ))}
                                 </div>
@@ -314,7 +421,18 @@ const MainBuilderPage = () => {
                     </div>
 
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm text-left">
-                        <h3 className="text-lg font-semibold text-white mb-4">Наполнение колбы</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold text-white">Наполнение колбы</h3>
+                            {settingsImages.liquids_image_url && (
+                                <button
+                                    onClick={() => openImageModal(settingsImages.liquids_image_url, 'Изображение наполнений колб')}
+                                    className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-neutral-400 hover:text-white"
+                                    title="Посмотреть изображение"
+                                >
+                                    <Info size={16} />
+                                </button>
+                            )}
+                        </div>
                         {liquids.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-6 text-neutral-600 gap-2">
                                 <span className="text-3xl">💧</span>
@@ -414,7 +532,6 @@ const MainBuilderPage = () => {
                                 <input
                                     type="text"
                                     placeholder="Поиск вкуса..."
-                                    autoFocus
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="flex-1 bg-transparent border-none outline-none text-white placeholder-neutral-500"
@@ -424,37 +541,41 @@ const MainBuilderPage = () => {
                                 </button>
                             </div>
 
-                            {/* Category Selection - automatically generated from flavors */}
+                            {/* Category Selection - теперь с бекенда, поддержка множественного выбора */}
                             <div className="p-4 border-b border-white/10">
-                            <div className="relative group">
-                                <select
-                                    value={selectedCategory === null ? "all" : selectedCategory}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setSelectedCategory(value === "all" ? null : value);
-                                    }}
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-900/50 text-white border border-fuchsia-500/30 focus:outline-none focus:border-fuchsia-500 cursor-pointer appearance-none transition-all duration-300 group-hover:border-fuchsia-500/60 group-hover:shadow-[0_0_15px_rgba(192,38,211,0.3)]"
-                                >
-                                    <option value="all" className="bg-gray-900">Все вкусы</option>
+                                <div className="flex flex-wrap gap-2">
                                     {categories.map((category) => (
-                                        <option key={category} value={category} className="bg-gray-900">
-                                            {category}
-                                        </option>
+                                        <button
+                                            key={category.id}
+                                            onClick={() => toggleCategory(category.id)}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                                selectedCategoryIds.includes(category.id)
+                                                    ? 'bg-fuchsia-600 text-white shadow-[0_0_10px_rgba(192,38,211,0.5)]'
+                                                    : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                        >
+                                            {category.name}
+                                        </button>
                                     ))}
-                                </select>
-
-                                {/* Анимированная стрелка */}
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform group-hover:translate-y-[-50%] group-hover:scale-110">
-                                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
+                                    {selectedCategoryIds.length > 0 && (
+                                        <button
+                                            onClick={clearCategories}
+                                            className="px-4 py-2 rounded-full text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all duration-200"
+                                        >
+                                            Очистить ✕
+                                        </button>
+                                    )}
                                 </div>
+                                {selectedCategoryIds.length > 0 && (
+                                    <div className="mt-2 text-xs text-neutral-500">
+                                        Выбрано категорий: {selectedCategoryIds.length}
+                                    </div>
+                                )}
                             </div>
-                        </div>
 
                             <div className="flex-1 overflow-y-auto p-4">
                                 {flavorsLoading ? (
-                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
                                         {Array.from({ length: 6 }).map((_, i) => (
                                             <div key={i} className="animate-pulse">
                                                 <div className="aspect-square bg-white/10 rounded-xl mb-2" />
@@ -464,10 +585,10 @@ const MainBuilderPage = () => {
                                     </div>
                                 ) : filteredFlavors.length === 0 ? (
                                     <div className="p-8 text-center text-neutral-500">
-                                        {searchQuery ? 'Вкусы не найдены' : 'В этой категории пока нет вкусов'}
+                                        {searchQuery ? 'Вкусы не найдены' : 'В выбранных категориях пока нет вкусов'}
                                     </div>
                                 ) : (
-                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
+                                    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
                                         {filteredFlavors.map(flavor => (
                                             <button
                                                 key={flavor.id}
@@ -485,7 +606,7 @@ const MainBuilderPage = () => {
                                                     ) : (
                                                         <div
                                                             className="w-full h-full flex items-center justify-center text-4xl font-bold"
-                                                            style={{ backgroundColor: flavor.color || '#333' }}
+                                                            style={{ backgroundColor: flavor.hex_color || flavor.color || '#333' }}
                                                         >
                                                             <span className="text-white/80">{flavor.name[0]}</span>
                                                         </div>
@@ -522,7 +643,7 @@ const MainBuilderPage = () => {
                                     <span className="flex items-center gap-2 text-[14px] font-semibold text-white">
                                         <span
                                             className="w-2 h-2 rounded-full inline-block shrink-0"
-                                            style={{ backgroundColor: flavor?.color || '#ccc' }}
+                                            style={{ backgroundColor: flavor?.hex_color || flavor?.color || '#ccc' }}
                                         />
                                         {flavor?.name || 'Неизвестный вкус'}
                                     </span>
@@ -598,8 +719,41 @@ const MainBuilderPage = () => {
                 </div>
             </div>
         )}
+
+        {/* Модальное окно для изображений */}
+        {isImageModalOpen && modalImageUrl && (
+            <div
+                className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+                onClick={() => setIsImageModalOpen(false)}
+            >
+                <div
+                    className="relative max-w-3xl max-h-[90vh] w-full bg-neutral-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="flex justify-between items-center p-4 border-b border-white/10">
+                        <h3 className="text-lg font-semibold text-white">{modalImageUrl.title}</h3>
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
+                            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-neutral-400 hover:text-white"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                    <div className="p-4 flex justify-center items-center bg-neutral-950/50">
+                        <img
+                            src={modalImageUrl.url}
+                            alt={modalImageUrl.title}
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                            onError={(e) => {
+                                e.target.src = 'https://placehold.co/600x400?text=Image+not+found';
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+        )}
     </section>
-);
+    );
 };
 
 export default MainBuilderPage;
