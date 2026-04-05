@@ -32,7 +32,8 @@ class OrderService(BaseOrderService):
             uow: BaseUnitOfWork,
             order: OrderCreate,
             preset_service: BasePresetService,
-            user_id: UUID
+            user_id: UUID,
+            user_preset_base_price: float = None
     ) -> OrderOutAdmin:
         async with uow:
             table = await uow.tables.get_by_id(order.table_id)
@@ -52,7 +53,11 @@ class OrderService(BaseOrderService):
             custom_name = None
 
             if order.preset_id:
-                preset = await preset_service.get_by_id_(uow, order.preset_id)
+                preset = await preset_service.get_by_id_(
+                    uow,
+                    order.preset_id,
+                    user_preset_base_price=user_preset_base_price
+                )
                 if not preset:
                     raise PresetNotFoundException(order.preset_id)
 
@@ -101,7 +106,12 @@ class OrderService(BaseOrderService):
                     flavors=order.preset.flavors
                 )
 
-                preset = await preset_service.create_(uow, converted_preset, user_id)
+                preset = await preset_service.create_(
+                    uow,
+                    converted_preset,
+                    user_id,
+                    user_preset_base_price=user_preset_base_price
+                )
                 composition_snapshot = {
                     "preset_id": str(preset.id),
                     "name": preset.name,
@@ -151,7 +161,11 @@ class OrderService(BaseOrderService):
             )
 
             if preset:
-                full_preset = await preset_service.get_by_id_(uow, preset.id)
+                full_preset = await preset_service.get_by_id_(
+                    uow,
+                    preset.id,
+                    user_preset_base_price=user_preset_base_price
+                )
                 order_out.preset = full_preset
 
             return order_out

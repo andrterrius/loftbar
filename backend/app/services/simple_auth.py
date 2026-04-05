@@ -36,14 +36,9 @@ class SimpleAuthService(BaseSimpleAuthService):
             user_data: dict
     ) -> DBUser:
         first_name = user_data.get("name")
-        if not first_name:
+        phone_number = user_data.get("phone_number")
+        if not first_name or not phone_number:
             raise NotFoundException()
 
-        user = await uow.users.create(self._create_db_user_from_user_data(user_data))
-
+        user = await uow.users.get_or_create_by_phone_number(phone_number, first_name)
         return user
-
-    def _create_db_user_from_user_data(self, user_data: dict) -> DBUser:
-        return DBUser(
-            first_name=user_data.get("name"),
-        )

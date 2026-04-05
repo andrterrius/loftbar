@@ -58,6 +58,8 @@ class AuthProvider(Provider):
         except ValueError:
             raise UnauthorizedException()
 
+        user_preset_base_price = None
+
         async with uow:
             user = await uow.users.get_by_id(user_id)
             if not user:
@@ -66,8 +68,11 @@ class AuthProvider(Provider):
             if user.is_banned:
                 raise BannedException()
 
+            user_preset_base_price = user.preset_base_price
+
         return CurrentUser(
             id=user_id,
+            preset_base_price=user_preset_base_price
         )
 
     @provide(scope=Scope.REQUEST, provides=BaseSimpleAuthService)

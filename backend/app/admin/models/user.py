@@ -16,6 +16,7 @@ class UserAdmin(ModelView, model=DBUser):
         "id": "ID",
         "is_admin": "Статус",
         "telegram_id": "Telegram ID",
+        "phone_number": "Номер телефона",
         "first_name": "Имя",
         "last_name": "Фамилия",
         "username": "Username",
@@ -24,6 +25,7 @@ class UserAdmin(ModelView, model=DBUser):
         "is_premium": "Premium",
         "is_active": "Активен",
         "is_banned": "Заблокирован",
+        "preset_base_price": "Базовая цена пресета",
         "presets": "Пресеты",
         "orders": "Заказы",
         "created_at": "Дата регистрации",
@@ -34,6 +36,7 @@ class UserAdmin(ModelView, model=DBUser):
         DBUser.username,
         DBUser.first_name,
         DBUser.last_name,
+        DBUser.phone_number,
         DBUser.is_admin,
         DBUser.is_active,
         DBUser.is_banned,
@@ -46,30 +49,52 @@ class UserAdmin(ModelView, model=DBUser):
         DBUser.first_name,
         DBUser.last_name,
         DBUser.telegram_id,
+        DBUser.phone_number,
     ]
 
     column_sortable_list = [
         DBUser.username,
         DBUser.first_name,
         DBUser.last_name,
+        DBUser.phone_number,
         DBUser.is_admin,
         DBUser.is_active,
         DBUser.is_banned,
         DBUser.created_at,
+        DBUser.preset_base_price,
     ]
 
     column_default_sort = [(DBUser.is_admin, True), (DBUser.created_at, True)]
 
     form_edit_rules = [
-        "telegram_id", "first_name", "last_name", "username",
-        "language_code", "is_admin", "is_active", "is_banned", "is_premium"
+        "preset_base_price",
+        "telegram_id",
+        "phone_number",
+        "first_name",
+        "last_name",
+        "username",
+        "language_code",
+        "is_admin",
+        "is_active",
+        "is_banned",
+        "is_premium",
     ]
 
     form_args = {
+        "preset_base_price": {
+            "label": "Базовая цена пресета",
+            "description": "Базовая цена для пресетов пользователя (необязательно)",
+            "render_kw": {"type": "number", "step": "0.01", "class": "form-control", "placeholder": "0.00"}
+        },
         "telegram_id": {
             "label": "Telegram ID",
             "description": "Уникальный идентификатор пользователя в Telegram",
             "render_kw": {"type": "number", "class": "form-control"}
+        },
+        "phone_number": {
+            "label": "Номер телефона",
+            "description": "Номер телефона пользователя",
+            "render_kw": {"placeholder": "+7 (999) 123-45-67", "class": "form-control"}
         },
         "first_name": {
             "label": "Имя",
@@ -112,6 +137,7 @@ class UserAdmin(ModelView, model=DBUser):
             "render_kw": {"class": "form-check-input", "type": "checkbox", "value": "y"}
         }
     }
+
     def _bool_formatter(value, true_markup="✅ Да", false_markup="❌ Нет"):
         return Markup(true_markup) if value else Markup(false_markup)
 
@@ -132,6 +158,16 @@ class UserAdmin(ModelView, model=DBUser):
             return Markup(f"@{m.username}")
         return "—"
 
+    def _phone_formatter(m, a):
+        if m.phone_number:
+            return Markup(f'<a href="tel:{m.phone_number}">{m.phone_number}</a>')
+        return "—"
+
+    def _price_formatter(m, a):
+        if m.preset_base_price is not None:
+            return Markup(f"{m.preset_base_price:.2f} ₽")
+        return "—"
+
     def _photo_formatter(m, a):
         if m.photo_url:
             return Markup(
@@ -140,17 +176,18 @@ class UserAdmin(ModelView, model=DBUser):
 
     column_formatters = {
         DBUser.username: _username_formatter,
+        DBUser.phone_number: _phone_formatter,
         DBUser.is_admin: _admin_formatter,
         DBUser.is_active: _active_formatter,
         DBUser.is_banned: _banned_formatter,
         DBUser.is_premium: _premium_formatter,
+        DBUser.preset_base_price: _price_formatter,
         DBUser.photo_url: _photo_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at),
     }
 
     column_formatters_detail = column_formatters
-
 
     async def on_before_form(self, request: Request, obj=None):
         request.state.custom_css = add_css_styles()

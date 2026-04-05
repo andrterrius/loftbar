@@ -1,6 +1,8 @@
 from uuid import UUID
 from typing import List, Optional, Sequence
 
+from app.core.common import its_evening_now
+
 from app.db.uow import BaseUnitOfWork
 from app.db.models import DBPreset, DBPresetFlavor
 from app.schemas.preset import (
@@ -15,31 +17,61 @@ from app.services.abc.abc_preset import BasePresetService
 
 
 class PresetService(BasePresetService):
-    async def get_all(self, uow: BaseUnitOfWork) -> List[PresetOut]:
+    async def get_all(
+            self, 
+            uow: BaseUnitOfWork, 
+            user_preset_base_price: float = None
+    ) -> List[PresetOut]:
         async with uow:
             presets = await uow.presets.get_all_with_relations()
-            return [self._preset_to_detail_out(p) for p in presets]
+            return [self._preset_to_detail_out(p, user_preset_base_price=user_preset_base_price) for p in presets]
 
-    async def get_available(self, uow: BaseUnitOfWork) -> List[PresetOut]:
+    async def get_available(
+            self, 
+            uow: BaseUnitOfWork, 
+            user_preset_base_price: float = None
+    ) -> List[PresetOut]:
         async with uow:
             presets = await uow.presets.get_available_with_relations()
-            return [self._preset_to_detail_out(p) for p in presets if p.is_fully_available]
+            return [self._preset_to_detail_out(p, user_preset_base_price=user_preset_base_price) for p in presets if p.is_fully_available]
 
-    async def get_by_id(self, uow: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+    async def get_by_id(
+            self, 
+            uow: BaseUnitOfWork, 
+            preset_id: UUID, 
+            user_preset_base_price: float = None
+    ) -> Optional[PresetOut]:
         async with uow:
             return await self.get_by_id_(uow, preset_id)
 
-    async def get_by_id_(self, uow_inited: BaseUnitOfWork, preset_id: UUID) -> Optional[PresetOut]:
+    async def get_by_id_(
+            self, 
+            uow_inited: BaseUnitOfWork, 
+            preset_id: UUID, 
+            user_preset_base_price: float = None
+    ) -> Optional[PresetOut]:
         preset = await uow_inited.presets.get_with_relations(preset_id)
         if not preset:
             return None
-        return self._preset_to_detail_out(preset)
+        return self._preset_to_detail_out(preset, user_preset_base_price=user_preset_base_price)
 
-    async def create(self, uow: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
+    async def create(
+            self,
+            uow: BaseUnitOfWork,
+            data: PresetCreate,
+            created_by_id: UUID = None,
+            user_preset_base_price: float = None
+    ) -> PresetOut:
         async with uow:
             return await self.create_(uow, data, created_by_id)
 
-    async def create_(self, uow_inited: BaseUnitOfWork, data: PresetCreate, created_by_id: UUID = None) -> PresetOut:
+    async def create_(
+            self,
+            uow_inited: BaseUnitOfWork,
+            data: PresetCreate,
+            created_by_id: UUID = None,
+            user_preset_base_price: float = None
+    ) -> PresetOut:
         preset = DBPreset(
             name=data.name,
             is_available=data.is_available,
@@ -60,11 +92,16 @@ class PresetService(BasePresetService):
                 percent=flavor.percent
             )
         preset_with_rels = await uow_inited.presets.get_with_relations(preset.id)
-        return self._preset_to_detail_out(preset_with_rels)
+        return self._preset_to_detail_out(preset_with_rels, user_preset_base_price=user_preset_base_price)
 
 
-    async def update(self, uow: BaseUnitOfWork, preset_id: UUID, data: PresetUpdate) -> Optional[PresetOut]:
-
+    async def update(
+            self,
+            uow: BaseUnitOfWork,
+            preset_id: UUID,
+            data: PresetUpdate,
+            user_preset_base_price: float = None
+    ) -> Optional[PresetOut]:
         async with uow:
             preset = await uow.presets.get_by_id(preset_id)
             if not preset:
@@ -94,15 +131,22 @@ class PresetService(BasePresetService):
                     await uow.presets.remove_flavor_from_preset(preset_id, old_flavor.flavor_id)
 
             updated = await uow.presets.get_with_relations(preset_id)
-            return self._preset_to_detail_out(updated)
+            return self._preset_to_detail_out(updated, user_preset_base_price=user_preset_base_price)
 
     async def delete(self, uow: BaseUnitOfWork, preset_id: UUID) -> None:
         async with uow:
             await uow.presets.delete(preset_id)
 
+    def _calculate_final_price(self, preset: DBPreset, user_preset_base_price: float = None) -> float:
+        is_evening_price = its_evening_now()
+        if is_evening_price:
+            if user_preset_base_price:
+                total_price = user_preset_base_price
+            else:
+                total_price = preset.settings.preset_base_price_evening
+        else:
+            total_price = preset.settings.preset_base_price
 
-    def _calculate_final_price(self, preset: DBPreset) -> int:
-        total_price = preset.settings.preset_base_price
         if preset.liquid and getattr(preset.liquid, 'is_available', True):
             total_price += preset.liquid.price
         if preset.bowl and getattr(preset.bowl, 'is_available', True):
@@ -113,14 +157,14 @@ class PresetService(BasePresetService):
 
         return total_price
 
-    def _preset_to_detail_out(self, preset: DBPreset) -> PresetOut:
+    def _preset_to_detail_out(self, preset: DBPreset, user_preset_base_price: float = None) -> PresetOut:
         flavors = [FlavorInPresetOut(flavor=pf.flavor, percent=pf.percent) for pf in preset.preset_flavors]
 
         return PresetOut(
             id=preset.id,
             name=preset.name,
             category=preset.category,
-            price=self._calculate_final_price(preset),
+            price=self._calculate_final_price(preset, user_preset_base_price=user_preset_base_price),
             strength=preset.strength,
             description=preset.description,
             hex_color=preset.hex_color,

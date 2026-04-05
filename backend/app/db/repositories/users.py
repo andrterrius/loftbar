@@ -39,6 +39,9 @@ class IUsersRepository(Protocol):
     async def get_by_first_name(self, first_name: str) -> Optional[Any]:
         ...
 
+    async def get_by_phone_number(self, phone_number: str) -> Optional[DBUser]:
+        ...
+
     async def get_admins(self) -> Sequence[Any]:
         ...
 
@@ -80,6 +83,12 @@ class IUsersRepository(Protocol):
     ) -> Any:
         ...
 
+    async def get_or_create_by_phone_number(
+            self,
+            phone_number: Optional[str] = None,
+            first_name: Optional[str] = None
+    ) -> DBUser:
+        ...
 
 class UsersRepository(SQLAlchemyRepository[DBUser], IUsersRepository):
 
@@ -94,6 +103,9 @@ class UsersRepository(SQLAlchemyRepository[DBUser], IUsersRepository):
 
     async def get_by_first_name(self, first_name: str) -> Optional[DBUser]:
         return await self.get_one(first_name=first_name)
+
+    async def get_by_phone_number(self, phone_number: str) -> Optional[DBUser]:
+        return await self.get_one(phone_number=phone_number)
 
     async def get_admins(self) -> Sequence[DBUser]:
         return await self.get_all(is_admin=True)
@@ -164,5 +176,20 @@ class UsersRepository(SQLAlchemyRepository[DBUser], IUsersRepository):
             photo_url=photo_url,
             language_code=language_code,
             is_premium=is_premium
+        )
+        return await self.create(user)
+
+    async def get_or_create_by_phone_number(
+            self,
+            phone_number: Optional[str] = None,
+            first_name: Optional[str] = None
+    ) -> DBUser:
+        user = await self.get_by_phone_number(phone_number)
+        if user:
+            return user
+
+        user = DBUser(
+            phone_number=phone_number,
+            first_name=first_name,
         )
         return await self.create(user)

@@ -28,7 +28,7 @@ async def get_available(
         current_user: FromDishka[CurrentUser]
 ):
     """Получить все доступные пресеты"""
-    return await service.get_available(uow)
+    return await service.get_available(uow, user_preset_base_price=current_user.preset_base_price)
 
 @presets_router.get("/price",
                     response_model=PresetBasePrice,
@@ -42,4 +42,4 @@ async def get_base_price(
         current_user: FromDishka[CurrentUser]
 ):
     """Получить базовую цену пресета"""
-    return await settings_service.get_preset_base_price(uow)
+    return await settings_service.get_preset_base_price(uow, user_preset_base_price=current_user.preset_base_price)

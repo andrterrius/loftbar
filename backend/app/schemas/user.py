@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 class UserBase(BaseModel):
     """Базовая схема пользователя"""
     telegram_id: Optional[int] = None
+    phone_number: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     username: Optional[str] = None
@@ -23,6 +24,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Схема для создания пользователя"""
     telegram_id: Optional[int] = None
+    phone_number: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     username: Optional[str] = None
@@ -35,6 +37,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Схема для обновления пользователя"""
     first_name: Optional[str] = None
+    phone_number: Optional[str] = None
     last_name: Optional[str] = None
     username: Optional[str] = None
     photo_url: Optional[str] = None

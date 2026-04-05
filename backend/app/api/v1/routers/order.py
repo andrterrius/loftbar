@@ -39,7 +39,13 @@ async def make_order(
         background_tasks: BackgroundTasks,
 ):
     """Создать заказ"""
-    order_out = await order_service.create_order(uow, order, preset_service, current_user.id)
+    order_out = await order_service.create_order(
+        uow,
+        order,
+        preset_service,
+        current_user.id,
+        user_preset_base_price=current_user.preset_base_price
+    )
     background_tasks.add_task(
         order_notification_service.notify_order_created,
         uow=uow,

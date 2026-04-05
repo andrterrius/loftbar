@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 
 from markupsafe import Markup
 
-from app.core.common import format_datetime_msk
+from app.core.common import format_datetime_msk, its_evening_now
 from app.db.models import (
     DBPreset,
     DBLiquid,
@@ -86,7 +86,13 @@ class PresetAdmin(ModelView, model=DBPreset):
     @staticmethod
     def _price_formatter(m, a):
         """Форматтер для цены без пояснений"""
-        total_price = m.settings.preset_base_price
+
+        is_evening_price = its_evening_now()
+        if is_evening_price:
+            total_price = m.settings.preset_base_price_evening
+        else:
+            total_price = m.settings.preset_base_price
+
         if m.liquid:
             total_price += m.liquid.price
         if m.bowl:
@@ -100,7 +106,17 @@ class PresetAdmin(ModelView, model=DBPreset):
     @staticmethod
     def _price_formatter_detail(m, a):
         """Форматтер для цены с пояснениями"""
-        total_price = m.settings.preset_base_price
+
+        is_evening_price = its_evening_now()
+        total_price_text = ""
+
+        if is_evening_price:
+            total_price = m.settings.preset_base_price_evening
+            total_price_text = f"{m.settings.preset_base_price_evening}₽ (базовая вечерняя цена)"
+        else:
+            total_price = m.settings.preset_base_price
+            total_price_text = f"{m.settings.preset_base_price}₽ (базовая дневная цена)"
+
         if m.liquid:
             total_price += m.liquid.price
         if m.bowl:
@@ -109,16 +125,20 @@ class PresetAdmin(ModelView, model=DBPreset):
         if m.strength >= 9:
             total_price += m.settings.strength_added_price
 
-            return Markup(f"{m.settings.preset_base_price}₽ (базовая цена)"
-                          f"<br>{m.settings.strength_added_price}₽ (добавочная цена)"
-                          f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
-                          f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
-                          f"<br> = {total_price}₽")
-
-        return Markup(f"{m.settings.preset_base_price}₽ (базовая цена)"
+            return Markup(
+                f"{total_price_text}"
+                f"<br>{m.settings.strength_added_price}₽ (добавочная цена)"
                 f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
                 f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
-                f"<br> = {total_price}₽")
+                f"<br> = {total_price}₽"
+            )
+
+        return Markup(
+            f"{total_price_text}"
+            f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
+            f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
+            f"<br> = {total_price}₽"
+        )
 
     @staticmethod
     def _available_formatter(m, a):

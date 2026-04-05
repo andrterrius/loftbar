@@ -15,7 +15,8 @@ class BaseOrderService(Protocol):
             uow: BaseUnitOfWork,
             order: OrderCreate,
             preset_service: BasePresetService,
-            user_id: UUID
+            user_id: UUID,
+            user_preset_base_price: float = None
     ) -> OrderOutAdmin:
         """Получить все пресеты с флагом is_available"""
         ...

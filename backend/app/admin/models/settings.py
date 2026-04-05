@@ -14,7 +14,8 @@ class SettingsAdmin(ModelView, model=DBSettings):
 
     column_labels = {
         "id": "ID",
-        "preset_base_price": "Базовая цена пресета",
+        "preset_base_price": "Базовая цена пресета до 17:00",
+        "preset_base_price_evening": "Базовая цена пресета после 17:00",
         "strength_added_price": "Добавочная цена крепости 9+",
         "liquids_image_url": "URL изображения жидкостей",
         "bowls_image_url": "URL изображения чаш",
@@ -25,6 +26,7 @@ class SettingsAdmin(ModelView, model=DBSettings):
     column_list = [
         DBSettings.id,
         DBSettings.preset_base_price,
+        DBSettings.preset_base_price_evening,
         DBSettings.strength_added_price,
         DBSettings.liquids_image_url,
         DBSettings.bowls_image_url,
@@ -36,18 +38,21 @@ class SettingsAdmin(ModelView, model=DBSettings):
     column_sortable_list = [
         DBSettings.id,
         DBSettings.preset_base_price,
+        DBSettings.preset_base_price_evening,
         DBSettings.created_at
     ]
     column_default_sort = [(DBSettings.id, False)]
 
     form_create_rules = [
         "preset_base_price",
+        "preset_base_price_evening",
         "strength_added_price",
         "liquids_image_url",
         "bowls_image_url"
     ]
     form_edit_rules = [
         "preset_base_price",
+        "preset_base_price_evening",
         "strength_added_price",
         "liquids_image_url",
         "bowls_image_url"
@@ -55,8 +60,13 @@ class SettingsAdmin(ModelView, model=DBSettings):
 
     form_args = {
         "preset_base_price": {
-            "label": "Базовая цена пресета",
-            "description": "Базовая цена для расчета стоимости пресетов",
+            "label": "Базовая цена пресета до 17:00",
+            "description": "Базовая цена для расчета стоимости пресетов с 12:00 до 17:00",
+            "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
+        },
+        "preset_base_price_evening": {
+            "label": "Базовая цена пресета после 17:00",
+            "description": "Базовая цена для расчета стоимости пресетов с 17:00 до 12:00",
             "render_kw": {"type": "number", "step": "1", "min": "0", "class": "form-control"}
         },
         "strength_added_price": {
@@ -79,6 +89,9 @@ class SettingsAdmin(ModelView, model=DBSettings):
     def _base_price_formatter(m, a):
         return f"{m.preset_base_price:.2f} ₽"
 
+    def _base_price_evening_formatter(m, a):
+        return f"{m.preset_base_price_evening:.2f} ₽"
+
     def _added_price_formatter(m, a):
         return f"{m.strength_added_price:.2f} ₽"
 
@@ -94,6 +107,7 @@ class SettingsAdmin(ModelView, model=DBSettings):
 
     column_formatters = {
         DBSettings.preset_base_price: _base_price_formatter,
+        DBSettings.preset_base_price_evening: _base_price_evening_formatter,
         DBSettings.strength_added_price: _added_price_formatter,
         DBSettings.liquids_image_url: _liquids_image_formatter,
         DBSettings.bowls_image_url: _bowls_image_formatter,
