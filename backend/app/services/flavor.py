@@ -49,11 +49,8 @@ class FlavorService(BaseFlavorService):
             flavor = await uow.flavors.get_by_id(flavor_id)
             if not flavor:
                 return None
+            update_data = data.model_dump(exclude={'categories'})
 
-            # Разделяем обновление полей и категорий
-            update_data = data.model_dump(exclude_unset=True, exclude={'categories'})
-
-            # Обновляем обычные поля
             for field, value in update_data.items():
                 setattr(flavor, field, value)
             if data.categories is not None:
