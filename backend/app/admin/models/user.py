@@ -40,7 +40,7 @@ class UserAdmin(ModelView, model=DBUser):
         DBUser.is_admin,
         DBUser.is_active,
         DBUser.is_banned,
-        DBUser.language_code,
+        DBUser.preset_base_price,
         DBUser.created_at,
     ]
 
