@@ -119,11 +119,23 @@ class PresetUpdate(PresetCreate):
 class PresetOut(PresetBase):
     """Базовая схема для ответа (список пресетов)"""
     id: UUID
-    price: float
+    price: Optional[float] = None
     is_available: bool
     strength: int
     bowl: BowlOut
     liquid: LiquidOut
+    flavors: List[FlavorInPresetOut] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+class PresetHistoryOut(PresetBase):
+    """Базовая схема для ответа (список пресетов)"""
+    id: UUID
+    price: float
+    is_available: bool
+    strength: int
+    bowl: str
+    liquid: str
     flavors: List[FlavorInPresetOut] = []
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,11 +1,12 @@
 from datetime import date
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 
 from app.core.common import get_current_order_date
 from app.db.uow import BaseUnitOfWork
-from app.schemas.order import OrderCreate, OrderStatus, OrderOutAdmin
-from app.schemas.preset import PresetCreate, PresetOut, FlavorInPreset
+from app.schemas.order import OrderCreate, OrderStatus, OrderOutAdmin, OrdersHistoryOut
+from app.schemas.preset import PresetCreate, PresetOut, FlavorInPresetOut
+from app.schemas.flavor import FlavorBase, FlavorOut
 from app.schemas.user import UserBase
 from app.schemas.table import TableBase
 from app.db.models import DBOrder
@@ -27,6 +28,43 @@ from .abc import BasePresetService, BaseOrderService
 
 
 class OrderService(BaseOrderService):
+    async def get_orders_list(
+            self,
+            uow: BaseUnitOfWork,
+            user_id: Optional[UUID] = None,
+            user_preset_base_price: float = None
+    ) -> List[OrdersHistoryOut]:
+        async with uow:
+            orders = await uow.orders.get_orders_history(
+                user_id=user_id,
+            )
+
+            if not orders:
+                return []
+            orders_history = []
+            for order in orders:
+                order_history = OrdersHistoryOut(
+                    id=order.id,
+                    daily_number=order.daily_number,
+                    status=order.status,
+                    total_price=order.total_price,
+                    special_requests=order.special_requests,
+                    is_custom=order.is_custom,
+                    custom_name=order.custom_name,
+                    created_at=order.created_at,
+                    preset=PresetOut.model_validate(order.preset),
+                    can_reorder=order.preset.is_fully_available,
+                    actual_price=order.preset.total_price(user_preset_base_price=user_preset_base_price)
+                )
+
+                order_history.preset.flavors = [
+                    FlavorInPresetOut(flavor=preset_flavors.flavor, percent=preset_flavors.percent) for preset_flavors in order.preset.preset_flavors
+                ]
+
+                orders_history.append(order_history)
+
+            return orders_history
+
     async def create_order(
             self,
             uow: BaseUnitOfWork,
@@ -72,6 +110,10 @@ class OrderService(BaseOrderService):
                     "preset_flavors": [
                         flavor.model_dump(mode='json') for flavor in preset.flavors
                     ],
+                    "liquid": preset.liquid.name,
+                    "bowl": preset.bowl.name,
+                    "strength": preset.strength,
+                    "is_custom": False
                 }
                 total_price = preset.price
 
@@ -117,7 +159,10 @@ class OrderService(BaseOrderService):
                     "name": preset.name,
                     "description": preset.description,
                     "total_price": preset.price,
-                    "preset_flavors": [flavor.model_dump(mode='json') for flavor in converted_preset.flavors],
+                    "preset_flavors": [FlavorBase.model_validate(flavor).model_dump(mode='json') for flavor in flavors],
+                    "liquid": preset.liquid.name,
+                    "bowl": preset.bowl.name,
+                    "strength": preset.strength,
                     "is_custom": True,
                 }
                 total_price = preset.price

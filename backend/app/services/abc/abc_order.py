@@ -2,13 +2,26 @@ from typing import Protocol, List, Optional
 from uuid import UUID
 
 from app.db.uow import BaseUnitOfWork
-from app.schemas.order import OrderStatus, OrderCreate, OrderOutAdmin
+from app.schemas.order import (
+    OrderStatus,
+    OrderCreate,
+    OrderOutAdmin,
+    OrdersHistoryOut
+)
 
 from .abc_preset import BasePresetService
 
 
 class BaseOrderService(Protocol):
     """Протокол сервиса для работы с заказами"""
+
+    async def get_orders_list(
+            self,
+            uow: BaseUnitOfWork,
+            user_id: Optional[UUID] = None,
+            user_preset_base_price: float = None
+    ) -> List[OrdersHistoryOut]:
+        ...
 
     async def create_order(
             self,

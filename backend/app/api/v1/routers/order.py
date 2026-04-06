@@ -1,4 +1,5 @@
 from uuid import UUID
+from typing import Optional, List
 from fastapi import APIRouter, BackgroundTasks
 from dishka.integrations.fastapi import FromDishka, DishkaRoute
 from sqlalchemy.sql.functions import current_user
@@ -9,7 +10,7 @@ from app.services.abc import (
     BasePresetService,
     BaseNotificationService,
 )
-from app.schemas.order import OrderCreate, OrderOut, OrderOutAdmin
+from app.schemas.order import OrderCreate, OrderOut, OrdersHistoryOut
 from app.schemas.error import ErrorResponse
 from app.schemas.auth import CurrentUser
 
@@ -56,4 +57,22 @@ async def make_order(
     return OrderOut(
         id=order_out.id,
         daily_number=order_out.daily_number
+    )
+
+@orders_router.get("/history",
+                    response_model=List[OrdersHistoryOut],
+                    responses={
+                        401: {"model": ErrorResponse, "description": "Ошибка авторизации. error_type=auth_error"}
+                    }
+)
+async def get_history(
+        service: FromDishka[BaseOrderService],
+        uow: FromDishka[BaseUnitOfWork],
+        current_user: FromDishka[CurrentUser],
+):
+    """Получить все доступные пресеты"""
+    return await service.get_orders_list(
+        uow,
+        user_id=current_user.id,
+        user_preset_base_price=current_user.preset_base_price
     )

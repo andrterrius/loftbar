@@ -138,24 +138,8 @@ class PresetService(BasePresetService):
             await uow.presets.delete(preset_id)
 
     def _calculate_final_price(self, preset: DBPreset, user_preset_base_price: float = None) -> float:
-        is_evening_price = its_evening_now()
-        if is_evening_price:
-            if user_preset_base_price:
-                total_price = user_preset_base_price
-            else:
-                total_price = preset.settings.preset_base_price_evening
-        else:
-            total_price = preset.settings.preset_base_price
 
-        if preset.liquid and getattr(preset.liquid, 'is_available', True):
-            total_price += preset.liquid.price
-        if preset.bowl and getattr(preset.bowl, 'is_available', True):
-            total_price += preset.bowl.price
-
-        if preset.strength >= 9:
-            total_price += preset.settings.strength_added_price
-
-        return total_price
+        return preset.total_price(user_preset_base_price=user_preset_base_price)
 
     def _preset_to_detail_out(self, preset: DBPreset, user_preset_base_price: float = None) -> PresetOut:
         flavors = [FlavorInPresetOut(flavor=pf.flavor, percent=pf.percent) for pf in preset.preset_flavors]

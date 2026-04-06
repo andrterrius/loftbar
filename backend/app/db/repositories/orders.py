@@ -32,6 +32,9 @@ class IOrdersRepository(Protocol):
     async def delete(self, _id: UUID) -> None:
         ...
 
+    async def get_orders_history(self, user_id: UUID) -> Sequence[DBOrder]:
+        ...
+
     async def get_by_user_id(self, user_id: UUID) -> Sequence[DBOrder]:
         ...
 
@@ -44,6 +47,25 @@ class IOrdersRepository(Protocol):
 class OrdersRepository(SQLAlchemyRepository[DBOrder]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, DBOrder)
+
+    async def get_orders_history(self, user_id: UUID) -> Sequence[DBOrder]:
+        query = (
+            select(DBOrder)
+            .where(DBOrder.user_id == user_id)
+            .order_by(DBOrder.created_at.desc())
+            .options(
+                selectinload(DBOrder.preset).options(
+                    selectinload(DBPreset.preset_flavors).selectinload(DBPresetFlavor.flavor),
+                    selectinload(DBPreset.liquid),
+                    selectinload(DBPreset.bowl)
+                ),
+                selectinload(DBOrder.user),
+                selectinload(DBOrder.table)
+            )
+        )
+
+        result = await self._session.execute(query)
+        return result.scalars().all()
 
     async def get_by_user_id(self, user_id: UUID) -> Sequence[DBOrder]:
         return await self.get_all(user_id=user_id)

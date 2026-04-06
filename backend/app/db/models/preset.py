@@ -9,6 +9,8 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from app.db.models.base import Base
 from app.db.models.mixins import TimestampMixin
 
+from app.core.common import its_evening_now
+
 
 class DBPreset(TimestampMixin, Base):
     __tablename__ = "presets"
@@ -118,25 +120,30 @@ class DBPreset(TimestampMixin, Base):
         """Причина недоступности для админки"""
         return self.availability_info[1]
 
-    @property
-    def total_price(self) -> int:
+    def total_price(self, user_preset_base_price: float = None) -> int:
         """Расчет полной цены пресета"""
         if not self.settings:
             return 0
 
-        total = self.settings.preset_base_price
+        is_evening_price = its_evening_now()
+        if is_evening_price:
+            if user_preset_base_price:
+                total_price = user_preset_base_price
+            else:
+                total_price = self.settings.preset_base_price_evening
+        else:
+            total_price = self.settings.preset_base_price
 
         if self.liquid and self.liquid.is_available:
-            total += self.liquid.price
+            total_price += self.liquid.price
 
         if self.bowl and self.bowl.is_available:
-            total += self.bowl.price
+            total_price += self.bowl.price
 
         if self.strength >= 9:
-            total += self.settings.strength_added_price
+            total_price += self.settings.strength_added_price
 
-
-        return total
+        return total_price
 
     def __str__(self) -> str:
         return self.name

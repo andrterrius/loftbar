@@ -93,3 +93,16 @@ class OrderListItem(BaseModel):
     user_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+class OrdersHistoryOut(BaseModel):
+    id: UUID
+    can_reorder: bool = True
+    daily_number: Optional[int] = None
+    preset: Optional[PresetOut] = Field(None, description="Информация о пресете")
+    status: OrderStatus
+    total_price: float = Field(..., description="Итоговая цена (рассчитывается в сервисе)")
+    actual_price: float = Field(..., description="Актуальная цена (рассчитывается в сервисе)")
+    special_requests: Optional[str] = None
+    is_custom: bool = Field(..., description="True если кастомный заказ")
+    custom_name: Optional[str] = Field(None, description="Название кастомного заказа")
+    created_at: datetime
