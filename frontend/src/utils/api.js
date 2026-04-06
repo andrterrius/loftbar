@@ -12,11 +12,14 @@ export async function login() {
     return data.access_token;
 }
 
-export async function simpleLogin(name) {
+export async function simpleLogin(name, phone_number) {
     const res = await fetch(`${BASE_URL}/users/login/simple`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ 
+            name: name.trim(),
+            phone_number: phone_number.trim() 
+        }),
     });
     if (!res.ok) throw new Error('login failed');
     const data = await res.json();
