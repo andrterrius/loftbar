@@ -141,7 +141,7 @@ class OrderService(BaseOrderService):
                 converted_preset = PresetCreate(
                     name=f"Кастомный пресет",
                     category="Пользовательский",
-                    is_available=False,
+                    is_available=True,
                     strength=order.preset.strength,
                     liquid_id=order.preset.liquid_id,
                     bowl_id=order.preset.bowl_id,

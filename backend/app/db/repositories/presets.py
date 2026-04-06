@@ -106,7 +106,10 @@ class PresetsRepository(SQLAlchemyRepository[DBPreset], IPresetsRepository):
     async def get_available_with_relations(self) -> Sequence[DBPreset]:
         stmt = (
             select(DBPreset)
-            .where(DBPreset.is_available == True)
+            .where(
+                DBPreset.is_available == True,
+                DBPreset.created_by_id == None
+            )
             .options(
                 selectinload(DBPreset.liquid),
                 selectinload(DBPreset.bowl),
