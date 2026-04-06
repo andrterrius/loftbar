@@ -90,6 +90,7 @@ export const getFlavoursCategories = () => apiRequest('/flavors/categories', { m
 export const getAvailablePresets = () => apiRequest('/presets/available', { method: 'GET' });
 export const getLiquids = () => apiRequest('/liquids', { method: 'GET' });
 export const getPresets = () => apiRequest('/presets', { method: 'GET' });
+export const getOrders = () => apiRequest('/orders/history', { method: 'GET' });
 export const getBowls = () => apiRequest('/bowls', { method: 'GET' });
 export const createOrder = (data) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(data) });
 export const getBasePrice = () => apiRequest('/presets/price', { method: 'GET' });

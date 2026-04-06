@@ -5,6 +5,7 @@ import { Search, Filter, ChevronDown } from "lucide-react";
 import Nav from "../nav";
 import { getPresets, createOrder } from "@/utils/api";
 import { PRESETS } from "../moks/moks";
+import { usePresetOrderConfirmation } from "@/components/orders/usePresetOrderConfirmation";
 
 const PresetCardSkeleton = () => (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col w-full animate-pulse">
@@ -34,10 +35,8 @@ const MainPresetsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [availablePresets, setAvailablePresets] = useState([]);
     const [presetsLoading, setPresetsLoading] = useState(true);
-    const [confirmPreset, setConfirmPreset] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [successOrderId, setSuccessOrderId] = useState(null);
     const [expandedPresetId, setExpandedPresetId] = useState(null);
+    const { openConfirm, ConfirmModal, SuccessModal } = usePresetOrderConfirmation({ createOrder });
 
     useEffect(() => {
         getPresets()
@@ -52,18 +51,18 @@ const MainPresetsPage = () => {
     }, []);
 
     useEffect(() => {
-    if (expandedPresetId) {
-        setTimeout(() => {
-            const expandedElement = document.getElementById(`preset-${expandedPresetId}`);
-            if (expandedElement) {
-                expandedElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start',
-                    inline: 'nearest'
-                });
-            }
-        }, 100);
-    }
+        if (expandedPresetId) {
+            setTimeout(() => {
+                const expandedElement = document.getElementById(`preset-${expandedPresetId}`);
+                if (expandedElement) {
+                    expandedElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                        inline: 'nearest'
+                    });
+                }
+            }, 100);
+        }
     }, [expandedPresetId]);
 
     const displayedPresets = availablePresets.filter(preset =>
@@ -71,27 +70,6 @@ const MainPresetsPage = () => {
         preset.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (preset.flavors || []).some(flavor => flavor.flavor?.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-
-    const handleOrder = async (preset) => {
-        setIsSubmitting(true);
-        const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
-                || new URLSearchParams(window.location.search).get('table_id')
-                || 'unknown_table',
-            preset_id: preset.id
-        };
-        try {
-            const result = await createOrder(orderData);
-            setConfirmPreset(null);
-            setSuccessOrderId(result.daily_number || '');
-            setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
-        } catch (error) {
-            alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
-            console.error(error);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
     const togglePreset = (presetId) => {
         setExpandedPresetId(expandedPresetId === presetId ? null : presetId);
@@ -252,7 +230,7 @@ const MainPresetsPage = () => {
                                                     {/* Order Button */}
                                                     <div className="pt-2">
                                                         <button
-                                                            onClick={() => setConfirmPreset(preset)}
+                                                            onClick={() => openConfirm({ preset })}
                                                             className="w-full px-4 py-2.5 bg-gradient-to-r from-fuchsia-600 to-cyan-600 hover:from-fuchsia-700 hover:to-cyan-700 text-white rounded-lg text-sm font-semibold tracking-tight transition-all shadow-lg"
                                                         >
                                                             Заказать микс
@@ -276,107 +254,8 @@ const MainPresetsPage = () => {
                 )}
             </div>
 
-            {/* Modal windows remain unchanged */}
-            {confirmPreset && (
-                <div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-                    onClick={(e) => e.target === e.currentTarget && setConfirmPreset(null)}
-                >
-                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-                        <h3 className="text-xl font-bold tracking-tight text-white mb-0.5">Подтвердить заказ</h3>
-                        <p className="text-[11px] uppercase tracking-widest text-neutral-600 font-medium mb-1">Вы заказываете</p>
-                        <p className="text-white font-bold text-base tracking-tight mb-4">{confirmPreset.name}</p>
-
-                        {(confirmPreset.flavors || []).length > 0 && (
-                            <div className="space-y-2 mb-4 bg-white/5 rounded-xl p-3">
-                                {confirmPreset.flavors.map((ing, i) => (
-                                    <div key={i} className="flex justify-between items-center">
-                                        <span className="text-[14px] font-semibold text-white">{ing.flavor?.name || 'Неизвестный вкус'}</span>
-                                        <span className="font-mono text-[12px] text-neutral-300 tabular-nums">{ing.percent}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="flex gap-2 flex-wrap mb-4">
-                            {confirmPreset.bowl && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                                        <span className="text-base leading-none">{confirmPreset.bowl.icon}</span> {confirmPreset.bowl.name}
-                                    </span>
-                                </div>
-                            )}
-                            {confirmPreset.liquid && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Колба</span>
-                                    <span
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border text-cyan-300"
-                                        style={{
-                                            backgroundColor: confirmPreset.liquid.hex_color ? `${confirmPreset.liquid.hex_color}20` : 'rgba(6,182,212,0.1)',
-                                            borderColor: confirmPreset.liquid.hex_color ? `${confirmPreset.liquid.hex_color}50` : 'rgba(6,182,212,0.3)',
-                                        }}
-                                    >
-                                        <span className="text-base leading-none">💧</span> {confirmPreset.liquid.name}
-                                    </span>
-                                </div>
-                            )}
-                            {confirmPreset.strength && (
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Крепость</span>
-                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold border ${getStrengthLabel(confirmPreset.strength).bg} ${getStrengthLabel(confirmPreset.strength).border}`}>
-                                        <span className={`text-base leading-none ${getStrengthLabel(confirmPreset.strength).color}`}>⚡</span>
-                                        <span className={getStrengthLabel(confirmPreset.strength).color}>{getStrengthLabel(confirmPreset.strength).label}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
-                            <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
-                            <span className="text-white font-bold text-2xl tracking-tight leading-none">{confirmPreset.price ?? '—'}<span className="text-neutral-400 text-lg font-semibold">₽</span></span>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setConfirmPreset(null)}
-                                disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-[13px] font-semibold disabled:opacity-50"
-                            >
-                                Отмена
-                            </button>
-                            <button
-                                onClick={() => handleOrder(confirmPreset)}
-                                disabled={isSubmitting}
-                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-[13px] tracking-tight shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
-                            >
-                                {isSubmitting ? 'Отправка...' : 'Заказать'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {successOrderId !== null && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                    <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
-                        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-                            <span className="text-3xl">✅</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
-                        <p className="text-neutral-400 text-sm mb-1">
-                            {successOrderId ? `Заказ #${successOrderId}` : 'Ваш заказ'} успешно оформлен.
-                        </p>
-                        <p className="text-neutral-500 text-xs mb-6">Ожидайте — ваш микс уже готовится 🔥</p>
-                        <button
-                            onClick={() => window.Telegram?.WebApp?.close()}
-                            className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform"
-                        >
-                            Закрыть
-                        </button>
-                    </div>
-                </div>
-            )}
+            {ConfirmModal}
+            {SuccessModal}
         </section>
     );
 };

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useState, Suspense } from "react";
-import { Flame, Grid, Home, Menu, X } from "lucide-react";
+import { History, Flame, Grid, Home, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from 'next/navigation';
 import { getUrlWithParams } from '../utils/urlParams';
@@ -16,7 +16,8 @@ const NavContent = () => {
     const navItems = [
         { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
         { label: 'Конструктор Миксов', path: '/builder', icon: <Flame size={20} /> },
-        { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> }
+        { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> },
+        { label: 'История заказов', path: '/orders', icon: <History size={20} /> }
     ];
 
     return (

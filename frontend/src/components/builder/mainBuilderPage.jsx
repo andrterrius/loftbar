@@ -6,6 +6,7 @@ import { X, Search, Plus, RussianRuble, Info } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder, getSettingsImages } from "@/utils/api";
+import { usePresetOrderConfirmation } from "@/components/orders/usePresetOrderConfirmation";
 import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS, SETTINGS_IMAGES } from "../moks/moks";
 
 const BowlSkeleton = () => (
@@ -19,10 +20,8 @@ const MainBuilderPage = () => {
     const [selectedLiquid, setSelectedLiquid] = useState(null);
     const [selectedBowl, setSelectedBowl] = useState(null);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [successOrderId, setSuccessOrderId] = useState(null);
+    const { openConfirm, ConfirmModal, SuccessModal, isSubmitting } = usePresetOrderConfirmation({ createOrder });
     const [bowlOptions, setBowlOptions] = useState([]);
     const [bowlsLoading, setBowlsLoading] = useState(true);
     const [basePrice, setBasePrice] = useState(0);
@@ -195,46 +194,47 @@ const MainBuilderPage = () => {
         return basePrice + addedPrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
     };
 
-    const handleOrder = async () => {
+    const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
+    const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
+
+    const handleOrder = () => {
         if (selectedFlavors.length === 0) return alert('Выберите вкусы!');
         if (!selectedLiquid) return alert('Выберите наполнение колбы!');
         const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
         if (total > 100.01) return alert('Сумма процентов превышает 100%. Скорректируйте микс.');
         if (total < 99.99) return alert('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
-        setIsConfirmOpen(true);
-    };
 
-    const handleConfirmedOrder = async () => {
-        setIsSubmitting(true);
-        const orderData = {
-            table_id: window.Telegram?.WebApp?.initDataUnsafe?.start_param
-                || new URLSearchParams(window.location.search).get('table_id')
-                || 'unknown_table',
-            special_requests: comment.trim() || undefined,
-            preset: {
-                liquid_id: selectedLiquid,
-                bowl_id: selectedBowl,
-                flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
-                strength: strength,
-            }
+        const displayPreset = {
+            name: 'Кастомный микс',
+            flavors: selectedFlavors.map((sf) => {
+                const flavor = flavors.find(f => f.id === sf.flavorId);
+                return { flavor: { name: flavor?.name }, percent: Math.round(sf.percentage) };
+            }),
+            bowl: selectedBowlData,
+            liquid: selectedLiquidData,
+            strength,
+            price: calculatePrice(),
         };
-        try {
-            const result = await createOrder(orderData);
-            setSelectedFlavors([]);
-            setSelectedLiquid(null);
-            setIsConfirmOpen(false);
-            setSuccessOrderId(result.daily_number || '');
-            setTimeout(() => window.Telegram?.WebApp?.close(), 4000);
-        } catch (error) {
-            console.error("Order error:", error);
-            alert('Не удалось отправить заказ. Попробуйте позже.');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
-    const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
-    const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
+        openConfirm({
+            preset: displayPreset,
+            title: 'Подтвердить заказ',
+            subtitle: 'Ваш микс',
+            getOrderPayload: () => ({
+                special_requests: comment.trim() || undefined,
+                preset: {
+                    liquid_id: selectedLiquid,
+                    bowl_id: selectedBowl,
+                    flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
+                    strength,
+                },
+            }),
+            onSuccess: () => {
+                setSelectedFlavors([]);
+                setSelectedLiquid(null);
+            },
+        });
+    };
 
     // Фильтрация вкусов по выбранным категориям (поддержка множественных категорий)
     const filteredFlavors = flavors.filter(flavor => {
@@ -626,99 +626,8 @@ const MainBuilderPage = () => {
             </AnimatePresence>
         </div>
 
-        {isConfirmOpen && (
-            <div
-                className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-                onClick={(e) => e.target === e.currentTarget && setIsConfirmOpen(false)}
-            >
-                <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-                    <h3 className="text-xl font-bold tracking-tight text-white mb-0.5">Подтвердить заказ</h3>
-                    <p className="text-[11px] uppercase tracking-widest text-neutral-600 font-medium mb-4">Ваш микс</p>
-
-                    <div className="space-y-2 mb-4 bg-white/5 rounded-xl p-3">
-                        {selectedFlavors.map((sf) => {
-                            const flavor = flavors.find(f => f.id === sf.flavorId);
-                            return (
-                                <div key={sf.flavorId} className="flex justify-between items-center">
-                                    <span className="flex items-center gap-2 text-[14px] font-semibold text-white">
-                                        <span
-                                            className="w-2 h-2 rounded-full inline-block shrink-0"
-                                            style={{ backgroundColor: flavor?.hex_color || flavor?.color || '#ccc' }}
-                                        />
-                                        {flavor?.name || 'Неизвестный вкус'}
-                                    </span>
-                                    <span className="font-mono text-[12px] text-neutral-300 tabular-nums">{Math.round(sf.percentage)}%</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="flex gap-4 mb-5">
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-medium">Чаша</span>
-                            {selectedBowlData && (
-                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
-                                    {selectedBowlData.icon} {selectedBowlData.name}
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-[10px] uppercase tracking-widest text-neutral-500 font-medium">Колба</span>
-                            {selectedLiquidData && (
-                                <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-white/10 border border-white/15 text-white">
-                                    💧 {selectedLiquidData.name}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-6 pt-4 border-t border-white/5">
-                        <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium">Итого</span>
-                        <span className="text-white font-bold text-2xl tracking-tight leading-none">{calculatePrice()}<span className="text-neutral-400 text-lg font-semibold">₽</span></span>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => setIsConfirmOpen(false)}
-                            disabled={isSubmitting}
-                            className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:bg-white/10 transition-all text-[13px] font-semibold disabled:opacity-50"
-                        >
-                            Отмена
-                        </button>
-                        <button
-                            onClick={handleConfirmedOrder}
-                            disabled={isSubmitting}
-                            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-[13px] tracking-tight shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform disabled:opacity-60"
-                        >
-                            {isSubmitting ? 'Отправка...' : 'Заказать'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {successOrderId !== null && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                <div className="bg-neutral-900 border border-white/10 rounded-2xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
-                        <span className="text-3xl">✅</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
-                    <p className="text-neutral-400 text-sm mb-1">
-                        {successOrderId ? `Заказ #${successOrderId}` : 'Ваш заказ'} успешно оформлен.
-                    </p>
-                    <p className="text-neutral-500 text-xs mb-6">
-                        Ожидайте — ваш микс уже готовится 🔥
-                    </p>
-                    <button
-                        onClick={() => window.Telegram?.WebApp?.close()}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-bold text-sm shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform"
-                    >
-                        Закрыть
-                    </button>
-                </div>
-            </div>
-        )}
+        {ConfirmModal}
+        {SuccessModal}
 
         {/* Модальное окно для изображений */}
         {isImageModalOpen && modalImageUrl && (
