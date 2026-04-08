@@ -131,8 +131,11 @@ class DBPreset(TimestampMixin, Base):
                 total_price = user_preset_base_price
             else:
                 total_price = self.settings.preset_base_price_evening
+
+            total_price += self.bowl.added_price_evening
         else:
             total_price = self.settings.preset_base_price
+            total_price += self.bowl.added_price
 
         if self.liquid and self.liquid.is_available:
             total_price += self.liquid.price

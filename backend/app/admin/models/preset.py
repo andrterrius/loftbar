@@ -90,8 +90,10 @@ class PresetAdmin(ModelView, model=DBPreset):
         is_evening_price = its_evening_now()
         if is_evening_price:
             total_price = m.settings.preset_base_price_evening
+            total_price += m.bowl.added_price_evening
         else:
             total_price = m.settings.preset_base_price
+            total_price += m.bowl.added_price
 
         if m.liquid:
             total_price += m.liquid.price
@@ -113,9 +115,15 @@ class PresetAdmin(ModelView, model=DBPreset):
         if is_evening_price:
             total_price = m.settings.preset_base_price_evening
             total_price_text = f"{m.settings.preset_base_price_evening}₽ (базовая вечерняя цена)"
+            total_price += m.bowl.added_price_evening
+            if m.bowl.added_price_evening:
+                total_price_text += f"<br>{m.bowl.added_price_evening}₽ (добавочная вечерняя цена за чашу)"
         else:
             total_price = m.settings.preset_base_price
             total_price_text = f"{m.settings.preset_base_price}₽ (базовая дневная цена)"
+            total_price += m.bowl.added_price
+            if m.bowl.added_price:
+                total_price_text += f"<br>{m.bowl.added_price}₽ (добавочная дневная цена за чашу)"
 
         if m.liquid:
             total_price += m.liquid.price
@@ -127,7 +135,7 @@ class PresetAdmin(ModelView, model=DBPreset):
 
             return Markup(
                 f"{total_price_text}"
-                f"<br>{m.settings.strength_added_price}₽ (добавочная цена)"
+                f"<br>{m.settings.strength_added_price}₽ (добавочная цена за крепость)"
                 f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
                 f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
                 f"<br> = {total_price}₽"

@@ -10,5 +10,6 @@ class BowlBase(BaseModel):
 class BowlOut(BowlBase):
     id: UUID4
     is_available: bool
+    added_price: float
 
     model_config = ConfigDict(from_attributes=True)

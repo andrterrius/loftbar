@@ -191,7 +191,7 @@ const MainBuilderPage = () => {
 
         let addedPrice = strength >= 9 ? addedStrengthPrice : 0;
 
-        return basePrice + addedPrice + (bowl?.price ?? 0) + (liquid?.price ?? 0);
+        return basePrice + addedPrice + (bowl?.price ?? 0) + (bowl?.added_price ?? 0) + (liquid?.price ?? 0);
     };
 
     const selectedBowlData = bowlOptions.find(b => b.id === selectedBowl);
