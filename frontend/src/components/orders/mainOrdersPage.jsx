@@ -95,7 +95,7 @@ function priceText(v) {
     return `${v} ₽`;
 }
 
-function OrderCard({ order, isExpanded, onToggleExpanded, onReorder, isReordering }) {
+function OrderCard({ order, orderNumber, isExpanded, onToggleExpanded, onReorder, isReordering }) {
     const number = order?.daily_number ? `#${order.daily_number}` : (order?.id ? `#${order.id}` : "");
 
     const title = order?.is_custom
@@ -121,21 +121,19 @@ function OrderCard({ order, isExpanded, onToggleExpanded, onReorder, isReorderin
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="text-base font-bold text-white tracking-tight leading-snug">
-                                Заказ {number || ""}
+                                Заказ #{orderNumber}
                             </h3>
+                            {number && (
+                                <span className="text-xs text-neutral-500 bg-white/5 px-2 py-0.5 rounded-full">
+                                    {number}
+                                </span>
+                            )}
                         </div>
                         <p className="text-neutral-300 font-semibold text-[15px] mt-1 truncate">{title}</p>
                         <p className="text-neutral-500 text-xs mt-1">{formatDateTime(order?.created_at)}</p>
                     </div>
                     <OrderStatusBadge status={order?.status} />
                 </div>
-
-                {order?.special_requests ? (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                        <p className="text-[11px] uppercase tracking-widest text-neutral-600 font-medium mb-1">Пожелания</p>
-                        <p className="text-sm text-neutral-200 leading-relaxed">{order.special_requests}</p>
-                    </div>
-                ) : null}
 
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-col gap-1">
@@ -278,8 +276,6 @@ const MainOrdersPage = () => {
     }, [orders]);
 
     useEffect(() => {
-        // В dev (React StrictMode) эффекты могут запускаться дважды.
-        // Этот guard предотвращает двойной запрос.
         if (didLoadRef.current) return;
         didLoadRef.current = true;
 
@@ -305,7 +301,7 @@ const MainOrdersPage = () => {
         openConfirm({
             preset: order.preset,
             title: "Повторить заказ?",
-            subtitle: "Вы уверены, что хотите заказать ещё раз",
+            subtitle: "Вы уверены, что хотите заказать ещё раз?",
             onBeforeSubmit: () => {
                 setIsReorderingById(prev => ({ ...prev, [id]: true }));
             },
@@ -354,7 +350,8 @@ const MainOrdersPage = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full items-start">
-                        {sortedOrders.map((order) => {
+                        {sortedOrders.map((order, index) => {
+                            const orderNumber = sortedOrders.length - index;
                             const key = order?.id ?? order?.daily_number ?? order?.created_at ?? `order-${Math.random().toString(16).slice(2)}`;
                             const idForBusy = order?.id ?? order?.daily_number ?? order?.preset?.id ?? key;
                             const expandedKey = order?.id ?? order?.daily_number ?? null;
@@ -364,6 +361,7 @@ const MainOrdersPage = () => {
                                 <div key={key} id={expandedKey ? `order-${expandedKey}` : undefined}>
                                     <OrderCard
                                         order={order}
+                                        orderNumber={orderNumber}
                                         isExpanded={isExpanded}
                                         onToggleExpanded={() => setExpandedOrderId(isExpanded ? null : expandedKey)}
                                         onReorder={() => handleReorder(order)}

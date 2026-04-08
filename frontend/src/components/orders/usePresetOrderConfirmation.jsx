@@ -200,7 +200,7 @@ export function usePresetOrderConfirmation({ createOrder } = {}) {
           </div>
           <h3 className="text-xl font-bold text-white mb-2">Заказ принят!</h3>
           <p className="text-neutral-400 text-sm mb-1">
-            {successOrderId ? `Заказ #${successOrderId}` : "Ваш заказ"} успешно оформлен.
+            {successOrderId ? `Заказ` : "Ваш заказ"} успешно оформлен.
           </p>
           <p className="text-neutral-500 text-xs mb-6">Ожидайте — ваш микс уже готовится 🔥</p>
           <a
