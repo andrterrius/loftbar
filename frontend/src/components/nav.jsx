@@ -15,8 +15,8 @@ const NavContent = () => {
 
     const navItems = [
         { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
-        { label: 'Конструктор Миксов', path: '/builder', icon: <Flame size={20} /> },
-        { label: 'Готовые миксы', path: '/presets', icon: <Grid size={20} /> },
+        { label: 'Конструктор кальяна', path: '/builder', icon: <Flame size={20} /> },
+        { label: 'Готовые кальяны', path: '/presets', icon: <Grid size={20} /> },
         { label: 'История заказов', path: '/orders', icon: <History size={20} /> }
     ];
 

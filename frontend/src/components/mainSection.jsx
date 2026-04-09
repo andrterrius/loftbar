@@ -1,16 +1,43 @@
 // components/MainSection.jsx
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { Flame, ArrowRight, Droplets } from "lucide-react";
+import { History, Flame, ArrowRight, Droplets } from "lucide-react";
 import Nav from "./nav";
 import { useSearchParams } from 'next/navigation';
 import { getUrlWithParams } from '../utils/urlParams';
+import { getSettingsImages } from "../utils/api";
+import { SETTINGS_IMAGES } from "./moks/moks";
+import { useImageModal } from "./shared/useImageModal";
 
 // Отдельный компонент, который использует useSearchParams
 const MainSectionContent = () => {
   const searchParams = useSearchParams();
+  const { openImageModal, preloadImage, ImageModal } = useImageModal();
+  const [settingsImages, setSettingsImages] = useState({ liquids_image_url: null, bowls_image_url: null });
+
+  useEffect(() => {
+    getSettingsImages()
+      .then((data) => {
+        if (data) {
+          const next = {
+            liquids_image_url: data.liquids_image_url || null,
+            bowls_image_url: data.bowls_image_url || null
+          };
+          setSettingsImages(next);
+          preloadImage(next.bowls_image_url);
+        }
+      })
+      .catch(() => {
+        const next = {
+          liquids_image_url: SETTINGS_IMAGES?.liquids_image_url || null,
+          bowls_image_url: SETTINGS_IMAGES?.bowls_image_url || null
+        };
+        setSettingsImages(next);
+        preloadImage(next.bowls_image_url);
+      });
+  }, [preloadImage]);
 
   return (
     <>
@@ -44,23 +71,40 @@ const MainSectionContent = () => {
       <div className="mt-12 w-full max-w-[400px] mb-10">
         <div className="flex flex-col gap-4">
           {[
-            { title: 'Большая библиотека', desc: 'Более 50 вкусов на выбор', icon: <Droplets className="text-cyan-400" /> },
-            { title: 'Сохранение вкусов', desc: 'Сохраняйте любимые комбинации', icon: <Flame className="text-fuchsia-400" /> },
-            { title: 'Уникальная подача', desc: 'Чаши в виде фруктов', icon: <ArrowRight className="text-purple-400" /> },
+            { title: 'Большая библиотека вкусов', desc: 'Более 100 вкусов на выбор', icon: <Droplets className="text-cyan-400" />, href: '/builder' },
+            {
+              title: 'Уникальная подача',
+              desc: 'Чаши в виде фруктов',
+              icon: <Flame className="text-purple-400" />,
+              href: '',
+              onClick: (e) => {
+                e.preventDefault();
+                openImageModal(settingsImages.bowls_image_url, 'Изображение чаш');
+              }
+            },
+            { title: 'Сохранение миксов', desc: 'Сохраняйте любимые комбинации', icon: <History className="text-fuchsia-400" />, href: '/orders' },
           ].map((item, i) => (
-            <div
+            <a
               key={i}
-              className="p-6 rounded-[28px] bg-white/5 border border-white/5 text-left active:bg-white/10 transition-colors"
+              href={item.href ? getUrlWithParams(item.href, searchParams) : '#'}
+              onClick={item.onClick}
+              className="block p-6 rounded-[28px] bg-white/5 border border-white/5 text-left transition-all duration-300 hover:scale-[1.02] hover:bg-white/10 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-400/10 cursor-pointer group"
             >
-              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                 {item.icon}
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white tracking-tight">{item.title}</h3>
-              <p className="text-neutral-400 text-[15px] leading-relaxed">{item.desc}</p>
-            </div>
+              <h3 className="text-xl font-bold mb-2 text-white tracking-tight transition-colors duration-300 group-hover:text-cyan-300">
+                {item.title}
+              </h3>
+              <p className="text-neutral-400 text-[15px] leading-relaxed transition-colors duration-300 group-hover:text-neutral-300">
+                {item.desc}
+              </p>
+            </a>
           ))}
         </div>
       </div>
+
+      {ImageModal}
     </>
   );
 };

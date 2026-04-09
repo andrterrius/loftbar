@@ -8,6 +8,7 @@ import Nav from "../nav";
 import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder, getSettingsImages } from "@/utils/api";
 import { usePresetOrderConfirmation } from "@/components/orders/usePresetOrderConfirmation";
 import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS, SETTINGS_IMAGES } from "../moks/moks";
+import { useImageModal } from "../shared/useImageModal";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -32,22 +33,11 @@ const MainBuilderPage = () => {
 
     // Изображения настроек
     const [settingsImages, setSettingsImages] = useState({ liquids_image_url: null, bowls_image_url: null });
-    const [modalImageUrl, setModalImageUrl] = useState(null);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const { openImageModal, preloadImage, ImageModal } = useImageModal();
 
     // Категории с бекенда
     const [categories, setCategories] = useState([]);
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]); // Массив ID выбранных категорий
-
-    const preloadImage = (url) => {
-        if (!url) return null;
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = reject;
-            img.src = url;
-        });
-    };
 
     useEffect(() => {
         getFlavours()
@@ -151,9 +141,13 @@ const MainBuilderPage = () => {
 
         const targetPct = Math.max(0, Math.min(100, newPercentage));
 
-        const newFlavors = selectedFlavors.map(f =>
-            f.flavorId === id ? { ...f, percentage: targetPct } : f
-        );
+        // Если выбрано ровно 2 вкуса — второй автоматически становится 100 - targetPct
+        // Для 3+ вкусов оставляем текущее поведение (ручная корректировка суммарных процентов)
+        const newFlavors = selectedFlavors.map(f => {
+            if (f.flavorId === id) return { ...f, percentage: targetPct };
+            if (selectedFlavors.length === 2) return { ...f, percentage: 100 - targetPct };
+            return f;
+        });
 
         const total = newFlavors.reduce((sum, f) => sum + f.percentage, 0);
         if (total > 100) {
@@ -168,12 +162,15 @@ const MainBuilderPage = () => {
         if (selectedFlavors.length >= 5) return alert('Доступно максимум 5 вкусов');
         if (selectedFlavors.length === 0) {
             setSelectedFlavors([{ flavorId: flavor.id, percentage: 100 }]);
-        } else {
+        } else if (selectedFlavors.length === 1) {
             const count = selectedFlavors.length + 1;
             const newPct = 100 / count;
             const updated = selectedFlavors.map(f => ({ ...f, percentage: newPct }));
             updated.push({ flavorId: flavor.id, percentage: newPct });
             setSelectedFlavors(updated);
+        } else {
+            // При добавлении 3+ вкуса не сбрасываем выставленные проценты
+            setSelectedFlavors(prev => [...prev, { flavorId: flavor.id, percentage: 100 }]);
         }
         setIsSearchOpen(false);
     };
@@ -272,16 +269,6 @@ const MainBuilderPage = () => {
         setSelectedCategoryIds([]);
     };
 
-    // Открытие модального окна с изображением
-    const openImageModal = (imageUrl, title) => {
-        if (imageUrl) {
-            setModalImageUrl({ url: imageUrl, title });
-            setIsImageModalOpen(true);
-        } else {
-            alert('Изображение не добавлено');
-        }
-    };
-
     return (
     <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
         <Nav/>
@@ -310,6 +297,7 @@ const MainBuilderPage = () => {
                                     color={flavor.color || flavor.hex_color || '#a21caf'}
                                     onRemove={() => removeFlavorFromMix(sf.flavorId)}
                                     onChange={(val, fromSlider) => handlePercentageChange(sf.flavorId, val, fromSlider)}
+                                    isLocked={selectedFlavors.length === 1}
                                 />
                             );
                         })}
@@ -629,38 +617,7 @@ const MainBuilderPage = () => {
         {ConfirmModal}
         {SuccessModal}
 
-        {/* Модальное окно для изображений */}
-        {isImageModalOpen && modalImageUrl && (
-            <div
-                className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-                onClick={() => setIsImageModalOpen(false)}
-            >
-                <div
-                    className="relative max-w-3xl max-h-[90vh] w-full bg-neutral-900 rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex justify-between items-center p-4 border-b border-white/10">
-                        <h3 className="text-lg font-semibold text-white">{modalImageUrl.title}</h3>
-                        <button
-                            onClick={() => setIsImageModalOpen(false)}
-                            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-neutral-400 hover:text-white"
-                        >
-                            <X size={20} />
-                        </button>
-                    </div>
-                    <div className="p-4 flex justify-center items-center bg-neutral-950/50">
-                        <img
-                            src={modalImageUrl.url}
-                            alt={modalImageUrl.title}
-                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
-                            onError={(e) => {
-                                e.target.src = 'https://placehold.co/600x400?text=Image+not+found';
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
-        )}
+        {ImageModal}
     </section>
     );
 };

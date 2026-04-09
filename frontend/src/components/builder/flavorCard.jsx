@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 
-const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
+const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = false }) => {
     const [inputValue, setInputValue] = useState(String(Math.round(percentage)));
     const [isFocused, setIsFocused] = useState(false);
 
@@ -16,6 +16,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
     }, [percentage, isFocused]);
 
     const handleCommit = () => {
+        if (isLocked) return;
         setIsFocused(false);
         const parsed = parseInt(inputValue, 10);
         if (isNaN(parsed) || inputValue === '') {
@@ -69,16 +70,20 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                             type="text"
                             inputMode="numeric"
                             value={inputValue}
+                            readOnly={isLocked}
                             onFocus={(e) => {
+                                if (isLocked) return;
                                 setIsFocused(true);
                                 e.target.select();
                             }}
                             onChange={(e) => {
+                                if (isLocked) return;
                                 const val = e.target.value.replace(/\D/g, '');
                                 setInputValue(val);
                             }}
                             onBlur={handleCommit}
                             onKeyDown={(e) => {
+                                if (isLocked) return;
                                 if (e.key === 'Enter') e.target.blur();
                                 if (e.key === 'Escape') {
                                     setInputValue(String(Math.round(percentage)));
@@ -86,7 +91,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                                     e.target.blur();
                                 }
                             }}
-                            className="w-14 text-center bg-neutral-800 border border-white/10 rounded-lg py-0.5 pr-4 text-sm font-mono text-cyan-400 outline-none focus:border-cyan-500/60 transition-colors"
+                            className={`w-14 text-center bg-neutral-800 border border-white/10 rounded-lg py-0.5 pr-4 text-sm font-mono text-cyan-400 outline-none focus:border-cyan-500/60 transition-colors ${isLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
                         />
                         <span className="absolute right-2 text-xs text-neutral-500 pointer-events-none">%</span>
                     </div>
@@ -98,12 +103,14 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color }) => {
                     min="1"
                     max="99"
                     value={isFocused ? (parseInt(inputValue) || Math.round(percentage)) : Math.round(percentage)}
+                    disabled={isLocked}
                     onChange={(e) => {
+                        if (isLocked) return;
                         const val = parseInt(e.target.value);
                         setInputValue(String(val));
                         onChange(val, true); // ← ползунок: авто-нормализация
                     }}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                    className={`w-full h-2 rounded-lg appearance-none ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                     style={{
                         background: `linear-gradient(to right, ${color} 0%, ${color} ${Math.round(percentage)}%, #262626 ${Math.round(percentage)}%, #262626 100%)`
                     }}
