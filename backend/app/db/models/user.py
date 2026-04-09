@@ -37,13 +37,12 @@ class DBUser(TimestampMixin, Base):
     presets: Mapped[List["DBPreset"]] = relationship(
         "DBPreset",
         back_populates="created_by",
-        cascade="all, delete-orphan"
+        cascade="save-update"
     )
 
     orders: Mapped[List["DBOrder"]] = relationship(
         "DBOrder",
         back_populates="user",
-        cascade="all, delete-orphan"
     )
 
     def __str__(self) -> str:

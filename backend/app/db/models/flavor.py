@@ -30,8 +30,7 @@ class DBFlavor(TimestampMixin, Base):
     priority: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
 
     preset_flavors: Mapped[List["DBPresetFlavor"]] = relationship(
-        back_populates="flavor",
-        cascade="all, delete-orphan"
+        back_populates="flavor"
     )
 
     categories: Mapped[List["DBFlavorCategory"]] = relationship(

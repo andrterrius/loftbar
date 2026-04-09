@@ -30,6 +30,7 @@ class PresetCreate(PresetBase):
     """Схема для создания пресета"""
     liquid_id: Optional[UUID] = None
     bowl_id: Optional[UUID] = None
+    created_by_admin: Optional[bool] = False
     strength: int = 1
     flavors: List[FlavorInPreset]
 
@@ -121,6 +122,7 @@ class PresetOut(PresetBase):
     id: UUID
     price: Optional[float] = None
     is_available: bool
+    created_by_admin: Optional[bool] = False
     strength: int
     bowl: BowlOut
     liquid: LiquidOut

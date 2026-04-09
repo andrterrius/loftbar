@@ -33,6 +33,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl": "Чаша",
         "settings": "Настройки",
         "created_by": "Создатель",
+        "created_by_admin": "Создано администратором",
         "created_at": "Дата создания",
         "updated_at": "Дата обновления",
         "hex_color": "Цвет",
@@ -49,6 +50,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl",
         "hex_color",
         "created_by",
+        "created_by_admin",
         "created_at",
     ]
 
@@ -64,6 +66,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "settings",
         "preset_flavors",
         "created_by",
+        "created_by_admin",
         "created_at",
         "updated_at",
     ]
@@ -74,9 +77,10 @@ class PresetAdmin(ModelView, model=DBPreset):
         DBPreset.is_available,
         DBPreset.created_at,
         DBPreset.created_by_id,
+        DBPreset.created_by_admin,
     ]
 
-    column_default_sort = [("created_by_id", True), ("is_available", True), ("updated_at", True)]
+    column_default_sort = [("created_by_admin", False), ("is_available", True), ("updated_at", True)]
 
     column_searchable_list = ["name", "category", "description"]
 
@@ -136,15 +140,15 @@ class PresetAdmin(ModelView, model=DBPreset):
             return Markup(
                 f"{total_price_text}"
                 f"<br>{m.settings.strength_added_price}₽ (добавочная цена за крепость)"
-                f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
-                f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
+                f"<br>{m.liquid.price if m.liquid else '<span style=\"color: red;\">❌ удалено</span>, 0'}₽ (жидкость)"
+                f"<br>{m.bowl.price if m.bowl else '<span style=\"color: red;\">❌ удалено</span>, 0'}₽ (чаша)"
                 f"<br> = {total_price}₽"
             )
 
         return Markup(
             f"{total_price_text}"
-            f"<br>{m.liquid.price if m.liquid else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (жидкость)"
-            f"<br>{m.bowl.price if m.bowl else "<span style='color: red;'>❌ удалено</span>, 0"}₽ (чаша)"
+            f"<br>{m.liquid.price if m.liquid else '<span style=\"color: red;\">❌ удалено</span>, 0'}₽ (жидкость)"
+            f"<br>{m.bowl.price if m.bowl else '<span style=\"color: red;\">❌ удалено</span>, 0'}₽ (чаша)"
             f"<br> = {total_price}₽"
         )
 
@@ -158,6 +162,7 @@ class PresetAdmin(ModelView, model=DBPreset):
 
         return Markup('<span style="color: green;">✅ Да</span>')
 
+    @staticmethod
     def _color_formatter(m, a):
         if m.hex_color:
             return Markup(
@@ -187,7 +192,13 @@ class PresetAdmin(ModelView, model=DBPreset):
     def _creator_formatter(m, a):
         if hasattr(m, 'created_by') and m.created_by:
             return m.created_by.username or m.created_by.first_name or str(m.created_by.telegram_id)
-        return "Админ"
+        return "-"
+
+    @staticmethod
+    def _created_by_admin_formatter(m, a):
+        if m.created_by_admin:
+            return Markup('<span style="color: green;">✅ Да</span>')
+        return Markup('<span style="color: red;">❌ Нет</span>')
 
     column_formatters = {
         "price": _price_formatter,
@@ -196,6 +207,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl": _bowl_formatter,
         "settings": _settings_formatter,
         "created_by": _creator_formatter,
+        "created_by_admin": _created_by_admin_formatter,
         "hex_color": _color_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)
@@ -208,6 +220,7 @@ class PresetAdmin(ModelView, model=DBPreset):
         "bowl": _bowl_formatter,
         "settings": _settings_formatter,
         "created_by": _creator_formatter,
+        "created_by_admin": _created_by_admin_formatter,
         "hex_color": _color_formatter,
         "created_at": lambda m, a: format_datetime_msk(m.created_at),
         "updated_at": lambda m, a: format_datetime_msk(m.updated_at)

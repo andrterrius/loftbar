@@ -123,7 +123,7 @@ def create_admin_preset_router(admin: Admin):
             uow: FromDishka[BaseUnitOfWork]
     ):
         """Сохранение пресета"""
-
+        print(data)
         admin: Admin = request.state.admin
         result = await preset_service.update(uow, preset_id, data)
         if not result:

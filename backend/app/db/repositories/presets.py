@@ -108,7 +108,7 @@ class PresetsRepository(SQLAlchemyRepository[DBPreset], IPresetsRepository):
             select(DBPreset)
             .where(
                 DBPreset.is_available == True,
-                DBPreset.created_by_id == None
+                DBPreset.created_by_admin == True
             )
             .options(
                 selectinload(DBPreset.liquid),

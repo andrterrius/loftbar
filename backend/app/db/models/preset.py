@@ -22,6 +22,7 @@ class DBPreset(TimestampMixin, Base):
         server_default=text("gen_random_uuid()")
     )
     is_available: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_by_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     strength: Mapped[float] = mapped_column(Integer, default=1, nullable=False)

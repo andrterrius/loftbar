@@ -155,5 +155,6 @@ class PresetService(BasePresetService):
             liquid=LiquidOut.model_validate(preset.liquid),
             bowl=BowlOut.model_validate(preset.bowl),
             is_available=preset.is_fully_available,
+            created_by_admin=preset.created_by_admin,
             flavors=flavors
         )
