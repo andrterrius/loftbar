@@ -986,7 +986,7 @@ function collectFormData() {
     formData.is_available = isAvailable.checked;
 
     const createdByAdmin = document.getElementById('created_by_admin');
-    formData.created_by_admin = isAvailable.checked;
+    formData.created_by_admin = createdByAdmin.checked;
 
     const category = document.getElementById('category');
     if (category && category.value) formData.category = category.value;
