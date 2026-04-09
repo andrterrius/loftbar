@@ -82,7 +82,7 @@ const MainSectionContent = () => {
                 openImageModal(settingsImages.bowls_image_url, 'Изображение чаш');
               }
             },
-            { title: 'Сохранение миксов', desc: 'Сохраняйте любимые комбинации', icon: <History className="text-fuchsia-400" />, href: '/orders' },
+            { title: 'Сохранение миксов', desc: 'История ваших заказов', icon: <History className="text-fuchsia-400" />, href: '/orders' },
           ].map((item, i) => (
             <a
               key={i}
