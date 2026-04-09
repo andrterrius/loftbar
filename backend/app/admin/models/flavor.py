@@ -1,9 +1,10 @@
 from fastapi.requests import Request
-from sqladmin import ModelView
+from fastapi.responses import RedirectResponse
+from sqladmin import ModelView, action
 from sqladmin.fields import QuerySelectMultipleField
 from markupsafe import Markup
 from wtforms import SelectMultipleField, widgets
-from sqlalchemy import nulls_last, desc
+from sqlalchemy import nulls_last, desc, update
 
 from app.db.models import DBFlavor, DBFlavorCategory
 from app.core.common import format_datetime_msk
@@ -109,6 +110,62 @@ class FlavorAdmin(ModelView, model=DBFlavor):
             "render_kw": {"placeholder": "https://...", "class": "form-control"}
         }
     }
+
+    @action(
+        name="set_available",
+        label="✅ Установить 'В наличии' для выбранных",
+        confirmation_message="Вы уверены, что хотите установить статус 'В наличии' для выбранных вкусов?",
+        add_in_detail=False,
+        add_in_list=True
+    )
+    async def set_available_action(self, request: Request):
+        form = request.query_params
+        pks = form.get("pks", "").split(",")
+
+        if not pks:
+            referer = request.headers.get("referer", f"/admin/{self.identity}/list")
+            return RedirectResponse(url=referer, status_code=302)
+
+        # Обновляем записи
+        async with self.session_maker() as session:
+            stmt = (
+                update(self.model)
+                .where(self.model.id.in_(pks))
+                .values(is_available=True)
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+        # Перенаправляем обратно
+        referer = request.headers.get("referer", f"/admin/{self.identity}/list")
+        return RedirectResponse(url=referer, status_code=302)
+
+    @action(
+        name="set_unavailable",
+        label="❌ Установить 'Не в наличии' для выбранных",
+        confirmation_message="Вы уверены, что хотите установить статус 'Не в наличии' для выбранных вкусов?",
+        add_in_detail=False,
+        add_in_list=True
+    )
+    async def set_unavailable_action(self, request: Request):
+        form = request.query_params
+        pks = form.get("pks", "").split(",")
+
+        if not pks:
+            referer = request.headers.get("referer", f"/admin/{self.identity}/list")
+            return RedirectResponse(url=referer, status_code=302)
+
+        async with self.session_maker() as session:
+            stmt = (
+                update(self.model)
+                .where(self.model.id.in_(pks))
+                .values(is_available=False)
+            )
+            await session.execute(stmt)
+            await session.commit()
+
+        referer = request.headers.get("referer", f"/admin/{self.identity}/list")
+        return RedirectResponse(url=referer, status_code=302)
 
     def _available_formatter(m, a):
         return Markup("✅ Да") if m.is_available else Markup("❌ Нет")
