@@ -435,7 +435,11 @@
                                     <label for="is_available">Создан администратором</label>
                                     <div class="form-check">
                                         <input type="checkbox" class="form-check-input" id="created_by_admin" name="created_by_admin"
-                                               {% if obj and obj.created_by_admin %}checked{% endif %}>
+                                               {% if obj and obj.created_by_admin %}
+                                               checked
+                                               {% elif not obj %}
+                                               checked
+                                               {% endif %}>
                                         <label class="form-check-label" for="created_by_admin">
                                             Пресет создан администратором
                                         </label>
