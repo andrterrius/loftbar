@@ -131,8 +131,20 @@ export function usePresetOrderConfirmation({ createOrder } = {}) {
             {preset.bowl && (
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
-                <span className="h-9 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                  <span className="text-base leading-none">{preset.bowl.icon}</span> {preset.bowl.name}
+                <span className="h-9 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300 min-w-0">
+                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden">
+                    {preset.bowl.image_url ? (
+                      <img
+                        src={preset.bowl.image_url}
+                        alt=""
+                        className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                        draggable={false}
+                      />
+                    ) : (
+                      <span className="text-base leading-none">{preset.bowl.icon || "🍲"}</span>
+                    )}
+                  </span>
+                  <span className="truncate">{preset.bowl.name}</span>
                 </span>
               </div>
             )}

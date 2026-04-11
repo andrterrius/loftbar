@@ -201,7 +201,18 @@ const MainPresetsPage = () => {
                                                             <div className="flex flex-col gap-1 flex-1 min-w-[100px]">
                                                                 <span className="text-[10px] uppercase tracking-widest text-neutral-600 font-medium pl-1">Чаша</span>
                                                                 <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-fuchsia-500/15 border border-fuchsia-500/30 text-fuchsia-300">
-                                                                    <span className="text-base">{preset.bowl.icon}</span>
+                                                                    <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden">
+                                                                        {preset.bowl.image_url ? (
+                                                                            <img
+                                                                                src={preset.bowl.image_url}
+                                                                                alt=""
+                                                                                className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                                                                                draggable={false}
+                                                                            />
+                                                                        ) : (
+                                                                            <span className="text-base leading-none">{preset.bowl.icon || "🍲"}</span>
+                                                                        )}
+                                                                    </span>
                                                                     <span className="truncate">{preset.bowl.name}</span>
                                                                 </span>
                                                             </div>
