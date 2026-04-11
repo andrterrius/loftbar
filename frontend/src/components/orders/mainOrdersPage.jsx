@@ -8,6 +8,7 @@ import { createOrder, getOrders } from "@/utils/api";
 import { usePresetOrderConfirmation } from "./usePresetOrderConfirmation";
 import { useSearchParams } from 'next/navigation';
 import { getUrlWithParams } from '../../utils/urlParams';
+import { useToast } from '@/components/shared/ToastProvider';
 
 function cn(...classes) {
     return classes.filter(Boolean).join(" ");
@@ -270,7 +271,7 @@ const MainOrdersPage = () => {
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { showError } = useToast();
     const [expandedOrderId, setExpandedOrderId] = useState(null);
     const [isReorderingById, setIsReorderingById] = useState({});
     const { openConfirm, ConfirmModal, SuccessModal } = usePresetOrderConfirmation({ createOrder });
@@ -295,13 +296,13 @@ const MainOrdersPage = () => {
                 setOrders(Array.isArray(data) ? data : []);
             })
             .catch(e => {
-                setError(e?.message || "Не удалось загрузить историю заказов");
+                showError(e?.message || "Не удалось загрузить историю заказов");
                 setOrders([]);
             })
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
+    }, [showError]);
 
     const handleReorder = async (order) => {
         const presetId = order?.preset?.id;

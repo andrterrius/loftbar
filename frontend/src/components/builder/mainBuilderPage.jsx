@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import { X, Search, Plus, RussianRuble, Info } from "lucide-react";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
@@ -9,6 +8,7 @@ import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids,
 import { usePresetOrderConfirmation } from "@/components/orders/usePresetOrderConfirmation";
 import { FLAVORS, FLAVORS_CATEGORIES, BOWL_OPTIONS, LIQUIDS, SETTINGS, SETTINGS_IMAGES } from "../moks/moks";
 import { useImageModal } from "../shared/useImageModal";
+import { useToast } from "@/components/shared/ToastProvider";
 
 const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
@@ -34,6 +34,7 @@ const MainBuilderPage = () => {
     // Изображения настроек
     const [settingsImages, setSettingsImages] = useState({ liquids_image_url: null, bowls_image_url: null });
     const { openImageModal, preloadImage, ImageModal } = useImageModal();
+    const { showError } = useToast();
 
     // Категории с бекенда
     const [categories, setCategories] = useState([]);
@@ -158,8 +159,8 @@ const MainBuilderPage = () => {
     };
 
     const addFlavorToMix = (flavor) => {
-        if (selectedFlavors.find(f => f.flavorId === flavor.id)) return alert('Вкус уже добавлен');
-        if (selectedFlavors.length >= 5) return alert('Доступно максимум 5 вкусов');
+        if (selectedFlavors.find(f => f.flavorId === flavor.id)) return showError('Вкус уже добавлен');
+        if (selectedFlavors.length >= 5) return showError('Доступно максимум 5 вкусов');
         if (selectedFlavors.length === 0) {
             setSelectedFlavors([{ flavorId: flavor.id, percentage: 100 }]);
         } else if (selectedFlavors.length === 1) {
@@ -195,11 +196,11 @@ const MainBuilderPage = () => {
     const selectedLiquidData = liquids.find(l => l.id === selectedLiquid);
 
     const handleOrder = () => {
-        if (selectedFlavors.length === 0) return alert('Выберите вкусы!');
-        if (!selectedLiquid) return alert('Выберите наполнение колбы!');
+        if (selectedFlavors.length === 0) return showError('Выберите вкусы!');
+        if (!selectedLiquid) return showError('Выберите наполнение колбы!');
         const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
-        if (total > 100.01) return alert('Сумма процентов превышает 100%. Скорректируйте микс.');
-        if (total < 99.99) return alert('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
+        if (total > 100.01) return showError('Сумма процентов превышает 100%. Скорректируйте микс.');
+        if (total < 99.99) return showError('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
 
         const displayPreset = {
             name: 'Кастомный микс',
@@ -273,7 +274,7 @@ const MainBuilderPage = () => {
     <section className="min-h-screen bg-neutral-950 flex flex-col items-center">
         <Nav/>
 
-        <div className="w-full max-w-6xl mx-auto px-5 pt-24 pb-12 space-y-8">
+        <div className="w-full max-w-6xl mx-auto px-5 pt-24 pb-32 sm:pb-28 space-y-8">
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-white/10 pb-6 text-left">
                 <div>
@@ -495,28 +496,10 @@ const MainBuilderPage = () => {
                         />
                         <p className="text-[10px] text-neutral-600 text-right mt-1">{comment.length}/300</p>
                     </div>
-
-                    <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-6 shadow-xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-neutral-400">Итоговая цена</span>
-                            <span className="text-3xl font-bold text-white flex items-center">
-                                {calculatePrice()}
-                                <RussianRuble size={28} className="text-green-500" />
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleOrder}
-                            disabled={isSubmitting}
-                            className="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-60"
-                        >
-                            Сделать заказ
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <AnimatePresence>
-                {isSearchOpen && (
+            {isSearchOpen && (
                     <div
                         className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4"
                         onClick={(e) => e.target === e.currentTarget && setIsSearchOpen(false)}
@@ -621,8 +604,32 @@ const MainBuilderPage = () => {
                             </div>
                         </div>
                     </div>
-                )}
-            </AnimatePresence>
+            )}
+        </div>
+
+        <div
+            className="fixed bottom-0 left-0 right-0 z-40 pointer-events-none"
+            style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+        >
+            <div className="w-full max-w-6xl mx-auto px-5 pb-3 pointer-events-auto">
+                <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-4 sm:p-5 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex justify-between items-center sm:justify-start sm:gap-4">
+                        <span className="text-neutral-400 text-sm sm:text-base">Итоговая цена</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-white flex items-center tabular-nums">
+                            {calculatePrice()}
+                            <RussianRuble size={26} className="text-green-500 sm:w-7 sm:h-7 shrink-0" />
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleOrder}
+                        disabled={isSubmitting}
+                        className="w-full sm:w-auto sm:min-w-[200px] shrink-0 py-3.5 sm:py-3 px-6 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                        Сделать заказ
+                    </button>
+                </div>
+            </div>
         </div>
 
         {ConfirmModal}

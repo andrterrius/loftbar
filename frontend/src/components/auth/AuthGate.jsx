@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from "react";
+import { ToastProvider } from "@/components/shared/ToastProvider";
 
 export default function AuthGate({ children }) {
     const [isReady, setIsReady] = useState(false);
@@ -27,7 +28,9 @@ export default function AuthGate({ children }) {
 
     return (
         <div key={authState}>
-            {children}
+            <ToastProvider>
+                {children}
+            </ToastProvider>
         </div>
     );
 }

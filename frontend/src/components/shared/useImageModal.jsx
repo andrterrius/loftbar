@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { useToast } from "@/components/shared/ToastProvider";
 
 export function useImageModal() {
+  const { showError } = useToast();
   const [modalImage, setModalImage] = useState(null); // { url, title }
   const [isOpen, setIsOpen] = useState(false);
   const preloadedRef = useRef(new Set());
@@ -30,14 +32,12 @@ export function useImageModal() {
       setModalImage({ url: imageUrl, title });
       setIsOpen(true);
     } else {
-      alert("Изображение не добавлено");
+      showError("Изображение не добавлено");
     }
-  }, []);
+  }, [showError]);
 
-  const ImageModal = useMemo(() => {
-    if (!isOpen || !modalImage) return null;
-
-    return (
+  const ImageModal =
+    isOpen && modalImage ? (
       <div
         className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
         onClick={close}
@@ -67,8 +67,7 @@ export function useImageModal() {
           </div>
         </div>
       </div>
-    );
-  }, [close, isOpen, modalImage]);
+    ) : null;
 
   return { openImageModal, preloadImage, ImageModal, close, isOpen };
 }

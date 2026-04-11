@@ -30,7 +30,6 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = fa
 
     return (
         <motion.div
-            layout
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
