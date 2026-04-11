@@ -24,10 +24,10 @@ class UserBase(BaseModel):
     username: Optional[str] = None
     photo_url: Optional[str] = None
     language_code: Optional[str] = None
-    is_premium: bool = False
-    is_active: bool = True
-    is_banned: bool = False
-    is_admin: bool = False
+    is_premium: Optional[bool] = False
+    is_active: Optional[bool] = True
+    is_banned: Optional[bool] = False
+    is_admin: Optional[bool] = False
 
     model_config = ConfigDict(from_attributes=True)
 
