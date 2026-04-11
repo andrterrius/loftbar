@@ -25,6 +25,7 @@ class DBBowl(TimestampMixin, Base):
     category: Mapped[str] = mapped_column(String(32), nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
     icon: Mapped[str] = mapped_column(String(32), nullable=True)
+    image_url: Mapped[str] = mapped_column(String(255), nullable=True)
     added_price: Mapped[float] = mapped_column(Float, default=0, nullable=False)
     added_price_evening: Mapped[float] = mapped_column(Float, default=0, nullable=False)
 

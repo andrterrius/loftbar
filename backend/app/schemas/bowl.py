@@ -6,6 +6,7 @@ class BowlBase(BaseModel):
     category: str = Field(..., max_length=32, description="Категория")
     price: float = Field(..., description="Цена в рублях")
     icon: Optional[str] = Field(None, max_length=32, description="Иконка чаши")
+    image_url: Optional[str] = Field(None, max_length=255, description="Изображение чаши")
 
 class BowlOut(BowlBase):
     id: UUID4
