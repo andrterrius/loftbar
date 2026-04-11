@@ -392,7 +392,18 @@ const MainBuilderPage = () => {
                                             }`}
                                             title={bowl.name}
                                         >
-                                            <span className="text-2xl mb-1">{bowl.icon}</span>
+                                            <div className="mb-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden">
+                                                {bowl.image_url ? (
+                                                    <img
+                                                        src={bowl.image_url}
+                                                        alt={bowl.name}
+                                                        className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                                                        draggable={false}
+                                                    />
+                                                ) : (
+                                                    <span className="text-2xl leading-none">{bowl.icon}</span>
+                                                )}
+                                            </div>
                                             <span className="text-[10px] text-center leading-tight w-full break-words whitespace-normal px-1">
                                                 {bowl.name}
                                             </span>

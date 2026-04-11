@@ -13,15 +13,15 @@ export const FLAVORS_CATEGORIES = [
 ];
 
 export const BOWL_OPTIONS = [
-    { type: 'Classic',    icon: '🏺', isFruit: false, price: 0  },
-    { type: 'Silicon',    icon: '⚫', isFruit: false, price: 20  },
-    { type: 'Grapefruit', icon: '🍊', isFruit: true,  price: 30  },
-    { type: 'Lemon',      icon: '🍋', isFruit: true,  price: 40  },
-    { type: 'Orange',     icon: '🍊', isFruit: true,  price: 50  },
-    { type: 'Coconut',    icon: '🥥', isFruit: true,  price: 60  },
-    { type: 'Pineapple',  icon: '🍍', isFruit: true,  price: 70  },
-    { type: 'Pitahaya',   icon: '🐉', isFruit: true,  price: 80 },
-    { type: 'Watermelon', icon: '🍉', isFruit: true,  price: 90  },
+    { type: 'Classic',    icon: '🏺', isFruit: false, price: 0},
+    { type: 'Silicon',    icon: '⚫', isFruit: false, price: 20, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Grapefruit', icon: '🍊', isFruit: true,  price: 30, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Lemon',      icon: '🍋', isFruit: true,  price: 40, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Orange',     icon: '🍊', isFruit: true,  price: 50, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Coconut',    icon: '🥥', isFruit: true,  price: 60, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Pineapple',  icon: '🍍', isFruit: true,  price: 70, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Pitahaya',   icon: '🐉', isFruit: true,  price: 80, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
+    { type: 'Watermelon', icon: '🍉', isFruit: true,  price: 90, image_url: "https://i.postimg.cc/9XD4LHb3/52363972e910953b52ab50241ef60de4.png" },
 ];
 
 export const LIQUIDS = [
