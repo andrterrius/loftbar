@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
+import LazyLoad from "react-lazyload";
 
 const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = false }) => {
     const [inputValue, setInputValue] = useState(String(Math.round(percentage)));
@@ -37,19 +38,34 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = fa
         >
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    <div
-                        style={{
-                            width: '40px', height: '40px', minWidth: '40px',
-                            flex: 'none', borderRadius: '50%', overflow: 'hidden',
-                            backgroundColor: color || '#ccc',
-                            backgroundImage: item.image_url ? `url(${item.image_url})` : 'none',
-                            backgroundSize: 'cover', backgroundPosition: 'center',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '14px', fontWeight: 'bold', color: 'rgba(0,0,0,0.6)',
-                        }}
+                    <LazyLoad
+                        once
+                        offset={200}
+                        height={40}
+                        className="shrink-0"
+                        style={{ width: 40, minWidth: 40 }}
                     >
-                        {!item.image_url && item.name[0]}
-                    </div>
+                        <div
+                            style={{
+                                width: '40px', height: '40px', minWidth: '40px',
+                                flex: 'none', borderRadius: '50%', overflow: 'hidden',
+                                backgroundColor: item.image_url ? 'transparent' : (color || '#ccc'),
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '14px', fontWeight: 'bold', color: 'rgba(0,0,0,0.6)',
+                            }}
+                        >
+                            {item.image_url ? (
+                                <img
+                                    src={item.image_url}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                    draggable={false}
+                                />
+                            ) : (
+                                item.name[0]
+                            )}
+                        </div>
+                    </LazyLoad>
                     <div>
                         <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
                     </div>

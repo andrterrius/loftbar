@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X, Search, Plus, RussianRuble, Info } from "lucide-react";
+import LazyLoad from "react-lazyload";
 import FlavorCard from "./flavorCard";
 import Nav from "../nav";
 import { getBowls, getFlavours, getFlavoursCategories, getBasePrice, getLiquids, createOrder, getSettingsImages } from "@/utils/api";
@@ -580,11 +581,20 @@ const MainBuilderPage = () => {
                                             >
                                                 <div className="w-full aspect-square rounded-xl mb-2 overflow-hidden bg-neutral-800 flex items-center justify-center relative">
                                                     {flavor.image_url ? (
-                                                        <img
-                                                            src={flavor.image_url}
-                                                            alt={flavor.name}
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                                        />
+                                                        <LazyLoad
+                                                            overflow
+                                                            once
+                                                            offset={120}
+                                                            className="absolute inset-0 w-full h-full"
+                                                            style={{ width: '100%', height: '100%' }}
+                                                            height="100%"
+                                                        >
+                                                            <img
+                                                                src={flavor.image_url}
+                                                                alt={flavor.name}
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                            />
+                                                        </LazyLoad>
                                                     ) : (
                                                         <div
                                                             className="w-full h-full flex items-center justify-center text-4xl font-bold"
