@@ -6,7 +6,12 @@ from telegram_init_data import InitData
 from app.core.security.abc_jwt_service import BaseJWTService
 from app.db.uow import BaseUnitOfWork
 
-from app.schemas.auth import LoginSimpleRequest, SuccessAuth
+from app.schemas.user import UserMeOut
+from app.schemas.auth import (
+    LoginSimpleRequest,
+    SuccessAuth,
+    CurrentUser
+)
 from app.schemas.error import ErrorResponse
 from app.services.abc import (
     BaseTgAuthService,
@@ -51,3 +56,15 @@ async def login_from_telegram_init_data(
     """Обменять telegram init data на jwt токен (access_token)"""
     async with uow:
         return await tg_auth_service.authenticate(uow, jwt_service, init_data)
+
+@users_router.get("/me",
+                    response_model=UserMeOut,
+                    responses={
+                        401: {"model": ErrorResponse, "description": "Ошибка авторизации. error_type=auth_error"}
+                    }
+)
+async def get_me(
+        current_user: FromDishka[CurrentUser]
+):
+    """Получить доступную информацию о пользователе"""
+    return UserMeOut.model_validate(current_user)

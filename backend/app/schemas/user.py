@@ -56,3 +56,9 @@ class UserResponse(UserBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class UserMeOut(BaseModel):
+    """Схема для ответа пользователю"""
+    phone_number: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

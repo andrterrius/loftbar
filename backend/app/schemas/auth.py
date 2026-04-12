@@ -9,6 +9,7 @@ class TokenPayload(BaseModel):
 
 class CurrentUser(BaseModel):
     id: UUID
+    phone_number: Optional[str]
     preset_base_price: Optional[float]
 
 class SuccessAuth(BaseModel):

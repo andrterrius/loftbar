@@ -1,10 +1,10 @@
 from uuid import UUID
 from typing import List, Protocol, Optional, Sequence, Any
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import SQLAlchemyRepository
-from app.db.models import DBFlavorCategory
+from app.db.models import DBFlavorCategory, DBFlavor, DBFlavorCategoryAssociation
 
 
 class IFlavorCategoriesRepository(Protocol):
@@ -44,8 +44,16 @@ class FlavorCategoriesRepository(SQLAlchemyRepository[DBFlavorCategory], IFlavor
         super().__init__(session, DBFlavorCategory)
 
     async def get_all_sorted(self) -> List[DBFlavorCategory]:
-        query = select(self.model).order_by(
-            self.model.order.asc().nulls_last()
+        query = (
+            select(DBFlavorCategory)
+            .where(
+                exists().where(
+                    DBFlavorCategoryAssociation.category_id == DBFlavorCategory.id,
+                    DBFlavorCategoryAssociation.flavor_id == DBFlavor.id,
+                    DBFlavor.is_available == True
+                )
+            )
+            .order_by(DBFlavorCategory.order.asc().nulls_last())
         )
         result = await self._session.execute(query)
         return list(result.scalars().all())
