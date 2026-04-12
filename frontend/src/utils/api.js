@@ -28,7 +28,7 @@ export async function simpleLogin(name, phone_number) {
 }
 
 function refreshToken() {
-    let isTg = !!window.Telegram?.WebApp.initData;
+    let isTg = !!window.Telegram?.WebApp?.initData;
     if (isTg) {
         return login();
     }
@@ -95,3 +95,4 @@ export const getBowls = () => apiRequest('/bowls', { method: 'GET' });
 export const createOrder = (data) => apiRequest('/orders', { method: 'POST', body: JSON.stringify(data) });
 export const getBasePrice = () => apiRequest('/presets/price', { method: 'GET' });
 export const getSettingsImages = () => apiRequest('/settings/images', { method: 'GET' });
+export const getMe = () => apiRequest('/users/me', { method: 'GET' });

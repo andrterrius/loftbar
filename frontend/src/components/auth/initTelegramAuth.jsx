@@ -95,8 +95,7 @@ const InitTelegramAuth = () => {
             }
 
             try {
-                const access_token = login();
-                localStorage.setItem('jwt', access_token);
+                await login();
                 window.dispatchEvent(new Event('auth-ready'));
             } catch (err) {
                 console.log("Ошибка", err);

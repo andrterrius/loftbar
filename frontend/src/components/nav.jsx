@@ -2,16 +2,42 @@
 'use client'
 
 import Link from "next/link";
-import { useState, Suspense } from "react";
-import { History, Flame, Grid, Home, Menu, X } from "lucide-react";
+import { useState, Suspense, useEffect } from "react";
+import { History, Flame, Grid, Home, LogOut, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from 'next/navigation';
 import { getUrlWithParams } from '../utils/urlParams';
+import { getNonTelegramUserProfile } from '../utils/nonTelegramUser';
 
 // Отдельный компонент, который использует useSearchParams
 const NavContent = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [telegramEnv, setTelegramEnv] = useState(null);
+    const [phoneNumber, setPhoneNumber] = useState(
+        () => getNonTelegramUserProfile()?.phone_number ?? null
+    );
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        setTelegramEnv(!!window.Telegram?.WebApp?.initData);
+    }, []);
+
+    useEffect(() => {
+        if (telegramEnv) return;
+        const onUserMe = (e) => setPhoneNumber(e.detail?.phone_number ?? null);
+        window.addEventListener('user-me', onUserMe);
+        setPhoneNumber(getNonTelegramUserProfile()?.phone_number ?? null);
+        return () => window.removeEventListener('user-me', onUserMe);
+    }, [telegramEnv]);
+
+    const showBrowserSession = telegramEnv === false;
+
+    const handleLogout = () => {
+        localStorage.removeItem('jwt');
+        setPhoneNumber(null);
+        window.dispatchEvent(new Event('unauthorized'));
+        window.dispatchEvent(new Event('logged-out'));
+    };
 
     const navItems = [
         { label: 'Главный экран', path: '/', icon: <Home size={20} /> },
@@ -22,15 +48,31 @@ const NavContent = () => {
 
     return (
         <>
-            <div className="mx-auto flex h-14 max-w-sm items-center justify-between px-4">
-                <div className="text-lg font-bold text-white tracking-tight">
+            <div className="mx-auto flex h-14 max-w-sm items-center gap-2 px-4">
+                <div className="shrink-0 text-lg font-bold text-white tracking-tight">
                     <Link href={getUrlWithParams('/', searchParams)}>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500">
                             {process.env.NEXT_PUBLIC_NAME}
                         </span>
                     </Link>
                 </div>
-                <div className="flex items-center">
+                {showBrowserSession && (
+                    <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+                        <span className="truncate text-center text-xs text-neutral-300 tabular-nums">
+                            {phoneNumber || '—'}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            aria-label="Выйти"
+                            className="shrink-0 rounded-lg border border-white/15 bg-white/5 p-2 text-neutral-300 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+                        >
+                            <LogOut size={18} strokeWidth={1.75} />
+                        </button>
+                    </div>
+                )}
+                {!showBrowserSession && <div className="flex-1" aria-hidden />}
+                <div className="flex shrink-0 items-center">
                     <button 
                         className="p-2 text-neutral-400 transition-colors"
                         onClick={() => setIsMobileMenuOpen(prev => !prev)}
