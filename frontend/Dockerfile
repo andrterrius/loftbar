@@ -20,12 +20,13 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-RUN chown -R nextjs:nodejs /app/.next
+RUN chown -R nextjs:nodejs /app/.next /app/public
 
 USER nextjs
 
