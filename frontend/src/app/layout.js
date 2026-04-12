@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import TelegramSdkInit from "@/components/TelegramSdkInit";
 import InitTelegramAuth from "@/components/auth/initTelegramAuth";
 import AuthGate from "@/components/auth/AuthGate";
 
@@ -19,10 +19,15 @@ export default function RootLayout({ children }) {
   
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TelegramSdkInit />
         <InitTelegramAuth/>
         <AuthGate>{children}</AuthGate>
       </body>
