@@ -163,15 +163,12 @@ const MainBuilderPage = () => {
         if (selectedFlavors.length >= 5) return showError('Доступно максимум 5 вкусов');
         if (selectedFlavors.length === 0) {
             setSelectedFlavors([{ flavorId: flavor.id, percentage: 100 }]);
-        } else if (selectedFlavors.length === 1) {
+        } else {
             const count = selectedFlavors.length + 1;
             const newPct = 100 / count;
             const updated = selectedFlavors.map(f => ({ ...f, percentage: newPct }));
             updated.push({ flavorId: flavor.id, percentage: newPct });
             setSelectedFlavors(updated);
-        } else {
-            // При добавлении 3+ вкуса не сбрасываем выставленные проценты
-            setSelectedFlavors(prev => [...prev, { flavorId: flavor.id, percentage: 100 }]);
         }
         setIsSearchOpen(false);
     };
