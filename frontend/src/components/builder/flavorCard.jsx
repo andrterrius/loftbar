@@ -25,7 +25,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = fa
         }
         const clamped = Math.max(1, Math.min(100, parsed));
         setInputValue(String(clamped));
-        onChange(clamped, false); // ← ввод с клавиатуры: без авто-нормализации
+        onChange(clamped);
     };
 
     return (
@@ -105,7 +105,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = fa
                     </div>
                 </div>
 
-                {/* Слайдер — перераспределяет остальные автоматически */}
+                {/* Слайдер */}
                 <input
                     type="range"
                     min="1"
@@ -116,7 +116,7 @@ const FlavorCard = ({ item, percentage, onRemove, onChange, color, isLocked = fa
                         if (isLocked) return;
                         const val = parseInt(e.target.value);
                         setInputValue(String(val));
-                        onChange(val, true); // ← ползунок: авто-нормализация
+                        onChange(val);
                     }}
                     className={`w-full h-2 rounded-lg appearance-none ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                     style={{

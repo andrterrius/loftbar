@@ -14,6 +14,41 @@ const BowlSkeleton = () => (
     <div className="aspect-square rounded-lg bg-white/5 animate-pulse border border-white/5" />
 );
 
+/** Целые доли на n вкусов, в сумме ровно 100 */
+const splitEqually = (count) => {
+    const base = Math.floor(100 / count);
+    const extra = 100 - base * count;
+    return Array.from({ length: count }, (_, i) => base + (i < extra ? 1 : 0));
+};
+
+/** Подгонка суммы к 100: разницу добавляем/снимаем с одного вкуса (без пересчёта остальных пропорций) */
+const normalizeTo100 = (flavors) => {
+    if (flavors.length === 0) return [];
+    if (flavors.length === 1) return [{ ...flavors[0], percentage: 100 }];
+
+    const result = flavors.map((f) => ({
+        ...f,
+        percentage: Math.max(1, Math.min(100, Math.round(f.percentage))),
+    }));
+
+    const diff = 100 - result.reduce((sum, f) => sum + f.percentage, 0);
+    if (diff === 0) return result;
+
+    const idx = result.findIndex(
+        (f) => f.percentage + diff >= 1 && f.percentage + diff <= 100
+    );
+    const targetIdx = idx >= 0 ? idx : 0;
+    result[targetIdx] = {
+        ...result[targetIdx],
+        percentage: Math.max(1, Math.min(100, result[targetIdx].percentage + diff)),
+    };
+
+    return result;
+};
+
+const flavorPercentTotal = (flavors) =>
+    flavors.reduce((sum, f) => sum + Math.round(f.percentage), 0);
+
 const MainBuilderPage = () => {
     const [flavors, setFlavors] = useState([]);
     const [flavorsLoading, setFlavorsLoading] = useState(true);
@@ -132,7 +167,7 @@ const MainBuilderPage = () => {
             });
     }, []);
 
-    const handlePercentageChange = (id, newPercentage, fromSlider = true) => {
+    const handlePercentageChange = (id, newPercentage) => {
         if (selectedFlavors.length <= 1) {
             setSelectedFlavors(prev => prev.map(f =>
                 f.flavorId === id ? { ...f, percentage: 100 } : f
@@ -140,22 +175,13 @@ const MainBuilderPage = () => {
             return;
         }
 
-        const targetPct = Math.max(0, Math.min(100, newPercentage));
+        const targetPct = Math.max(1, Math.min(100, Math.round(newPercentage)));
 
-        // Если выбрано ровно 2 вкуса — второй автоматически становится 100 - targetPct
-        // Для 3+ вкусов оставляем текущее поведение (ручная корректировка суммарных процентов)
-        const newFlavors = selectedFlavors.map(f => {
-            if (f.flavorId === id) return { ...f, percentage: targetPct };
-            if (selectedFlavors.length === 2) return { ...f, percentage: 100 - targetPct };
-            return f;
-        });
-
-        const total = newFlavors.reduce((sum, f) => sum + f.percentage, 0);
-        if (total > 100) {
-            console.warn('Сумма процентов превышает 100');
-        }
-
-        setSelectedFlavors(newFlavors);
+        setSelectedFlavors(selectedFlavors.map(f =>
+            f.flavorId === id
+                ? { ...f, percentage: targetPct }
+                : { ...f, percentage: Math.round(f.percentage) }
+        ));
     };
 
     const addFlavorToMix = (flavor) => {
@@ -165,9 +191,9 @@ const MainBuilderPage = () => {
             setSelectedFlavors([{ flavorId: flavor.id, percentage: 100 }]);
         } else {
             const count = selectedFlavors.length + 1;
-            const newPct = 100 / count;
-            const updated = selectedFlavors.map(f => ({ ...f, percentage: newPct }));
-            updated.push({ flavorId: flavor.id, percentage: newPct });
+            const shares = splitEqually(count);
+            const updated = selectedFlavors.map((f, i) => ({ ...f, percentage: shares[i] }));
+            updated.push({ flavorId: flavor.id, percentage: shares[count - 1] });
             setSelectedFlavors(updated);
         }
         setIsSearchOpen(false);
@@ -176,8 +202,11 @@ const MainBuilderPage = () => {
     const removeFlavorFromMix = (id) => {
         const remaining = selectedFlavors.filter(f => f.flavorId !== id);
         if (remaining.length === 0) return setSelectedFlavors([]);
-        const currentSum = remaining.reduce((acc, f) => acc + f.percentage, 0);
-        setSelectedFlavors(remaining.map(f => ({ ...f, percentage: (f.percentage / currentSum) * 100 })));
+        if (remaining.length === 1) {
+            setSelectedFlavors([{ ...remaining[0], percentage: 100 }]);
+            return;
+        }
+        setSelectedFlavors(remaining.map(f => ({ ...f, percentage: Math.round(f.percentage) })));
     };
 
     const calculatePrice = () => {
@@ -195,15 +224,15 @@ const MainBuilderPage = () => {
     const handleOrder = () => {
         if (selectedFlavors.length === 0) return showError('Выберите вкусы!');
         if (!selectedLiquid) return showError('Выберите наполнение колбы!');
-        const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
-        if (total > 100.01) return showError('Сумма процентов превышает 100%. Скорректируйте микс.');
-        if (total < 99.99) return showError('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
+        const normalizedFlavors = normalizeTo100(selectedFlavors);
+        const total = flavorPercentTotal(normalizedFlavors);
+        if (total !== 100) return showError('Сумма процентов должна быть равна 100%. Скорректируйте микс.');
 
         const displayPreset = {
             name: 'Кастомный микс',
-            flavors: selectedFlavors.map((sf) => {
+            flavors: normalizedFlavors.map((sf) => {
                 const flavor = flavors.find(f => f.id === sf.flavorId);
-                return { flavor: { name: flavor?.name }, percent: Math.round(sf.percentage) };
+                return { flavor: { name: flavor?.name }, percent: sf.percentage };
             }),
             bowl: selectedBowlData,
             liquid: selectedLiquidData,
@@ -220,7 +249,7 @@ const MainBuilderPage = () => {
                 preset: {
                     liquid_id: selectedLiquid,
                     bowl_id: selectedBowl,
-                    flavors: selectedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
+                    flavors: normalizedFlavors.map(f => ({ flavor_id: f.flavorId, percent: f.percentage })),
                     strength,
                 },
             }),
@@ -294,16 +323,16 @@ const MainBuilderPage = () => {
                                     percentage={sf.percentage}
                                     color={flavor.color || flavor.hex_color || '#a21caf'}
                                     onRemove={() => removeFlavorFromMix(sf.flavorId)}
-                                    onChange={(val, fromSlider) => handlePercentageChange(sf.flavorId, val, fromSlider)}
+                                    onChange={(val) => handlePercentageChange(sf.flavorId, val)}
                                     isLocked={selectedFlavors.length === 1}
                                 />
                             );
                         })}
 
                         {(() => {
-                            const total = selectedFlavors.reduce((acc, f) => acc + f.percentage, 0);
-                            const isOver = total > 100.01;
-                            const isUnder = selectedFlavors.length > 0 && total < 99.99;
+                            const total = flavorPercentTotal(selectedFlavors);
+                            const isOver = total > 100;
+                            const isUnder = selectedFlavors.length > 1 && total < 100;
                             if (!isOver && !isUnder) return null;
                             return (
                                 <div className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium ${
@@ -315,7 +344,7 @@ const MainBuilderPage = () => {
                                         {isOver ? '⚠ Сумма процентов превышает 100%' : 'ℹ Сумма процентов меньше 100%'}
                                     </span>
                                     <span className="font-mono font-bold">
-                                        {Math.round(total)}%
+                                        {total}%
                                     </span>
                                 </div>
                             );
@@ -493,6 +522,15 @@ const MainBuilderPage = () => {
                         />
                         <p className="text-[10px] text-neutral-600 text-right mt-1">{comment.length}/300</p>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={handleOrder}
+                        disabled={isSubmitting}
+                        className="w-full py-3.5 px-6 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-60"
+                    >
+                        Сделать заказ
+                    </button>
                 </div>
             </div>
 
@@ -611,22 +649,12 @@ const MainBuilderPage = () => {
             style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
         >
             <div className="w-full max-w-6xl mx-auto px-5 pb-3 pointer-events-auto">
-                <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-4 sm:p-5 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div className="flex justify-between items-center sm:justify-start sm:gap-4">
-                        <span className="text-neutral-400 text-sm sm:text-base">Итоговая цена</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-white flex items-center tabular-nums">
-                            {calculatePrice()}
-                            <RussianRuble size={26} className="text-green-500 sm:w-7 sm:h-7 shrink-0" />
-                        </span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleOrder}
-                        disabled={isSubmitting}
-                        className="w-full sm:w-auto sm:min-w-[200px] shrink-0 py-3.5 sm:py-3 px-6 bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-[0_0_20px_rgba(192,38,211,0.3)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-60"
-                    >
-                        Сделать заказ
-                    </button>
+                <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/10 rounded-xl p-4 sm:p-5 backdrop-blur-md shadow-[0_-8px_32px_rgba(0,0,0,0.45)] flex justify-between items-center gap-4">
+                    <span className="text-neutral-400 text-sm sm:text-base">Итоговая цена</span>
+                    <span className="text-2xl sm:text-3xl font-bold text-white flex items-center tabular-nums">
+                        {calculatePrice()}
+                        <RussianRuble size={26} className="text-green-500 sm:w-7 sm:h-7 shrink-0" />
+                    </span>
                 </div>
             </div>
         </div>
