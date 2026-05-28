@@ -168,20 +168,29 @@ const MainBuilderPage = () => {
     }, []);
 
     const handlePercentageChange = (id, newPercentage) => {
-        if (selectedFlavors.length <= 1) {
-            setSelectedFlavors(prev => prev.map(f =>
-                f.flavorId === id ? { ...f, percentage: 100 } : f
-            ));
-            return;
-        }
+        setSelectedFlavors((prev) => {
+            if (prev.length <= 1) {
+                return prev.map((f) =>
+                    f.flavorId === id ? { ...f, percentage: 100 } : f
+                );
+            }
 
-        const targetPct = Math.max(1, Math.min(100, Math.round(newPercentage)));
+            const targetPct = Math.max(1, Math.min(99, Math.round(newPercentage)));
 
-        setSelectedFlavors(selectedFlavors.map(f =>
-            f.flavorId === id
-                ? { ...f, percentage: targetPct }
-                : { ...f, percentage: Math.round(f.percentage) }
-        ));
+            if (prev.length === 2) {
+                return prev.map((f) =>
+                    f.flavorId === id
+                        ? { ...f, percentage: targetPct }
+                        : { ...f, percentage: 100 - targetPct }
+                );
+            }
+
+            return prev.map((f) =>
+                f.flavorId === id
+                    ? { ...f, percentage: Math.max(1, Math.min(100, Math.round(newPercentage))) }
+                    : { ...f, percentage: Math.round(f.percentage) }
+            );
+        });
     };
 
     const addFlavorToMix = (flavor) => {
@@ -200,13 +209,12 @@ const MainBuilderPage = () => {
     };
 
     const removeFlavorFromMix = (id) => {
-        const remaining = selectedFlavors.filter(f => f.flavorId !== id);
+        const remaining = selectedFlavors.filter((f) => f.flavorId !== id);
         if (remaining.length === 0) return setSelectedFlavors([]);
-        if (remaining.length === 1) {
-            setSelectedFlavors([{ ...remaining[0], percentage: 100 }]);
-            return;
-        }
-        setSelectedFlavors(remaining.map(f => ({ ...f, percentage: Math.round(f.percentage) })));
+        const shares = splitEqually(remaining.length);
+        setSelectedFlavors(
+            remaining.map((f, i) => ({ ...f, percentage: shares[i] }))
+        );
     };
 
     const calculatePrice = () => {
@@ -331,8 +339,8 @@ const MainBuilderPage = () => {
 
                         {(() => {
                             const total = flavorPercentTotal(selectedFlavors);
-                            const isOver = total > 100;
-                            const isUnder = selectedFlavors.length > 1 && total < 100;
+                            const isOver = selectedFlavors.length > 2 && total > 100;
+                            const isUnder = selectedFlavors.length > 2 && total < 100;
                             if (!isOver && !isUnder) return null;
                             return (
                                 <div className={`flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium ${
